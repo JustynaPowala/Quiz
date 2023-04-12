@@ -1,4 +1,6 @@
 
+using Microsoft.AspNetCore.Cors.Infrastructure;
+
 namespace Quiz.WebApi
 {
     public class Program
@@ -14,6 +16,22 @@ namespace Quiz.WebApi
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowedCorsOrigins",
+
+                    corsPolicyBuilder => 
+                    {
+                        corsPolicyBuilder
+                        .SetIsOriginAllowed(_ => true)
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowCredentials();
+                    }
+                    );
+
+            });
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -25,6 +43,7 @@ namespace Quiz.WebApi
 
             app.UseAuthorization();
 
+            app.UseCors("AllowedCorsOrigins");
 
             app.MapControllers();
 
