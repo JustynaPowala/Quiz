@@ -23,9 +23,9 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var forecast in forecasts)
+            @foreach (var forecast in forecasts)     // tr to wiersz tabeli,a  td komórka tabeli
             {
-                <tr>
+                <tr>                                                   
                     <td>@forecast.Date.ToShortDateString()</td>
                     <td>@forecast.TemperatureC</td>
                     <td>@forecast.TemperatureF</td>
@@ -41,10 +41,10 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("sample-data/weather.json");
+        forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("sample-data/weather.json"); //
     }
 
-    public class WeatherForecast
+    public class WeatherForecast                          //takie coś było też w webapi
     {
         public DateOnly Date { get; set; }
 

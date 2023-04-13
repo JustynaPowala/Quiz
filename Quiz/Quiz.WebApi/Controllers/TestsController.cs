@@ -13,6 +13,7 @@ namespace Quiz.WebApi.Controllers
         public TestsController(ILogger<TestsController> logger)
         {
             _logger = logger;
+            
         }
 
         [HttpGet("random-number")]

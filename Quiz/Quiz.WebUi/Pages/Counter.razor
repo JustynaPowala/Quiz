@@ -5,16 +5,20 @@
 <h1>Counter</h1>
 <h2>@_randomGuid</h2>
 <h3>@_randomNumber</h3>
+<h4>@_count</h4>
 
 <p role="status">Current count: @currentCount</p>
 
 <button class="btn btn-primary" @onclick="IncrementCountAsync">Click me</button>
+<button class="btn btn-primary" @onclick="Count">Click this button</button>
+
 
 @code {
     private string _randomGuid;
     private string _randomNumber;
 
     private int currentCount = 0;
+    private int _count = 10;
 
     public Counter()
     {
@@ -23,11 +27,12 @@
 
     }
 
+
     private async Task IncrementCountAsync()
     {
         currentCount++;
         await RefreshGuidAsync();
-        await RefreshNumAsync();
+        await RefreshNumAsync();         
     }
 
     protected override async Task OnInitializedAsync()
@@ -54,4 +59,16 @@
 
     }
 
+    private void Count()
+    {
+        _count++;
+    }
+
 }
+
+
+
+
+
+
+
