@@ -6,6 +6,7 @@
 <h2>@_randomGuid</h2>
 <h3>@_randomNumber</h3>
 <h4>@_count</h4>
+<h5>@_query</h5>
 
 <p role="status">Current count: @currentCount</p>
 
@@ -16,6 +17,7 @@
 @code {
     private string _randomGuid;
     private string _randomNumber;
+    private string _query;
 
     private int currentCount = 0;
     private int _count = 10;
@@ -24,6 +26,8 @@
     {
         _randomGuid = "12";
         _randomNumber = "1";
+        _query = "";
+
 
     }
 
@@ -32,7 +36,8 @@
     {
         currentCount++;
         await RefreshGuidAsync();
-        await RefreshNumAsync();         
+        await RefreshNumAsync();
+        await RefreshSQLAsync();
     }
 
     protected override async Task OnInitializedAsync()
@@ -56,6 +61,16 @@
         var response = await quizNum.GetAsync("tests/random-number");
         var body = await response.Content.ReadAsStringAsync();
         _randomNumber = body;
+
+    }
+
+    private async Task RefreshSQLAsync()
+    {
+        var sqlquery = new HttpClient();
+        sqlquery.BaseAddress = new Uri("http://localhost:5271");
+        var response = await sqlquery.GetAsync("tests/from-database");
+        var body = await response.Content.ReadAsStringAsync();
+        _query = body;
 
     }
 

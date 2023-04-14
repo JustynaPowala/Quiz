@@ -1,4 +1,7 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿
+
+
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">Quiz.WebUi</a>
         <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
@@ -24,8 +27,15 @@
                 <span class="oi oi-list-rich" aria-hidden="true"></span> Fetch data
             </NavLink>
         </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="test">
+                <span class="oi oi-pencil" aria-hidden="true"></span> Test
+            </NavLink>
+        </div>
     </nav>
 </div>
+<iconify-icon icon="bi:text-center"></iconify-icon>
+
 
 @code {
     private bool collapseNavMenu = true;
@@ -36,4 +46,8 @@
     {
         collapseNavMenu = !collapseNavMenu;
     }
+
+
+
+    // href- hypertext reference- określamy tutaj adres dokumentu HTML, do którego hiperłącze ma prowadzić.
 }
