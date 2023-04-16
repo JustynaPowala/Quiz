@@ -18,9 +18,12 @@
     private string _randomGuid;
     private string _randomNumber;
     private string _query;
+    private string _question = "???";
 
     private int currentCount = 0;
     private int _count = 10;
+
+
 
     public Counter()
     {
@@ -68,7 +71,8 @@
     {
         var sqlquery = new HttpClient();
         sqlquery.BaseAddress = new Uri("http://localhost:5271");
-        var response = await sqlquery.GetAsync("tests/from-database");
+        var response = await sqlquery.GetAsync("tests/to-database");
+        var cos = (_randomGuid, _question);
         var body = await response.Content.ReadAsStringAsync();
         _query = body;
 

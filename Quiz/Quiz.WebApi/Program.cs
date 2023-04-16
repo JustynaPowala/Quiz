@@ -1,5 +1,6 @@
 
 using Microsoft.AspNetCore.Cors.Infrastructure;
+using Quiz.WebApi.Controllers;
 
 namespace Quiz.WebApi
 {
@@ -32,6 +33,7 @@ namespace Quiz.WebApi
 
             });
 
+            
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
