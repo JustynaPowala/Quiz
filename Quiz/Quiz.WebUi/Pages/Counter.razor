@@ -9,6 +9,7 @@
 <h4>@_count</h4>
 <h5>@_returnedguid</h5>
 <h6>@_question</h6>
+<h7> @_listOfQuestions</h7>
 
 <p role="status">Current count: @currentCount</p>
 
@@ -16,8 +17,14 @@
 <button class="btn btn-primary" @onclick="Count">Click this button</button>
 <br />  
 <input type="text" class="form-control" @bind-value="@_question" />
-
-
+<ul>
+@foreach (var ques in _listOfQuestions)
+{
+    <li>
+        @ques.Guid - @ques.QuestionContent
+    </li>
+}
+</ul>
 
 @code {
     private string _randomGuid;
@@ -27,6 +34,7 @@
 
     private int currentCount = 0;
     private int _count = 10;
+    private List<GetQuestionIdAndContent> _listOfQuestions;
 
 
 
@@ -35,7 +43,7 @@
         _randomGuid = "12";
         _randomNumber = "1";
         _returnedguid = Guid.Empty;
-
+        _listOfQuestions = new List<GetQuestionIdAndContent>();
 
     }
 
@@ -45,8 +53,9 @@
         currentCount++;
         await RefreshGuidAsync();
         await RefreshNumAsync();
-        await RefreshSQLAsync();
+        await AddQuestionAsync();
         _question = string.Empty;
+        await LoadTop5Async();
     }
 
     protected override async Task OnInitializedAsync()
@@ -68,12 +77,12 @@
         var quizNum = new HttpClient();
         quizNum.BaseAddress = new Uri("http://localhost:5271");
         var response = await quizNum.GetAsync("tests/random-number");
-        var body = await response.Content.ReadAsStringAsync();
+        var body = await response.Content.ReadAsStringAsync();                      //content to ta zserializowana forma
         _randomNumber = body;
 
     }
 
-    private async Task RefreshSQLAsync()
+    private async Task AddQuestionAsync()
     {
         var sqlquery = new HttpClient();
         sqlquery.BaseAddress = new Uri("http://localhost:5271");
@@ -82,8 +91,16 @@
                 QuestionContent = _question   
             }));
 
-        var body = await response.Content.ReadAsStringAsync();
-        _returnedguid = Guid.Parse(body);
+        var body = await response.Content.ReadFromJsonAsync<Guid>();
+        _returnedguid = body;
+
+    }
+    private async Task LoadTop5Async()
+    {
+        var httpClient = new HttpClient();
+        httpClient.BaseAddress = new Uri("http://localhost:5271");
+        var response = await httpClient.GetAsync("tests/top-five");
+        _listOfQuestions = await response.Content.ReadFromJsonAsync<List<GetQuestionIdAndContent>>();
         
     }
 

@@ -33,51 +33,55 @@ namespace Quiz.WebApi.Controllers
         }
 
 
-        private string _x;
+      
+
+
+        [HttpGet("top-five")]
+        public List<GetQuestionIdAndContent> OpenSqlConnection()
+        {
+           var  listOfTop5 = new List<GetQuestionIdAndContent>();
+            
+            string connectionString = GetConnectionString();
+
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.ConnectionString = connectionString;
+
+                connection.Open();
+
+                string sqlQuery = "SELECT TOP 5 * FROM dbo.Questions";
+
+                using (SqlCommand command = new SqlCommand(sqlQuery, connection))
+                {
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            // Retrieve data from the reader and process as needed
+                            var question = new GetQuestionIdAndContent();
+
+                            string questionId = reader["ID"].ToString();
+                            questionId ??= string.Empty;
+                            
+                            question.Guid = Guid.Parse(questionId);
+
+
+                            string questionText = reader["QuestionContent"].ToString();
+                            questionText ??= string.Empty;
+                            question.QuestionContent = questionText;
+                            
+                            listOfTop5.Add(question);
+
+
+                        }
+                    }
+                }
+            }
+            return listOfTop5;
+        }
 
 
 
-
-        //public string OpenSqlConnection()
-        //{
-        //    string connectionString = GetConnectionString();
-
-        //    using (SqlConnection connection = new SqlConnection(connectionString))
-        //    {
-        //        connection.ConnectionString = connectionString;
-
-        //        connection.Open();
-
-        //        string sqlQuery = "SELECT * FROM dbo.Questions";
-
-        //        using (SqlCommand command = new SqlCommand(sqlQuery, connection))
-        //        {
-        //            using (SqlDataReader reader = command.ExecuteReader())
-        //            {
-        //                while (reader.Read())
-        //                {
-        //                    // Retrieve data from the reader and process as needed
-
-
-        //                    string questionId = reader["ID"].ToString();
-        //                    questionId ??= string.Empty;
-
-        //                    string questionText = reader["QuestionContent"].ToString();
-        //                    questionText ??= string.Empty;
-        //                    Console.WriteLine($"ID: {questionId}, QuestionText: {questionText}");
-        //                    _x = questionId + " " + questionText;
-
-
-
-        //                }
-        //            }
-        //        }
-        //    }
-        //    return _x;
-        //}
-
-        
-       
         [HttpPost("to-database")]
         public Guid Inserting([FromBody] AddQuestionBody body)
         {
