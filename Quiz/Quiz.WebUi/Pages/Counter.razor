@@ -1,4 +1,5 @@
 ﻿@page "/counter"
+@using Quiz.Contracts;
 
 <PageTitle>Counter</PageTitle>
 
@@ -6,18 +7,22 @@
 <h2>@_randomGuid</h2>
 <h3>@_randomNumber</h3>
 <h4>@_count</h4>
-<h5>@_query</h5>
+<h5>@_returnedguid</h5>
+<h6>@_question</h6>
 
 <p role="status">Current count: @currentCount</p>
 
 <button class="btn btn-primary" @onclick="IncrementCountAsync">Click me</button>
 <button class="btn btn-primary" @onclick="Count">Click this button</button>
+<br />  
+<input type="text" class="form-control" @bind-value="@_question" />
+
 
 
 @code {
     private string _randomGuid;
     private string _randomNumber;
-    private string _query;
+    private Guid _returnedguid;
     private string _question = "???";
 
     private int currentCount = 0;
@@ -29,7 +34,7 @@
     {
         _randomGuid = "12";
         _randomNumber = "1";
-        _query = "";
+        _returnedguid = Guid.Empty;
 
 
     }
@@ -41,6 +46,7 @@
         await RefreshGuidAsync();
         await RefreshNumAsync();
         await RefreshSQLAsync();
+        _question = string.Empty;
     }
 
     protected override async Task OnInitializedAsync()
@@ -71,17 +77,25 @@
     {
         var sqlquery = new HttpClient();
         sqlquery.BaseAddress = new Uri("http://localhost:5271");
-        var response = await sqlquery.GetAsync("tests/to-database");
-        var cos = (_randomGuid, _question);
-        var body = await response.Content.ReadAsStringAsync();
-        _query = body;
+        var response = await sqlquery.PostAsync("tests/to-database", JsonContent.Create(new AddQuestionBody()
+            {
+                QuestionContent = _question   
+            }));
 
+        var body = await response.Content.ReadAsStringAsync();
+        _returnedguid = Guid.Parse(body);
+        
     }
 
     private void Count()
     {
         _count++;
+
     }
+
+
+
+
 
 }
 

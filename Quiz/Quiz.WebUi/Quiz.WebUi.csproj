@@ -12,4 +12,8 @@
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Quiz.Contracts\Quiz.Contracts.csproj" />
+  </ItemGroup>
+
 </Project>

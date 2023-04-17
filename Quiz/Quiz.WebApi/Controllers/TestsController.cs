@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
-
+using Quiz.Contracts;
 
 namespace Quiz.WebApi.Controllers
 {
@@ -77,13 +77,11 @@ namespace Quiz.WebApi.Controllers
         //}
 
         
-        private string _guid;
-        private string _question;
+       
         [HttpPost("to-database")]
-        public void Inserting(string Guid, string Ques)
+        public Guid Inserting([FromBody] AddQuestionBody body)
         {
-            _guid = Guid;
-            _question = Ques;
+            var guid =  GetRandomGuid();
 
             string connectionString = GetConnectionString();
 
@@ -97,11 +95,12 @@ namespace Quiz.WebApi.Controllers
 
                 using (SqlCommand command = new SqlCommand(sqlQuery, connection))
                 {
-                    command.Parameters.AddWithValue("@Id", _guid);
-                    command.Parameters.AddWithValue("@QuestionContent", _question);
+                    command.Parameters.AddWithValue("@Id", guid);
+                    command.Parameters.AddWithValue("@QuestionContent", body.QuestionContent);
                     command.ExecuteNonQuery();
                 }
             }
+            return guid;
         }
 
 

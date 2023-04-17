@@ -12,5 +12,9 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Quiz.Contracts\Quiz.Contracts.csproj" />
+  </ItemGroup>
+
 
 </Project>
