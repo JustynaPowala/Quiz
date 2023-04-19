@@ -3,5 +3,6 @@
     public class AddQuestionBody
     {
         public string QuestionContent { get; set; }
+        public int Points { get; set; }
     }
 }

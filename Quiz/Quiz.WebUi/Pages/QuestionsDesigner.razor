@@ -1,0 +1,72 @@
+﻿@page "/questions-designer"
+
+@using Quiz.Contracts;
+@using Quiz.WebUi.ApiClients;
+@inject IQuizApiClient  QuizApiClient;  //property in class QuestionDesginer. Początkowo nie wie mój qestions designer co zrobić. Muszę "połączyć" IQuizApiClient z  HttpQuizApiClient(który ma zawarty ten interfejs). To połączenie jest zrobione poprzez services w klasie program.//
+
+<PageTitle>Questions Designer</PageTitle>
+
+<h1>Questions Designer</h1>
+
+<p> Enter your question and choose how much points you can get</p>
+<input type="text" class="form-control" @bind-value="@_question" />
+<br />  
+<input type="number" @bind-value="@_points" />
+<br />
+<br />
+<button class="btn btn-primary" @onclick="IncrementCountAsync">Add</button>
+<ul>
+@foreach (var ques in _listOfQuestions)
+{
+    <li>
+        @ques.Guid - @ques.QuestionContent
+    </li>
+}
+</ul>
+
+@code {
+
+    private Guid _returnedguid;
+    private string _question = "???";
+    private int _points = 0;
+
+
+
+    private List<GetQuestionIdAndContent> _listOfQuestions;
+
+
+
+    public QuestionsDesigner()
+    {
+        _returnedguid = Guid.Empty;
+        _listOfQuestions = new List<GetQuestionIdAndContent>();
+
+    }
+
+
+    private async Task IncrementCountAsync()
+    {           
+        await AddQuestionAsync();
+        _question = string.Empty;
+        _points = 0;
+        await LoadTop5Async();
+    }
+
+
+    private async Task AddQuestionAsync()
+    {
+        await QuizApiClient.AddQuestionAsync(_question, _points);
+        
+    }
+    private async Task LoadTop5Async()
+    {
+        var httpClient = new HttpClient();
+        httpClient.BaseAddress = new Uri("http://localhost:5271");
+        var response = await httpClient.GetAsync("tests/top-five");
+        _listOfQuestions = await response.Content.ReadFromJsonAsync<List<GetQuestionIdAndContent>>();
+        
+    }
+
+  
+
+}

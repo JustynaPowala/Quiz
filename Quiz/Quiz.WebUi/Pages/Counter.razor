@@ -13,10 +13,13 @@
 
 <p role="status">Current count: @currentCount</p>
 
-<button class="btn btn-primary" @onclick="IncrementCountAsync">Click me</button>
-<button class="btn btn-primary" @onclick="Count">Click this button</button>
+
 <br />  
+<p> Enter your question and choose how much points you can get</p>
 <input type="text" class="form-control" @bind-value="@_question" />
+<input type="number" @bind-value="@_points" />
+<br />
+<button class="btn btn-primary" @onclick="IncrementCountAsync">Add</button>
 <ul>
 @foreach (var ques in _listOfQuestions)
 {
@@ -31,6 +34,7 @@
     private string _randomNumber;
     private Guid _returnedguid;
     private string _question = "???";
+    private int _points;
 
     private int currentCount = 0;
     private int _count = 10;
@@ -88,7 +92,8 @@
         sqlquery.BaseAddress = new Uri("http://localhost:5271");
         var response = await sqlquery.PostAsync("tests/to-database", JsonContent.Create(new AddQuestionBody()
             {
-                QuestionContent = _question   
+                QuestionContent = _question,
+                Points = _points
             }));
 
         var body = await response.Content.ReadFromJsonAsync<Guid>();

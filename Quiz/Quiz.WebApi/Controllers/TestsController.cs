@@ -12,11 +12,12 @@ namespace Quiz.WebApi.Controllers
 
 
         private readonly ILogger<TestsController> _logger;
+        private readonly IConfiguration _configuration;
 
-        public TestsController(ILogger<TestsController> logger)
+        public TestsController(ILogger<TestsController> logger, IConfiguration configuration)
         {
             _logger = logger;
-
+            _configuration = configuration;
         }
 
         [HttpGet("random-number")]
@@ -29,7 +30,8 @@ namespace Quiz.WebApi.Controllers
         [HttpGet("random-guid")]
         public Guid GetRandomGuid()
         {
-            return Guid.NewGuid();
+            _logger.LogCritical("abc");
+             return Guid.NewGuid();
         }
 
 
@@ -95,12 +97,13 @@ namespace Quiz.WebApi.Controllers
 
                 connection.Open();
 
-                string sqlQuery = "INSERT INTO dbo.Questions (Id, QuestionContent) VALUES (@Id, @QuestionContent)";
+                string sqlQuery = "INSERT INTO dbo.Questions (Id, QuestionContent, Points) VALUES (@Id, @QuestionContent, @Points)";
 
                 using (SqlCommand command = new SqlCommand(sqlQuery, connection))
                 {
                     command.Parameters.AddWithValue("@Id", guid);
                     command.Parameters.AddWithValue("@QuestionContent", body.QuestionContent);
+                    command.Parameters.AddWithValue("@Points", body.Points); 
                     command.ExecuteNonQuery();
                 }
             }
@@ -110,12 +113,10 @@ namespace Quiz.WebApi.Controllers
 
 
 
-        public static string GetConnectionString()
+        private  string GetConnectionString()
             {
-            // To avoid storing the connection string in your code,
-            // you can retrieve it from a configuration file.
-            return "Server=DESKTOP-K74FN9P\\SQLEXPRESS;Database=Quiz;"
-                + "Integrated Security=true;Encrypt=false;";
+            
+            return _configuration["ConnectionStrings:Default"];    // appsettings, tam jest path
         }
     }
 
