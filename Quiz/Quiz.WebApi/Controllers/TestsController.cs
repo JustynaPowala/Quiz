@@ -97,13 +97,14 @@ namespace Quiz.WebApi.Controllers
 
                 connection.Open();
 
-                string sqlQuery = "INSERT INTO dbo.Questions (Id, QuestionContent, Points) VALUES (@Id, @QuestionContent, @Points)";
+                string sqlQuery = "INSERT INTO dbo.Questions (Id, QuestionContent, Points, Category) VALUES (@Id, @QuestionContent, @Points, @Category)";
 
                 using (SqlCommand command = new SqlCommand(sqlQuery, connection))
                 {
                     command.Parameters.AddWithValue("@Id", guid);
                     command.Parameters.AddWithValue("@QuestionContent", body.QuestionContent);
-                    command.Parameters.AddWithValue("@Points", body.Points); 
+                    command.Parameters.AddWithValue("@Points", body.Points);
+                    command.Parameters.AddWithValue("@Category", body.Category);
                     command.ExecuteNonQuery();
                 }
             }

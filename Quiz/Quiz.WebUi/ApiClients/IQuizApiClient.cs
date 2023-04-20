@@ -2,7 +2,7 @@
 {
     public interface IQuizApiClient
     {
-        Task<Guid> AddQuestionAsync(string questionContent, int points); 
+        Task<Guid> AddQuestionAsync(string questionContent, int points, string category); 
         
        
     }

@@ -14,7 +14,7 @@
 <input type="number" @bind-value="@_points" />
 <br />
 <br />
-<button class="btn btn-primary" @onclick="IncrementCountAsync">Add</button>
+
 <ul>
 @foreach (var ques in _listOfQuestions)
 {
@@ -24,11 +24,28 @@
 }
 </ul>
 
+<label 
+    <InputSelect @bind-Value = "@_category">
+
+    <option value="default">Select a category</option>
+    <option value="history">History</option>
+    <option value="chemistry">Chemistry</option>
+    <option value="mathematics">Mathematics</option>
+    <option value="music">Music</option>
+    <option value="information technology">Information technology</option>
+    </InputSelect>
+    
+</label>
+
+
+<button class="btn btn-primary" @onclick="IncrementCountAsync">Add</button>
+
 @code {
 
     private Guid _returnedguid;
     private string _question = "???";
     private int _points = 0;
+    private string _category = "default";
 
 
 
@@ -49,13 +66,14 @@
         await AddQuestionAsync();
         _question = string.Empty;
         _points = 0;
+        _category = "default";
         await LoadTop5Async();
     }
 
 
     private async Task AddQuestionAsync()
     {
-        await QuizApiClient.AddQuestionAsync(_question, _points);
+        await QuizApiClient.AddQuestionAsync(_question, _points, _category);
         
     }
     private async Task LoadTop5Async()

@@ -4,5 +4,7 @@
     {
         public string QuestionContent { get; set; }
         public int Points { get; set; }
+
+        public string Category { get; set; }
     }
 }

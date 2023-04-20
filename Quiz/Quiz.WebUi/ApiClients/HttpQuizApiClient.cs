@@ -12,13 +12,14 @@ namespace Quiz.WebUi.ApiClients
             _configuration = configuration;
         }
        
-        public async Task<Guid> AddQuestionAsync(string questionContent, int points)
+        public async Task<Guid> AddQuestionAsync(string questionContent, int points, string category)
         {
             var client = CreateHttpClient();
             var response = await client.PostAsync("tests/to-database", JsonContent.Create(new AddQuestionBody()
             {
                 QuestionContent = questionContent,
-                Points = points
+                Points = points,
+                Category = category
             }));
 
             var body = await response.Content.ReadFromJsonAsync<Guid>();
