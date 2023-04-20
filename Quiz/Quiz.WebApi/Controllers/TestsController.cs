@@ -112,7 +112,56 @@ namespace Quiz.WebApi.Controllers
             return guid;
         }
 
+        [HttpPost("answer-to-database")]
+        public Guid InsertingAnswer([FromBody] AddAnswerBody body)
+        {
+            var answerGuid = GetRandomGuid();
 
+            string connectionString = GetConnectionString();
+
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.ConnectionString = connectionString;
+
+                connection.Open();
+
+                string sqlQuery = "INSERT INTO dbo.Answers (QuestionID, ID, AnswerContent, IsCorrect) VALUES (@QuestionID, @ID, @AnswerContent, @IsCorrect)";
+
+                using (SqlCommand command = new SqlCommand(sqlQuery, connection))
+                {
+                    command.Parameters.AddWithValue("@QuestionID", body.QuestionID);
+                    command.Parameters.AddWithValue("@Id", answerGuid);
+                    command.Parameters.AddWithValue("@AnswerContent", body.AnswerContent);
+                    command.Parameters.AddWithValue("@IsCorrect", body.IsCorrect);               
+                    command.ExecuteNonQuery();
+                }
+            }
+            return answerGuid;
+        }
+
+
+        [HttpPost("delete-answer")]
+        public void  DeletingAnswer([FromBody] Guid answerGuid)
+        {
+
+            string connectionString = GetConnectionString();
+
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.ConnectionString = connectionString;
+
+                connection.Open();
+
+                string sqlQuery = "DELETE FROM dbo.Answers WHERE ID = @ID";
+
+                using (SqlCommand command = new SqlCommand(sqlQuery, connection))
+                {
+                    command.Parameters.AddWithValue("@ID", answerGuid);
+                    command.ExecuteNonQuery();
+                }
+            }
+            
+        }
 
 
         private  string GetConnectionString()
