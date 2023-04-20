@@ -97,7 +97,7 @@ namespace Quiz.WebApi.Controllers
 
                 connection.Open();
 
-                string sqlQuery = "INSERT INTO dbo.Questions (Id, QuestionContent, Points, Category) VALUES (@Id, @QuestionContent, @Points, @Category)";
+                string sqlQuery = "INSERT INTO dbo.Questions (Id, QuestionContent, Points, Category, SelectionMultiplicity) VALUES (@Id, @QuestionContent, @Points, @Category, @SelectionMultiplicity)";
 
                 using (SqlCommand command = new SqlCommand(sqlQuery, connection))
                 {
@@ -105,6 +105,7 @@ namespace Quiz.WebApi.Controllers
                     command.Parameters.AddWithValue("@QuestionContent", body.QuestionContent);
                     command.Parameters.AddWithValue("@Points", body.Points);
                     command.Parameters.AddWithValue("@Category", body.Category);
+                    command.Parameters.AddWithValue("@SelectionMultiplicity", body.SelectionMultiplicity);
                     command.ExecuteNonQuery();
                 }
             }

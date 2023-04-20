@@ -38,6 +38,16 @@
 </label>
 
 
+<label
+    <InputSelect @bind-Value = "@_selectionMultiplicity">
+
+    <option value="default">Choose selection multiplicity</option>
+    <option value="single">Single</option>
+    <option value="multiple">Multiple</option>
+    </InputSelect>
+
+</label>
+
 <button class="btn btn-primary" @onclick="IncrementCountAsync">Add</button>
 
 @code {
@@ -46,6 +56,7 @@
     private string _question = "???";
     private int _points = 0;
     private string _category = "default";
+    private string _selectionMultiplicity = "default";
 
 
 
@@ -67,13 +78,14 @@
         _question = string.Empty;
         _points = 0;
         _category = "default";
+        _selectionMultiplicity = "default";
         await LoadTop5Async();
     }
 
 
     private async Task AddQuestionAsync()
     {
-        await QuizApiClient.AddQuestionAsync(_question, _points, _category);
+        await QuizApiClient.AddQuestionAsync(_question, _points, _category, _selectionMultiplicity);
         
     }
     private async Task LoadTop5Async()
