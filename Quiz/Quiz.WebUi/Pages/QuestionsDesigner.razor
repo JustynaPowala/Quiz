@@ -57,7 +57,7 @@
     private int _points = 0;
     private string _category = "default";
     private string _selectionMultiplicity = "default";
-
+    private Guid _questionID;
 
 
     private List<GetQuestionIdAndContent> _listOfQuestions;
@@ -85,8 +85,15 @@
 
     private async Task AddQuestionAsync()
     {
-        await QuizApiClient.AddQuestionAsync(_question, _points, _category, _selectionMultiplicity);
-        
+        _questionID = await QuizApiClient.AddQuestionAsync(_question, _points, _category, _selectionMultiplicity);  //metoda dodaje pytanie i zwraca też guida. guid pod prywatne pole, bo będzie potrzebny do dodawania odpowiedzi
+
+    }
+
+    private async Task AddQuestionAnswerAsync()
+    {
+
+        await QuizApiClient.AddQuestionAnswerAsync(_questionID, "", true);  ////
+
     }
     private async Task LoadTop5Async()
     {

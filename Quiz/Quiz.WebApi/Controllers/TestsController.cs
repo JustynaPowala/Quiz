@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Quiz.Contracts;
+using System.Security.Cryptography.Xml;
 
 namespace Quiz.WebApi.Controllers
 {
@@ -84,8 +85,8 @@ namespace Quiz.WebApi.Controllers
 
 
 
-        [HttpPost("to-database")]
-        public Guid Inserting([FromBody] AddQuestionBody body)
+        [HttpPost("questions")] //
+        public Guid AddQuestion([FromBody] AddQuestionBody body)
         {
             var guid =  GetRandomGuid();
 
@@ -112,8 +113,8 @@ namespace Quiz.WebApi.Controllers
             return guid;
         }
 
-        [HttpPost("answer-to-database")]
-        public Guid InsertingAnswer([FromBody] AddAnswerBody body)
+        [HttpPost("questions/{questionID}/answers")]
+        public Guid AddQuestionAnswer([FromRoute] Guid questionID, [FromBody] AddAnswerBody body)
         {
             var answerGuid = GetRandomGuid();
 
@@ -129,10 +130,10 @@ namespace Quiz.WebApi.Controllers
 
                 using (SqlCommand command = new SqlCommand(sqlQuery, connection))
                 {
-                    command.Parameters.AddWithValue("@QuestionID", body.QuestionID);
+                    command.Parameters.AddWithValue("@QuestionID", questionID);
                     command.Parameters.AddWithValue("@Id", answerGuid);
                     command.Parameters.AddWithValue("@AnswerContent", body.AnswerContent);
-                    command.Parameters.AddWithValue("@IsCorrect", body.IsCorrect);               
+                    command.Parameters.AddWithValue("@IsCorrect", body.IsCorrect ?1:0);         //jeœli to co przed? bêdzie true to przyjmie to co przed: a jak false to to co po:. czyli 1 bêdzie true a 0 bêdzie false- tak jak jst w sql.
                     command.ExecuteNonQuery();
                 }
             }
@@ -140,8 +141,8 @@ namespace Quiz.WebApi.Controllers
         }
 
 
-        [HttpPost("delete-answer")]
-        public void  DeletingAnswer([FromBody] Guid answerGuid)
+        [HttpDelete("questions/{questionID}/answers/{answerID}")]
+        public void  DeletingAnswer([FromRoute] Guid questionID, Guid answerID)
         {
 
             string connectionString = GetConnectionString();
@@ -156,12 +157,24 @@ namespace Quiz.WebApi.Controllers
 
                 using (SqlCommand command = new SqlCommand(sqlQuery, connection))
                 {
-                    command.Parameters.AddWithValue("@ID", answerGuid);
+                    command.Parameters.AddWithValue("@ID", answerID);
                     command.ExecuteNonQuery();
                 }
             }
             
         }
+
+
+        [HttpPost("execute-test/{x1}/tralala/{x2}/abc")]
+        public TestResponseBody ExecuteTest([FromRoute]int x1,  [FromRoute]int x2, [FromQuery] int y1, [FromQuery] int y2, [FromBody] TestRequestBody body)
+        {
+            return new TestResponseBody()
+            {
+                ResultA = x1 * x2 * y1 * y2 * body.NumberA * body.NumberB,
+                ResultC = (x1 * y1 * body.NumberA).ToString(),
+            };
+        }
+
 
 
         private  string GetConnectionString()

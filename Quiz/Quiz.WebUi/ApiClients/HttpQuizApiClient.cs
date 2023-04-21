@@ -15,7 +15,7 @@ namespace Quiz.WebUi.ApiClients
         public async Task<Guid> AddQuestionAsync(string questionContent, int points, string category, string selectionMultiplicity)
         {
             var client = CreateHttpClient();
-            var response = await client.PostAsync("tests/to-database", JsonContent.Create(new AddQuestionBody()
+            var response = await client.PostAsync("tests/questions", JsonContent.Create(new AddQuestionBody()  // 
             {
                 QuestionContent = questionContent,
                 Points = points,
@@ -26,6 +26,28 @@ namespace Quiz.WebUi.ApiClients
             var body = await response.Content.ReadFromJsonAsync<Guid>();
             return body;
 
+        }
+
+        public async Task<Guid> AddQuestionAnswerAsync(Guid questionID, string answerContent, bool isCorrect)
+        {
+            
+            var client = CreateHttpClient();
+            var address = "tests/questions/" + questionID+ "/asnwers";
+            var response = await client.PostAsync(address, JsonContent.Create(new AddAnswerBody()  // 
+            {
+                AnswerContent = answerContent,
+                IsCorrect = isCorrect
+            })); ;
+
+            var body = await response.Content.ReadFromJsonAsync<Guid>();  //identyfikattor odpowiedzi
+            return body;
+        }
+
+        public async Task DeleteAnswer(Guid questionID, Guid answerID)
+        {
+            var client = CreateHttpClient();
+            var address = "tests/questions/" + questionID + "/asnwers/" + answerID;
+            await client.DeleteAsync(address);  
         }
 
         private HttpClient CreateHttpClient()
