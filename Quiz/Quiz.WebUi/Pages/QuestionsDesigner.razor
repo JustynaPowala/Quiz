@@ -7,6 +7,7 @@
 <PageTitle>Questions Designer</PageTitle>
 
 <h1>Questions Designer</h1>
+<h2>@_isCorrect</h2>
 
 <p> Enter your question and choose how much points you can get</p>
 <input type="text" class="form-control" @bind-value="@_question" />
@@ -23,6 +24,9 @@
     </li>
 }
 </ul>
+
+
+
 
 <label 
     <InputSelect @bind-Value = "@_category">
@@ -50,6 +54,39 @@
 
 <button class="btn btn-primary" @onclick="IncrementCountAsync">Add</button>
 
+
+@*it will be use to answers text box*@
+<style>
+    .half-screen-textbox{
+        width:50vw;
+    }
+</style>      
+
+
+@if (_answers == true)
+{
+    <p>Add answers to your question. Check the box if it is correct answer.</p>
+    <input type="text" class="half-screen-textbox" @bind-value="@_answer" />
+    <input type="checkbox" @bind-value="@_isCorrect" />
+} 
+
+@if (_answers == true)
+{
+    <button class="btn btn-primary" @onclick="AddingAnswerOnButtonClickedAsync">Add answer</button>
+}
+
+
+<ul>
+    @foreach (var answ in _listOfAnswers)
+    {
+        <li>
+            @answ.AnswGuid - @answ.AnswerContent  <button @onclick="() => DeletingAnswerAsync(answ.QeGuid,answ.AnswGuid)">Delete</button>
+        </li>
+    }
+
+
+</ul>
+
 @code {
 
     private Guid _returnedguid;
@@ -58,9 +95,14 @@
     private string _category = "default";
     private string _selectionMultiplicity = "default";
     private Guid _questionID;
+    private Guid _answerID;
+    private string _answer;
+    private bool _answers = false;
+    private bool _isCorrect; 
 
 
     private List<GetQuestionIdAndContent> _listOfQuestions;
+    private List<GetAllInfosAboutAnswer> _listOfAnswers;
 
 
 
@@ -68,6 +110,7 @@
     {
         _returnedguid = Guid.Empty;
         _listOfQuestions = new List<GetQuestionIdAndContent>();
+        _listOfAnswers = new List<GetAllInfosAboutAnswer>();
 
     }
 
@@ -79,7 +122,23 @@
         _points = 0;
         _category = "default";
         _selectionMultiplicity = "default";
-        await LoadTop5Async();
+        _answers = true;
+        //await LoadTop5Async();
+    }
+
+    private async Task AddingAnswerOnButtonClickedAsync()
+    {
+        await AddQuestionAnswerAsync();
+        await GetListOfAnswersAsync();
+    }
+
+    private async Task DeletingAnswerAsync(Guid questionID, Guid answerID)
+    {
+        _questionID = questionID;
+        _answerID = answerID;
+        await DeleteAnswerAsync();
+        await GetListOfAnswersAsync();
+        
     }
 
 
@@ -92,8 +151,17 @@
     private async Task AddQuestionAnswerAsync()
     {
 
-        await QuizApiClient.AddQuestionAnswerAsync(_questionID, "", true);  ////
+        _answerID = await QuizApiClient.AddQuestionAnswerAsync(_questionID, _answer, _isCorrect);  ////
+    }
 
+    private async Task DeleteAnswerAsync()
+    {
+        await QuizApiClient.DeleteAnswer(_questionID, _answerID);
+    }
+
+    private async Task GetListOfAnswersAsync()
+    {
+       _listOfAnswers= await QuizApiClient.GetListOfAnswersAsync(_questionID);
     }
     private async Task LoadTop5Async()
     {

@@ -1,4 +1,5 @@
 ﻿using Quiz.Contracts;
+using System.Net.Http;
 using System.Net.Http.Json;
 
 namespace Quiz.WebUi.ApiClients
@@ -32,7 +33,7 @@ namespace Quiz.WebUi.ApiClients
         {
             
             var client = CreateHttpClient();
-            var address = "tests/questions/" + questionID+ "/asnwers";
+            var address = "tests/questions/" + questionID+ "/answers";
             var response = await client.PostAsync(address, JsonContent.Create(new AddAnswerBody()  // 
             {
                 AnswerContent = answerContent,
@@ -46,9 +47,19 @@ namespace Quiz.WebUi.ApiClients
         public async Task DeleteAnswer(Guid questionID, Guid answerID)
         {
             var client = CreateHttpClient();
-            var address = "tests/questions/" + questionID + "/asnwers/" + answerID;
+            var address = "tests/questions/" + questionID + "/answers/" + answerID;
             await client.DeleteAsync(address);  
         }
+
+        public async Task<List<GetAllInfosAboutAnswer>> GetListOfAnswersAsync(Guid questionID)
+        {
+
+            var client = CreateHttpClient();
+            var response = await client.GetAsync("tests/list-of-answers/" + questionID);
+            var listOfAnswers = await response.Content.ReadFromJsonAsync<List<GetAllInfosAboutAnswer>>();
+            return listOfAnswers;
+        }
+
 
         private HttpClient CreateHttpClient()
         {

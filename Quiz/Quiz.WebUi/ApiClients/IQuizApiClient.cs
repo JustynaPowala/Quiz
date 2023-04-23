@@ -1,4 +1,6 @@
-﻿namespace Quiz.WebUi.ApiClients
+﻿using Quiz.Contracts;
+
+namespace Quiz.WebUi.ApiClients
 {
     public interface IQuizApiClient
     {
@@ -6,6 +8,8 @@
 
         Task<Guid> AddQuestionAnswerAsync(Guid questionID, string answerContent, bool isCorrect);
 
-        Task DeleteAnswer(Guid questionID, Guid answerID);
+        Task DeleteAnswer(Guid questionID, Guid answerID);   //async?
+
+        Task<List<GetAllInfosAboutAnswer>> GetListOfAnswersAsync(Guid questionID);
     }
 }

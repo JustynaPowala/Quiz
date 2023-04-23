@@ -31,7 +31,7 @@ namespace Quiz.WebApi.Controllers
         [HttpGet("random-guid")]
         public Guid GetRandomGuid()
         {
-            _logger.LogCritical("abc");
+            //_logger.LogCritical("abc");
              return Guid.NewGuid();
         }
 
@@ -39,49 +39,49 @@ namespace Quiz.WebApi.Controllers
       
 
 
-        [HttpGet("top-five")]
-        public List<GetQuestionIdAndContent> OpenSqlConnection()
-        {
-           var  listOfTop5 = new List<GetQuestionIdAndContent>();
+        //[HttpGet("top-five")]
+        //public List<GetQuestionIdAndContent> OpenSqlConnection()
+        //{
+        //   var  listOfTop5 = new List<GetQuestionIdAndContent>();
             
-            string connectionString = GetConnectionString();
+        //    string connectionString = GetConnectionString();
 
-            using (SqlConnection connection = new SqlConnection(connectionString))
-            {
-                connection.ConnectionString = connectionString;
+        //    using (SqlConnection connection = new SqlConnection(connectionString))
+        //    {
+        //        connection.ConnectionString = connectionString;
 
-                connection.Open();
+        //        connection.Open();
 
-                string sqlQuery = "SELECT TOP 5 * FROM dbo.Questions";
+        //        string sqlQuery = "SELECT TOP 5 * FROM dbo.Questions";
 
-                using (SqlCommand command = new SqlCommand(sqlQuery, connection))
-                {
-                    using (SqlDataReader reader = command.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            // Retrieve data from the reader and process as needed
-                            var question = new GetQuestionIdAndContent();
+        //        using (SqlCommand command = new SqlCommand(sqlQuery, connection))
+        //        {
+        //            using (SqlDataReader reader = command.ExecuteReader())
+        //            {
+        //                while (reader.Read())
+        //                {
+        //                    // Retrieve data from the reader and process as needed
+        //                    var question = new GetQuestionIdAndContent();
 
-                            string questionId = reader["ID"].ToString();
-                            questionId ??= string.Empty;
+        //                    string questionId = reader["ID"].ToString();
+        //                    questionId ??= string.Empty;
                             
-                            question.Guid = Guid.Parse(questionId);
+        //                    question.Guid = Guid.Parse(questionId);
 
 
-                            string questionText = reader["QuestionContent"].ToString();
-                            questionText ??= string.Empty;
-                            question.QuestionContent = questionText;
+        //                    string questionText = reader["QuestionContent"].ToString();
+        //                    questionText ??= string.Empty;
+        //                    question.QuestionContent = questionText;
                             
-                            listOfTop5.Add(question);
+        //                    listOfTop5.Add(question);
 
 
-                        }
-                    }
-                }
-            }
-            return listOfTop5;
-        }
+        //                }
+        //            }
+        //        }
+        //    }
+        //    return listOfTop5;
+        //}
 
 
 
@@ -165,16 +165,70 @@ namespace Quiz.WebApi.Controllers
         }
 
 
-        [HttpPost("execute-test/{x1}/tralala/{x2}/abc")]
-        public TestResponseBody ExecuteTest([FromRoute]int x1,  [FromRoute]int x2, [FromQuery] int y1, [FromQuery] int y2, [FromBody] TestRequestBody body)
-        {
-            return new TestResponseBody()
-            {
-                ResultA = x1 * x2 * y1 * y2 * body.NumberA * body.NumberB,
-                ResultC = (x1 * y1 * body.NumberA).ToString(),
-            };
-        }
+       
 
+        [HttpGet("list-of-answers/{questionID}")]
+        public List<GetAllInfosAboutAnswer> OpenSqlConnection([FromRoute] Guid questionID)
+        {
+            var listOfAnswers = new List<GetAllInfosAboutAnswer>();
+
+            string connectionString = GetConnectionString();
+
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.ConnectionString = connectionString;
+
+                connection.Open();
+
+                string sqlQuery = "SELECT * FROM dbo.Answers where QuestionID = @questionID";
+
+                using (SqlCommand command = new SqlCommand(sqlQuery, connection))
+                {
+                    command.Parameters.AddWithValue("@questionID", questionID);
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        
+                        while (reader.Read())
+                        {
+                            // Retrieve data from the reader and process as needed
+                            var answer = new GetAllInfosAboutAnswer();
+
+                            string questionId = reader["questionID"].ToString();
+                            questionId ??= string.Empty;
+
+                            answer.QeGuid = Guid.Parse(questionId);
+
+                            string answerId = reader["ID"].ToString();
+                            answerId ??= string.Empty;
+
+                            answer.AnswGuid = Guid.Parse(answerId);
+
+
+                            string answerText = reader["AnswerContent"].ToString();
+                            answerText ??= string.Empty;
+                            answer.AnswerContent = answerText;
+
+                            string isCorrect = reader["IsCorrect"].ToString();
+                            isCorrect ??= string.Empty;
+                            if (isCorrect == "False")
+                            {
+                                answer.IsCorrect = false;
+                            }
+                            else if (isCorrect == "True")
+                            {
+                                answer.IsCorrect = true;
+                            }
+                            
+
+                            listOfAnswers.Add(answer);
+
+
+                        }
+                    }
+                }
+            }
+            return listOfAnswers;
+        }
 
 
         private  string GetConnectionString()
