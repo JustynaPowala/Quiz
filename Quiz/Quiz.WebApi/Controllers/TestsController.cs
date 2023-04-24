@@ -126,7 +126,7 @@ namespace Quiz.WebApi.Controllers
 
                 connection.Open();
 
-                string sqlQuery = "INSERT INTO dbo.Answers (QuestionID, ID, AnswerContent, IsCorrect) VALUES (@QuestionID, @ID, @AnswerContent, @IsCorrect)";
+                string sqlQuery = "INSERT INTO dbo.Answers (QuestionID, ID, AnswerContent, IsCorrect, CreationTimestamp) VALUES (@QuestionID, @ID, @AnswerContent, @IsCorrect, @CreationTimestamp)";
 
                 using (SqlCommand command = new SqlCommand(sqlQuery, connection))
                 {
@@ -134,6 +134,7 @@ namespace Quiz.WebApi.Controllers
                     command.Parameters.AddWithValue("@Id", answerGuid);
                     command.Parameters.AddWithValue("@AnswerContent", body.AnswerContent);
                     command.Parameters.AddWithValue("@IsCorrect", body.IsCorrect ?1:0);         //jeœli to co przed? bêdzie true to przyjmie to co przed: a jak false to to co po:. czyli 1 bêdzie true a 0 bêdzie false- tak jak jst w sql.
+                    command.Parameters.AddWithValue("@CreationTimestamp", DateTime.Now);
                     command.ExecuteNonQuery();
                 }
             }
@@ -167,8 +168,8 @@ namespace Quiz.WebApi.Controllers
 
        
 
-        [HttpGet("list-of-answers/{questionID}")]
-        public List<GetAllInfosAboutAnswer> OpenSqlConnection([FromRoute] Guid questionID)
+        [HttpGet("questions/{questionID}/answers")]
+        public List<GetAllInfosAboutAnswer> ViewListOfAnswers([FromRoute] Guid questionID)
         {
             var listOfAnswers = new List<GetAllInfosAboutAnswer>();
 
@@ -180,7 +181,7 @@ namespace Quiz.WebApi.Controllers
 
                 connection.Open();
 
-                string sqlQuery = "SELECT * FROM dbo.Answers where QuestionID = @questionID";
+                string sqlQuery = "SELECT * FROM dbo.Answers where QuestionID = @questionID order by CreationTimestamp";
 
                 using (SqlCommand command = new SqlCommand(sqlQuery, connection))
                 {

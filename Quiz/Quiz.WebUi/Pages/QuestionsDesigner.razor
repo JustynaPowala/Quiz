@@ -2,6 +2,9 @@
 
 @using Quiz.Contracts;
 @using Quiz.WebUi.ApiClients;
+@using System.ComponentModel.DataAnnotations; @*//*@
+@using Syncfusion.Blazor.Inputs;
+@using Syncfusion.Blazor.InPlaceEditor
 @inject IQuizApiClient  QuizApiClient;  //property in class QuestionDesginer. Początkowo nie wie mój qestions designer co zrobić. Muszę "połączyć" IQuizApiClient z  HttpQuizApiClient(który ma zawarty ten interfejs). To połączenie jest zrobione poprzez services w klasie program.//
 
 <PageTitle>Questions Designer</PageTitle>
@@ -10,7 +13,27 @@
 <h2>@_isCorrect</h2>
 
 <p> Enter your question and choose how much points you can get</p>
-<input type="text" class="form-control" @bind-value="@_question" />
+<input type="text" class="form-control" @bind-value="@_question"  />
+@*<div>   
+    <table style="margin=top : 30px">
+        <tr>
+            <td>
+                <SfInPlaceEditor @bind-value="Example.Question" TValue="string">   
+                    <EditorComponent>
+                        <EditForm Model="@Example">
+                            <DataAnnotationsValidator>
+                            </DataAnnotationsValidator>
+                            <SfTextBox @bind-Value="Example.Question"></SfTextBox>
+                            <ValidationMessage For=@(() => Example.Question) />
+                        </EditForm>
+
+                    </EditorComponent>
+                </SfInPlaceEditor>
+            </td>
+        </tr>
+    </table>
+</div>
+*@
 <br />  
 <input type="number" @bind-value="@_points" />
 <br />
@@ -76,21 +99,35 @@
 }
 
 
-<ul>
+<ol>
     @foreach (var answ in _listOfAnswers)
     {
         <li>
-            @answ.AnswGuid - @answ.AnswerContent  <button @onclick="() => DeletingAnswerAsync(answ.QeGuid,answ.AnswGuid)">Delete</button>
+            @answ.AnswerContent - @if (@answ.IsCorrect == true)
+            {
+                @_correct
+            }
+            else  { @_notCorrect }
+
+            <button @onclick="() => DeletingAnswerAsync(answ.QeGuid,answ.AnswGuid)">Delete</button>
         </li>
     }
 
 
-</ul>
+</ol>
 
 @code {
+    private string _question = string.Empty;
+    public class ValidationModel
+    {
+        [Required]
+        public string Question { get; set; } = "";
+    }
+
+    public ValidationModel Example = new ValidationModel();
 
     private Guid _returnedguid;
-    private string _question = "???";
+    //private string _question = string.Empty;
     private int _points = 0;
     private string _category = "default";
     private string _selectionMultiplicity = "default";
@@ -98,7 +135,11 @@
     private Guid _answerID;
     private string _answer;
     private bool _answers = false;
-    private bool _isCorrect; 
+    private bool _isCorrect;
+
+
+    private string _correct = "Correct";
+    private string _notCorrect = "Not correct";
 
 
     private List<GetQuestionIdAndContent> _listOfQuestions;
@@ -138,7 +179,7 @@
         _answerID = answerID;
         await DeleteAnswerAsync();
         await GetListOfAnswersAsync();
-        
+
     }
 
 
@@ -161,7 +202,7 @@
 
     private async Task GetListOfAnswersAsync()
     {
-       _listOfAnswers= await QuizApiClient.GetListOfAnswersAsync(_questionID);
+        _listOfAnswers= await QuizApiClient.GetListOfAnswersAsync(_questionID);
     }
     private async Task LoadTop5Async()
     {
@@ -169,9 +210,13 @@
         httpClient.BaseAddress = new Uri("http://localhost:5271");
         var response = await httpClient.GetAsync("tests/top-five");
         _listOfQuestions = await response.Content.ReadFromJsonAsync<List<GetQuestionIdAndContent>>();
-        
+
     }
 
-  
+
+    
+
 
 }
+
+

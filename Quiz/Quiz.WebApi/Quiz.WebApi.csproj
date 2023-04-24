@@ -10,6 +10,8 @@
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.4" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.1" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+    <PackageReference Include="Syncfusion.Blazor.InPlaceEditor" Version="21.1.41" />
+    <PackageReference Include="Syncfusion.Blazor.Inputs" Version="21.1.41" />
   </ItemGroup>
 
   <ItemGroup>

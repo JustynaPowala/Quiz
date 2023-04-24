@@ -55,7 +55,8 @@ namespace Quiz.WebUi.ApiClients
         {
 
             var client = CreateHttpClient();
-            var response = await client.GetAsync("tests/list-of-answers/" + questionID);
+            var address = "tests/questions/" + questionID + "/answers";
+            var response = await client.GetAsync(address);
             var listOfAnswers = await response.Content.ReadFromJsonAsync<List<GetAllInfosAboutAnswer>>();
             return listOfAnswers;
         }

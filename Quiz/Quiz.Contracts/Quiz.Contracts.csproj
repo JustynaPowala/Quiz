@@ -6,4 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Syncfusion.Blazor.InPlaceEditor" Version="21.1.41" />
+    <PackageReference Include="Syncfusion.Blazor.Inputs" Version="21.1.41" />
+  </ItemGroup>
+
 </Project>
