@@ -14,14 +14,43 @@
 <p> Enter your question and choose how much points you can get</p>
 <input type="text" class="form-control" @bind-value="@_question"  />
 
-<EditForm Model="@exampleModel" OnValidSubmit="@HandleValidSubmit">     @*// proba wywolania funkcji w buttonie add, bez dodawania buttona submit*@
-    <DataAnnotationsValidator/>
+<EditForm Model="@questionModel" OnValidSubmit="@HandleValidSubmit">     
+    
+    <InputText id="question" @bind-Value="questionModel.Question"/>
+    <br />
+    
+        <input type="number" additionalatributes max="10" min="1" @bind-value="questionModel.Points" />
+   <br />
+
+    
+        <InputSelect @bind-Value="questionModel.Category">
+
+            <option value="default" disabled selected>Select a category</option>
+            <option value="history">History</option>
+            <option value="chemistry">Chemistry</option>
+            <option value="mathematics">Mathematics</option>
+            <option value="music">Music</option>
+            <option value="information technology">Information technology</option>
+        </InputSelect>
+    <br />
+    
+        <InputSelect @bind-Value="questionModel.SelectionMultiplicity">
+
+            <option value="default" disabled selected>Choose selection multiplicity</option>
+            <option value="single">Single</option>
+            <option value="multiple">Multiple</option>
+        </InputSelect>
+
+    <br />
+
+    <DataAnnotationsValidator />
     <ValidationSummary />
-    <InputText id="question" @bind-Value="exampleModel.Question"/>
+
+    <button type="submit" class="btn btn-primary" @onclick="IncrementCountAsync">Add</button>    @*//incrementocuntasync zawiera handlevalidsubmit*@
 </EditForm>
 
 <br />  
-<input type="number" @bind-value="@_points" />
+@*<input type="number" @bind-value="@_points" />*@
 <br />
 <br />
 
@@ -37,32 +66,7 @@
 
 
 
-<label 
-    <InputSelect @bind-Value = "@_category">
-
-    <option value="default" disabled selected>Select a category</option>
-    <option value="history">History</option>
-    <option value="chemistry">Chemistry</option>
-    <option value="mathematics">Mathematics</option>
-    <option value="music">Music</option>
-    <option value="information technology">Information technology</option>
-    </InputSelect>
-    
-</label>
-
-
-<label
-    <InputSelect @bind-Value = "@_selectionMultiplicity">
-
-    <option value="default" disabled selected>Choose selection multiplicity</option>
-    <option value="single">Single</option>
-    <option value="multiple">Multiple</option>
-    </InputSelect>
-
-</label>
-
-<button type="submit" class="btn btn-primary" @onclick="IncrementCountAsync">Add</button>
-
+@*//tu był add button*@
 
 @*it will be use to answers text box*@
 <style>
@@ -103,13 +107,22 @@
 </ol>
 
 @code {
-    public class ExampleModel
+    public class QuestionModel
     {
         [Required]
         public string? Question { get; set; }
+
+        [Required]
+        public int Points { get; set; }
+
+        [Required]
+        public string? Category { get; set; }
+
+        [Required]
+        public string? SelectionMultiplicity { get; set; }  
     }
 
-    private ExampleModel exampleModel = new();
+    private QuestionModel questionModel = new();
 
     private async Task HandleValidSubmit()
     {
@@ -119,7 +132,7 @@
     private string _question = string.Empty;
     private Guid _returnedguid;
     //private string _question = string.Empty;
-    private int _points = 0;
+    private int _points ;
     private string _category = "default";
     private string _selectionMultiplicity = "default";
     private Guid _questionID;
@@ -149,8 +162,8 @@
 
     private async Task IncrementCountAsync()
     {           
-        await AddQuestionAsync();
         await HandleValidSubmit();
+        await AddQuestionAsync();
         _question = string.Empty;
         _points = 0;
         _category = "default";
@@ -177,7 +190,7 @@
 
     private async Task AddQuestionAsync()
     {
-        _questionID = await QuizApiClient.AddQuestionAsync(_question, _points, _category, _selectionMultiplicity);  //metoda dodaje pytanie i zwraca też guida. guid pod prywatne pole, bo będzie potrzebny do dodawania odpowiedzi
+        _questionID = await QuizApiClient.AddQuestionAsync(questionModel.Question, questionModel.Points, questionModel.Category, questionModel.SelectionMultiplicity);  //metoda dodaje pytanie i zwraca też guida. guid pod prywatne pole, bo będzie potrzebny do dodawania odpowiedzi
 
     }
 
