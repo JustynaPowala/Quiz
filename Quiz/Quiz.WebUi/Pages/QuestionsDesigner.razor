@@ -11,18 +11,21 @@
 <h1>Questions Designer</h1>
 <h2>@_isCorrect</h2>
 
-<p> Enter your question and choose how much points you can get</p>
-<input type="text" class="form-control" @bind-value="@_question"  />
-
 <EditForm Model="@questionModel" OnValidSubmit="@HandleValidSubmit">     
     
-    <InputText id="question" @bind-Value="questionModel.Question"/>
-    <br />
+    <p>
+        <span style="font-weight: bold;">Enter content of Your question</span>
+        <br />
+        <InputText id="question" class="half-screen-textbox"   @bind-Value="questionModel.Question" />
     
+    </p>
+    <p>Choose how many points you can get in this question
+        <br />
         <input type="number" additionalatributes max="10" min="1" @bind-value="questionModel.Points" />
-   <br />
-
-    
+    </p>
+  
+        <p>Select question category
+        <br />
         <InputSelect @bind-Value="questionModel.Category">
 
             <option value="default" disabled selected>Select a category</option>
@@ -32,20 +35,21 @@
             <option value="music">Music</option>
             <option value="information technology">Information technology</option>
         </InputSelect>
-    <br />
+    </p>
     
+    <p>Select whether the question is single-choice or multiple-choice
+        <br />
         <InputSelect @bind-Value="questionModel.SelectionMultiplicity">
-
             <option value="default" disabled selected>Choose selection multiplicity</option>
             <option value="single">Single</option>
             <option value="multiple">Multiple</option>
         </InputSelect>
-
-    <br />
+    </p>
+    
 
     <DataAnnotationsValidator />
     <ValidationSummary />
-
+    <br />
     <button type="submit" class="btn btn-primary" @onclick="IncrementCountAsync">Add</button>    @*//incrementocuntasync zawiera handlevalidsubmit*@
 </EditForm>
 
@@ -129,12 +133,8 @@
         Logger.LogInformation("Handlesubmit called");
     }
 
-    private string _question = string.Empty;
+   
     private Guid _returnedguid;
-    //private string _question = string.Empty;
-    private int _points ;
-    private string _category = "default";
-    private string _selectionMultiplicity = "default";
     private Guid _questionID;
     private Guid _answerID;
     private string _answer;
@@ -164,10 +164,10 @@
     {           
         await HandleValidSubmit();
         await AddQuestionAsync();
-        _question = string.Empty;
-        _points = 0;
-        _category = "default";
-        _selectionMultiplicity = "default";
+        questionModel.Question = string.Empty;
+        questionModel.Points = 1;
+        questionModel.Category = "default";
+        questionModel.SelectionMultiplicity = "default";
         _answers = true;
         //await LoadTop5Async();
     }
