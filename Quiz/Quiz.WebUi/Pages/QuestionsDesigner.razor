@@ -19,12 +19,14 @@
         <InputText id="question" class="half-screen-textbox"   @bind-Value="questionModel.Question" />
     
     </p>
-    <p>Choose how many points you can get in this question
+    <p>
+        <span style="font-weight: bold;">Choose how many points you can get in this question</span>
         <br />
         <input type="number" additionalatributes max="10" min="1" @bind-value="questionModel.Points" />
     </p>
   
-        <p>Select question category
+        <p>
+        <span style="font-weight: bold;">Select question category</span>
         <br />
         <InputSelect @bind-Value="questionModel.Category">
 
@@ -37,7 +39,8 @@
         </InputSelect>
     </p>
     
-    <p>Select whether the question is single-choice or multiple-choice
+    <p>
+        <span style="font-weight: bold;">Select whether the question is single-choice or multiple-choice</span>
         <br />
         <InputSelect @bind-Value="questionModel.SelectionMultiplicity">
             <option value="default" disabled selected>Choose selection multiplicity</option>
@@ -85,15 +88,53 @@
     <p>Add answers to your question. Check the box if it is correct answer.</p>
     <input type="text" class="half-screen-textbox" @bind-value="@_answer" />
     <input type="checkbox" @bind-value="@_isCorrect" />
-} 
 
-@if (_answers == true)
-{
+
+
+
     <button class="btn btn-primary" @onclick="AddingAnswerOnButtonClickedAsync">Add answer</button>
+
+
+
+    @if (_listOfAnswers == null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else
+    {
+        @(_answersCounting = 1)
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>No.</th>
+                    <th>Answer Content</th>
+                    <th>Is Correct?</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                
+                @foreach (var answ in _listOfAnswers)
+                {
+                    
+                    <tr>
+                        <td>@(_answersCounting++)</td>
+                        <td>@answ.AnswerContent</td>
+                        <td>@(answ.IsCorrect ? _correct : _notCorrect)</td>
+                        <td><button @onclick="() => DeletingAnswerAsync(answ.QeGuid, answ.AnswGuid)">Delete</button></td>
+                    </tr>
+                   
+                }
+                
+            </tbody>
+        </table>
+    }
 }
 
 
-<ol>
+
+@*<ol>
     @foreach (var answ in _listOfAnswers)
     {
         <li>
@@ -108,7 +149,7 @@
     }
 
 
-</ol>
+</ol>*@
 
 @code {
     public class QuestionModel
@@ -140,7 +181,7 @@
         _answers = true;
     }
 
-   
+
     private Guid _returnedguid;
     private Guid _questionID;
     private Guid _answerID;
@@ -148,9 +189,9 @@
     private bool _answers = false;
     private bool _isCorrect;
 
-
-    private string _correct = "Correct";
-    private string _notCorrect = "Not correct";
+    private int _answersCounting = 1;
+    private string _correct = "Yes";
+    private string _notCorrect = "No";
 
 
     private List<GetQuestionIdAndContent> _listOfQuestions;
