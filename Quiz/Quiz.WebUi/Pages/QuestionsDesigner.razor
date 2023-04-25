@@ -50,7 +50,7 @@
     <DataAnnotationsValidator />
     <ValidationSummary />
     <br />
-    <button type="submit" class="btn btn-primary" @onclick="IncrementCountAsync">Add</button>    @*//incrementocuntasync zawiera handlevalidsubmit*@
+    <button type="submit" class="btn btn-primary" >Add</button>  
 </EditForm>
 
 <br />  
@@ -131,6 +131,13 @@
     private async Task HandleValidSubmit()
     {
         Logger.LogInformation("Handlesubmit called");
+
+        await AddQuestionAsync();
+        questionModel.Question = string.Empty;
+        questionModel.Points = 1;
+        questionModel.Category = "default";
+        questionModel.SelectionMultiplicity = "default";
+        _answers = true;
     }
 
    
@@ -160,17 +167,6 @@
     }
 
 
-    private async Task IncrementCountAsync()
-    {           
-        await HandleValidSubmit();
-        await AddQuestionAsync();
-        questionModel.Question = string.Empty;
-        questionModel.Points = 1;
-        questionModel.Category = "default";
-        questionModel.SelectionMultiplicity = "default";
-        _answers = true;
-        //await LoadTop5Async();
-    }
 
     private async Task AddingAnswerOnButtonClickedAsync()
     {
