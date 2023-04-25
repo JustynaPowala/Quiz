@@ -3,9 +3,8 @@
 @using Quiz.Contracts;
 @using Quiz.WebUi.ApiClients;
 @using System.ComponentModel.DataAnnotations; @*//*@
-@using Syncfusion.Blazor.Inputs;
-@using Syncfusion.Blazor.InPlaceEditor
 @inject IQuizApiClient  QuizApiClient;  //property in class QuestionDesginer. Początkowo nie wie mój qestions designer co zrobić. Muszę "połączyć" IQuizApiClient z  HttpQuizApiClient(który ma zawarty ten interfejs). To połączenie jest zrobione poprzez services w klasie program.//
+@inject ILogger<QuestionsDesigner> Logger //
 
 <PageTitle>Questions Designer</PageTitle>
 
@@ -14,26 +13,13 @@
 
 <p> Enter your question and choose how much points you can get</p>
 <input type="text" class="form-control" @bind-value="@_question"  />
-@*<div>   
-    <table style="margin=top : 30px">
-        <tr>
-            <td>
-                <SfInPlaceEditor @bind-value="Example.Question" TValue="string">   
-                    <EditorComponent>
-                        <EditForm Model="@Example">
-                            <DataAnnotationsValidator>
-                            </DataAnnotationsValidator>
-                            <SfTextBox @bind-Value="Example.Question"></SfTextBox>
-                            <ValidationMessage For=@(() => Example.Question) />
-                        </EditForm>
 
-                    </EditorComponent>
-                </SfInPlaceEditor>
-            </td>
-        </tr>
-    </table>
-</div>
-*@
+<EditForm Model="@exampleModel" OnValidSubmit="@HandleValidSubmit">     @*// proba wywolania funkcji w buttonie add, bez dodawania buttona submit*@
+    <DataAnnotationsValidator/>
+    <ValidationSummary />
+    <InputText id="question" @bind-Value="exampleModel.Question"/>
+</EditForm>
+
 <br />  
 <input type="number" @bind-value="@_points" />
 <br />
@@ -54,7 +40,7 @@
 <label 
     <InputSelect @bind-Value = "@_category">
 
-    <option value="default">Select a category</option>
+    <option value="default" disabled selected>Select a category</option>
     <option value="history">History</option>
     <option value="chemistry">Chemistry</option>
     <option value="mathematics">Mathematics</option>
@@ -68,14 +54,14 @@
 <label
     <InputSelect @bind-Value = "@_selectionMultiplicity">
 
-    <option value="default">Choose selection multiplicity</option>
+    <option value="default" disabled selected>Choose selection multiplicity</option>
     <option value="single">Single</option>
     <option value="multiple">Multiple</option>
     </InputSelect>
 
 </label>
 
-<button class="btn btn-primary" @onclick="IncrementCountAsync">Add</button>
+<button type="submit" class="btn btn-primary" @onclick="IncrementCountAsync">Add</button>
 
 
 @*it will be use to answers text box*@
@@ -117,15 +103,20 @@
 </ol>
 
 @code {
-    private string _question = string.Empty;
-    public class ValidationModel
+    public class ExampleModel
     {
         [Required]
-        public string Question { get; set; } = "";
+        public string? Question { get; set; }
     }
 
-    public ValidationModel Example = new ValidationModel();
+    private ExampleModel exampleModel = new();
 
+    private async Task HandleValidSubmit()
+    {
+        Logger.LogInformation("Handlesubmit called");
+    }
+
+    private string _question = string.Empty;
     private Guid _returnedguid;
     //private string _question = string.Empty;
     private int _points = 0;
@@ -159,6 +150,7 @@
     private async Task IncrementCountAsync()
     {           
         await AddQuestionAsync();
+        await HandleValidSubmit();
         _question = string.Empty;
         _points = 0;
         _category = "default";
