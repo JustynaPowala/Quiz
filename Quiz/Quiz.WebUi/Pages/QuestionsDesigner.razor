@@ -9,7 +9,18 @@
 <PageTitle>Questions Designer</PageTitle>
 
 <h1>Questions Designer</h1>
-<h2>@_isCorrect</h2>
+
+<style>
+    .half-screen-textbox {
+        width: 50vw;
+    }
+</style>
+
+<style>
+    .checkbox-design{
+        height:30px; width:30px
+    }
+</style>
 
 <EditForm Model="@questionModel" OnValidSubmit="@HandleValidSubmit">     
     
@@ -56,53 +67,33 @@
     <button type="submit" class="btn btn-primary" >Add</button>  
 </EditForm>
 
-<br />  
-@*<input type="number" @bind-value="@_points" />*@
-<br />
-<br />
+<EditForm Model="@answerModel" OnValidSubmit="@HandleValidAnswerSubmit">
+    @if (_answers == true)
+    {
+        <p>
+            <span style="font-weight: bold;">Add answers to your question. Check the box if it is correct answer</span>
+        </p>
+        <InputText id="answer" class="half-screen-textbox" @bind-Value="answerModel.Answer" />
 
-<ul>
-@foreach (var ques in _listOfQuestions)
-{
-    <li>
-        @ques.Guid - @ques.QuestionContent
-    </li>
-}
-</ul>
+        <input type="checkbox" class="checkbox-design"  @bind-value="answerModel.IsCorrect" />
 
-
-
-
-@*//tu był add button*@
-
-@*it will be use to answers text box*@
-<style>
-    .half-screen-textbox{
-        width:50vw;
+        <br />
+        <button type="submit" class="btn btn-primary">Add answer</button>
+        <DataAnnotationsValidator />
+        <ValidationSummary />
     }
-</style>      
-
+</EditForm>
 
 @if (_answers == true)
 {
-    <p>Add answers to your question. Check the box if it is correct answer.</p>
-    <input type="text" class="half-screen-textbox" @bind-value="@_answer" />
-    <input type="checkbox" @bind-value="@_isCorrect" />
-
-
-
-
-    <button class="btn btn-primary" @onclick="AddingAnswerOnButtonClickedAsync">Add answer</button>
-
-
-
+    
     @if (_listOfAnswers == null)
     {
         <p><em>Loading...</em></p>
     }
     else
     {
-        @(_answersCounting = 1)
+        var answersCounting = 1;
         <table class="table">
             <thead>
                 <tr>
@@ -114,42 +105,28 @@
             </thead>
             <tbody>
 
-                
+
                 @foreach (var answ in _listOfAnswers)
                 {
-                    
+
                     <tr>
-                        <td>@(_answersCounting++)</td>
+                        <td>@(answersCounting++)</td>
                         <td>@answ.AnswerContent</td>
                         <td>@(answ.IsCorrect ? _correct : _notCorrect)</td>
                         <td><button @onclick="() => DeletingAnswerAsync(answ.QeGuid, answ.AnswGuid)">Delete</button></td>
                     </tr>
-                   
+
                 }
-                
+
             </tbody>
         </table>
     }
 }
 
+  
 
 
-@*<ol>
-    @foreach (var answ in _listOfAnswers)
-    {
-        <li>
-            @answ.AnswerContent - @if (@answ.IsCorrect == true)
-            {
-                @_correct
-            }
-            else  { @_notCorrect }
 
-            <button @onclick="() => DeletingAnswerAsync(answ.QeGuid,answ.AnswGuid)">Delete</button>
-        </li>
-    }
-
-
-</ol>*@
 
 @code {
     public class QuestionModel
@@ -181,6 +158,22 @@
         _answers = true;
     }
 
+    public class AnswerModel
+    {
+        [Required]
+        public string? Answer { get; set; }
+        public bool IsCorrect { get; set; }
+
+    }
+    private AnswerModel answerModel = new();
+
+    private async Task HandleValidAnswerSubmit()
+    {
+        Logger.LogInformation("Handlesubmit called");
+        await AddingAnswerOnButtonClickedAsync();
+
+
+    }
 
     private Guid _returnedguid;
     private Guid _questionID;
@@ -189,7 +182,7 @@
     private bool _answers = false;
     private bool _isCorrect;
 
-    private int _answersCounting = 1;
+  
     private string _correct = "Yes";
     private string _notCorrect = "No";
 
@@ -212,7 +205,8 @@
     private async Task AddingAnswerOnButtonClickedAsync()
     {
         await AddQuestionAnswerAsync();
-        await GetListOfAnswersAsync();
+        await GetListOfAnswersAsync();      
+
     }
 
     private async Task DeletingAnswerAsync(Guid questionID, Guid answerID)
@@ -234,7 +228,7 @@
     private async Task AddQuestionAnswerAsync()
     {
 
-        _answerID = await QuizApiClient.AddQuestionAnswerAsync(_questionID, _answer, _isCorrect);  ////
+        _answerID = await QuizApiClient.AddQuestionAnswerAsync(_questionID, answerModel.Answer, answerModel.IsCorrect);  ////
     }
 
     private async Task DeleteAnswerAsync()
