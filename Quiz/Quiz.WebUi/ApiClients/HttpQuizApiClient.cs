@@ -71,7 +71,7 @@ namespace Quiz.WebUi.ApiClients
 
 
             var client = CreateHttpClient();
-            var address = "tests/questions?category=" + cat + "&skippedCount=" + skippedCount + "&maxResult" + maxResult;
+            var address = "tests/questions?category=" + cat + "&skipCount=" + skippedCount + "&maxResultCount=" + maxResult;
             if(searchStr != null)
             {
                 address += "&searchString=" + searchStr;

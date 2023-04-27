@@ -258,11 +258,12 @@ namespace Quiz.WebApi.Controllers
                 using (SqlCommand command = new SqlCommand(sqlQuery, connection))
                 {
                     command.Parameters.AddWithValue("@category", category);
+                    command.Parameters.AddWithValue("@skipCount", skipCount);
+                    command.Parameters.AddWithValue("@maxResultCount", maxResultCount);
                     if (searchString != null)
                     {
                         command.Parameters.AddWithValue("@searchString", searchString);
-                        command.Parameters.AddWithValue("@SkipCount", skipCount);
-                        command.Parameters.AddWithValue("@maxResultCount", maxResultCount);
+                       
 
                     }
 
@@ -283,9 +284,15 @@ namespace Quiz.WebApi.Controllers
 
                             string quesCategory = reader["Category"].ToString();
                             quesCategory ??= string.Empty;
-                            question.Category = category;
-
+                            question.Category = quesCategory;
+               
                             listOfQuestions.Add(question);
+
+                           //string skip = reader["@skipCount"].ToString();
+                           //var skipped = int.Parse(skip);
+
+                           //string max = reader["@maxResultCount"].ToString();
+                           //var maxCount = int.Parse(max);
                         }
                     }
                 }
