@@ -11,5 +11,6 @@ namespace Quiz.WebUi.ApiClients
         Task DeleteAnswer(Guid questionID, Guid answerID);   //async?
 
         Task<List<GetAllInfosAboutAnswer>> GetListOfAnswersAsync(Guid questionID);
+        Task<List<QuestionInfo>> GetQuestionsAsync(string category, int skipCount, int maxResultCount, string? searchString);
     }
 }

@@ -36,52 +36,52 @@ namespace Quiz.WebApi.Controllers
         }
 
 
-      
 
 
-        //[HttpGet("top-five")]
-        //public List<GetQuestionIdAndContent> OpenSqlConnection()
-        //{
-        //   var  listOfTop5 = new List<GetQuestionIdAndContent>();
-            
-        //    string connectionString = GetConnectionString();
 
-        //    using (SqlConnection connection = new SqlConnection(connectionString))
-        //    {
-        //        connection.ConnectionString = connectionString;
+//        [HttpGet("top-five")]
+//        public List<GetQuestionIdAndContent> OpenSqlConnection()
+//        {
+//            var listOfTop5 = new List<GetQuestionIdAndContent>();
 
-        //        connection.Open();
+//            string connectionString = GetConnectionString();
 
-        //        string sqlQuery = "SELECT TOP 5 * FROM dbo.Questions";
+//            using (SqlConnection connection = new SqlConnection(connectionString))
+//            {
+//                connection.ConnectionString = connectionString;
 
-        //        using (SqlCommand command = new SqlCommand(sqlQuery, connection))
-        //        {
-        //            using (SqlDataReader reader = command.ExecuteReader())
-        //            {
-        //                while (reader.Read())
-        //                {
-        //                    // Retrieve data from the reader and process as needed
-        //                    var question = new GetQuestionIdAndContent();
+//                connection.Open();
 
-        //                    string questionId = reader["ID"].ToString();
-        //                    questionId ??= string.Empty;
+//                string sqlQuery = "SELECT TOP 5 * FROM dbo.Questions";
+
+//                using (SqlCommand command = new SqlCommand(sqlQuery, connection))
+//                {
+//                    using (SqlDataReader reader = command.ExecuteReader())
+//                    {
+//                        while (reader.Read())
+//                        {
+//                            // Retrieve data from the reader and process as needed
+//                            var question = new GetQuestionIdAndContent();
+
+//        string questionId = reader["ID"].ToString();
+//        questionId ??= string.Empty;
                             
-        //                    question.Guid = Guid.Parse(questionId);
+//                            question.Guid = Guid.Parse(questionId);
 
 
-        //                    string questionText = reader["QuestionContent"].ToString();
-        //                    questionText ??= string.Empty;
-        //                    question.QuestionContent = questionText;
+//                            string questionText = reader["QuestionContent"].ToString();
+//        questionText ??= string.Empty;
+//                            question.QuestionContent = questionText;
                             
-        //                    listOfTop5.Add(question);
+//                            listOfTop5.Add(question);
 
 
-        //                }
-        //            }
-        //        }
-        //    }
-        //    return listOfTop5;
-        //}
+//                        }
+//}
+//                }
+//            }
+//            return listOfTop5;
+//        }
 
 
 
@@ -230,6 +230,70 @@ namespace Quiz.WebApi.Controllers
             }
             return listOfAnswers;
         }
+
+
+        [HttpGet("questions")]
+        public List<QuestionInfo> GetListOfQuestions([FromQuery] string? category, [FromQuery] string? searchString, [FromQuery] int skipCount, [FromQuery] int maxResultCount)
+        {
+            var listOfQuestions = new List<QuestionInfo>();
+            
+
+            string connectionString = GetConnectionString();
+
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.ConnectionString = connectionString;
+
+                connection.Open();
+                var sqlQuery = "";
+
+                if(searchString != null) { 
+                 sqlQuery = "SELECT * FROM dbo.Questions where Category = @category and QuestionContent like '%' + @searchString + '%' ORDER BY QuestionContent OFFSET @skipCount ROWS FETCH NEXT @maxResultCount ROWS ONLY";
+                }
+                else
+                {
+                    sqlQuery = "SELECT * FROM dbo.Questions where Category = @category ORDER BY QuestionContent OFFSET @skipCount ROWS FETCH NEXT @maxResultCount ROWS ONLY";
+                }
+
+                using (SqlCommand command = new SqlCommand(sqlQuery, connection))
+                {
+                    command.Parameters.AddWithValue("@category", category);
+                    if (searchString != null)
+                    {
+                        command.Parameters.AddWithValue("@searchString", searchString);
+                        command.Parameters.AddWithValue("@SkipCount", skipCount);
+                        command.Parameters.AddWithValue("@maxResultCount", maxResultCount);
+
+                    }
+
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            var question = new QuestionInfo();
+
+                            string questionId = reader["ID"].ToString();
+                            questionId ??= string.Empty;
+                            question.Guid = Guid.Parse(questionId);
+
+
+                            string questionText = reader["QuestionContent"].ToString();
+                            questionText ??= string.Empty;
+                            question.QuestionContent = questionText;
+
+                            string quesCategory = reader["Category"].ToString();
+                            quesCategory ??= string.Empty;
+                            question.Category = category;
+
+                            listOfQuestions.Add(question);
+                        }
+                    }
+                }
+            }
+            return listOfQuestions;
+        }
+
+        //dodac order by content,wtedy bedzie alfabetycznie + OFFSET @skipcount ROWS, FETCH NEXT,   maxresultoccunt=pagesize(np.10)
 
 
         private  string GetConnectionString()

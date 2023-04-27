@@ -38,7 +38,7 @@
 
     private int currentCount = 0;
     private int _count = 10;
-    private List<GetQuestionIdAndContent> _listOfQuestions;
+    private List<QuestionInfo> _listOfQuestions;
 
 
 
@@ -47,7 +47,7 @@
         _randomGuid = "12";
         _randomNumber = "1";
         _returnedguid = Guid.Empty;
-        _listOfQuestions = new List<GetQuestionIdAndContent>();
+        _listOfQuestions = new List<QuestionInfo>();
 
     }
 
@@ -105,7 +105,7 @@
         var httpClient = new HttpClient();
         httpClient.BaseAddress = new Uri("http://localhost:5271");
         var response = await httpClient.GetAsync("tests/top-five");
-        _listOfQuestions = await response.Content.ReadFromJsonAsync<List<GetQuestionIdAndContent>>();
+        _listOfQuestions = await response.Content.ReadFromJsonAsync<List<QuestionInfo>>();
         
     }
 

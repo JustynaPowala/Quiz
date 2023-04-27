@@ -61,6 +61,27 @@ namespace Quiz.WebUi.ApiClients
             return listOfAnswers;
         }
 
+        public async Task<List<QuestionInfo>> GetQuestionsAsync(string category, int skipCount, int maxResultCount, string? searchString)
+        {
+            var cat = category.ToLower();  //tolower is to delete
+            var searchStr = searchString.ToLower();
+            var skippedCount = skipCount;
+            var maxResult = maxResultCount;    //ints to strings?
+
+
+
+            var client = CreateHttpClient();
+            var address = "tests/questions?category=" + cat + "&skippedCount=" + skippedCount + "&maxResult" + maxResult;
+            if(searchStr != null)
+            {
+                address += "&searchString=" + searchStr;
+            }
+            
+            var response = await client.GetAsync(address);
+            var listOfQuestions = await response.Content.ReadFromJsonAsync<List<QuestionInfo>>();
+            return listOfQuestions;
+        }
+
 
         private HttpClient CreateHttpClient()
         {

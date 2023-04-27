@@ -100,7 +100,7 @@
                     <th>No.</th>
                     <th>Answer Content</th>
                     <th>Is Correct?</th>
-                    <th>Action</th>
+                    <th>Remove</th>
                 </tr>
             </thead>
             <tbody>
@@ -113,7 +113,7 @@
                         <td>@(answersCounting++)</td>
                         <td>@answ.AnswerContent</td>
                         <td>@(answ.IsCorrect ? _correct : _notCorrect)</td>
-                        <td><button @onclick="() => DeletingAnswerAsync(answ.QeGuid, answ.AnswGuid)">Delete</button></td>
+                        <td><button @onclick="() => DeletingAnswerAsync(answ.QeGuid, answ.AnswGuid)"><i class="oi oi-trash"></i></button></td>
                     </tr>
 
                 }
@@ -123,12 +123,60 @@
     }
 }
 
-  
+ @if (_listOfQuestions == null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>cos</th>
+                    <th>2cos</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var ques in _listOfQuestions)
+                {
+                    <tr>
+                        <td>@ques.Guid</td>
+                        <td>@ques.QuestionContent</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
 
+<InputSelect @bind-Value="_category">
+    <option value="history">History</option>
+    <option value="chemistry">Chemistry</option>
+    <option value="mathematics">Mathematics</option>
+    <option value="music">Music</option>
+    <option value="information technology">Information technology</option>
+</InputSelect>
+<input type="text" @bind-value="@_searchString" />
+<input type="button" value="Search" @onclick="SearchIssues"/>
 
 
 
 @code {
+
+
+
+    private List<QuestionInfo> _listOfQuestions;
+
+    private async Task SearchIssues()
+    {
+        await GetQuestionsAsync();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetQuestionsAsync();
+    }
+
+
     public class QuestionModel
     {
         [Required]
@@ -178,16 +226,25 @@
     private Guid _returnedguid;
     private Guid _questionID;
     private Guid _answerID;
-    private string _answer;
+    //private string _answer;
     private bool _answers = false;
-    private bool _isCorrect;
+    // private bool _isCorrect;
+    private string _category = "history";
+    private string _searchString = string.Empty;
+    private int _pageSize = 1;
+    private int _skipCount;
+    private int _maxResultCount = 10;
 
-  
+
     private string _correct = "Yes";
     private string _notCorrect = "No";
 
 
-    private List<GetQuestionIdAndContent> _listOfQuestions;
+    //public int CountResultsToSkip()
+    //{
+        
+    //}
+
     private List<GetAllInfosAboutAnswer> _listOfAnswers;
 
 
@@ -195,7 +252,7 @@
     public QuestionsDesigner()
     {
         _returnedguid = Guid.Empty;
-        _listOfQuestions = new List<GetQuestionIdAndContent>();
+        _listOfQuestions = new List<QuestionInfo>();
         _listOfAnswers = new List<GetAllInfosAboutAnswer>();
 
     }
@@ -240,12 +297,17 @@
     {
         _listOfAnswers= await QuizApiClient.GetListOfAnswersAsync(_questionID);
     }
-    private async Task LoadTop5Async()
+
+    private async Task GetQuestionsAsync()
     {
-        var httpClient = new HttpClient();
-        httpClient.BaseAddress = new Uri("http://localhost:5271");
-        var response = await httpClient.GetAsync("tests/top-five");
-        _listOfQuestions = await response.Content.ReadFromJsonAsync<List<GetQuestionIdAndContent>>();
+        _listOfQuestions = await QuizApiClient.GetQuestionsAsync(_category, _skipCount, _maxResultCount, _searchString);
+    }
+    //private async Task LoadTop5Async()
+    //{
+    //    var httpClient = new HttpClient();
+    //    httpClient.BaseAddress = new Uri("http://localhost:5271");
+    //    var response = await httpClient.GetAsync("tests/top-five");
+    //    _listOfQuestions = await response.Content.ReadFromJsonAsync<List<GetQuestionIdAndContent>>();
 
     }
 
