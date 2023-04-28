@@ -51,6 +51,13 @@ namespace Quiz.WebUi.ApiClients
             await client.DeleteAsync(address);  
         }
 
+        public async Task DeleteQuestion(Guid questionID)
+        {
+            var client = CreateHttpClient();
+            var address = "tests/questions/" + questionID;
+            await client.DeleteAsync(address);
+        }
+
         public async Task<List<GetAllInfosAboutAnswer>> GetListOfAnswersAsync(Guid questionID)
         {
 

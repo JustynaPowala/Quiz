@@ -209,13 +209,23 @@ else
 
 @code {
 
+    private Guid _returnedguid;
+    private Guid _questionID;
+    private Guid _answerID;
+    private bool _answers = false;
+    private string _category = "history";
+    private string _searchString = string.Empty;
+    private int _pageIndex = 0;
+    private const int PageSize = 10;
+
+
     private List<QuestionInfo> _listOfQuestions;
 
     private async Task SearchIssues()
     {
         _pageIndex = 0;
         await GetQuestionsAsync();
-        
+
     }
 
     protected override async Task OnInitializedAsync()
@@ -237,10 +247,9 @@ else
 
     }
 
-   
     private QuestionModel _questionModel = new QuestionModel();
 
-  
+
     private async Task HandleValidSubmit()
     {
         Logger.LogInformation("Handlesubmit called");
@@ -253,7 +262,7 @@ else
         _answers = true;
     }
 
-    
+
     private AnswerModel _answerModel = new();
 
     private async Task HandleValidAnswerSubmit()
@@ -264,14 +273,6 @@ else
 
     }
 
-    private Guid _returnedguid;
-    private Guid _questionID;
-    private Guid _answerID;
-    private bool _answers = false;
-    private string _category = "history";
-    private string _searchString = string.Empty;
-    private int _pageIndex = 0;
-    private const int PageSize = 10;
 
 
     private List<GetAllInfosAboutAnswer> _listOfAnswers;
@@ -302,6 +303,17 @@ else
 
     }
 
+    //private async Task ModifyQuestion(_questionID)
+    //{
+
+    //}
+
+
+
+
+
+    //Below: QuizApiClient methods
+
 
     private async Task AddQuestionAsync()
     {
@@ -320,6 +332,11 @@ else
         await QuizApiClient.DeleteAnswer(_questionID, _answerID);
     }
 
+    private async Task DeleteQuestionAsync()
+    {
+        await QuizApiClient.DeleteQuestion(_questionID);   //to use!!!!!!
+    }
+
     private async Task GetListOfAnswersAsync()
     {
         _listOfAnswers= await QuizApiClient.GetListOfAnswersAsync(_questionID);
@@ -329,13 +346,7 @@ else
     {
         _listOfQuestions = await QuizApiClient.GetQuestionsAsync(_category, _pageIndex * PageSize, PageSize + 1, _searchString);
     }
-    //private async Task LoadTop5Async()
-    //{
-    //    var httpClient = new HttpClient();
-    //    httpClient.BaseAddress = new Uri("http://localhost:5271");
-    //    var response = await httpClient.GetAsync("tests/top-five");
-    //    _listOfQuestions = await response.Content.ReadFromJsonAsync<List<GetQuestionIdAndContent>>();
-
+   
     }
 
 
