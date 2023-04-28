@@ -3,6 +3,7 @@
 @using Quiz.Contracts;
 @using Quiz.WebUi.ApiClients;
 @using System.ComponentModel.DataAnnotations; @*//*@
+@using Classes;
 @inject IQuizApiClient  QuizApiClient;  //property in class QuestionDesginer. Początkowo nie wie mój qestions designer co zrobić. Muszę "połączyć" IQuizApiClient z  HttpQuizApiClient(który ma zawarty ten interfejs). To połączenie jest zrobione poprzez services w klasie program.//
 @inject ILogger<QuestionsDesigner> Logger //
 
@@ -22,24 +23,24 @@
     }
 </style>
 
-<EditForm Model="@questionModel" OnValidSubmit="@HandleValidSubmit">     
+<EditForm Model="@_questionModel" OnValidSubmit="@HandleValidSubmit">     
     
     <p>
         <span style="font-weight: bold;">Enter content of Your question</span>
         <br />
-        <InputText id="question" class="half-screen-textbox"   @bind-Value="questionModel.Question" />
+        <InputText id="question" class="half-screen-textbox"   @bind-Value="_questionModel.Question" />
     
     </p>
     <p>
         <span style="font-weight: bold;">Choose how many points you can get in this question</span>
         <br />
-        <input type="number" additionalatributes max="10" min="1" @bind-value="questionModel.Points" />
+        <input type="number" additionalatributes max="10" min="1" @bind-value="_questionModel.Points" />
     </p>
   
         <p>
         <span style="font-weight: bold;">Select question category</span>
         <br />
-        <InputSelect @bind-Value="questionModel.Category">
+        <InputSelect @bind-Value="_questionModel.Category">
 
             <option value="default" disabled selected>Select a category</option>
             <option value="history">History</option>
@@ -53,7 +54,7 @@
     <p>
         <span style="font-weight: bold;">Select whether the question is single-choice or multiple-choice</span>
         <br />
-        <InputSelect @bind-Value="questionModel.SelectionMultiplicity">
+        <InputSelect @bind-Value="_questionModel.SelectionMultiplicity">
             <option value="default" disabled selected>Choose selection multiplicity</option>
             <option value="single">Single</option>
             <option value="multiple">Multiple</option>
@@ -64,18 +65,18 @@
     <DataAnnotationsValidator />
     <ValidationSummary />
     <br />
-    <button type="submit" class="btn btn-primary" >Add</button>  
+    <button type="submit" class="btn btn-primary" >Save</button>  
 </EditForm>
 
-<EditForm Model="@answerModel" OnValidSubmit="@HandleValidAnswerSubmit">
+<EditForm Model="@_answerModel" OnValidSubmit="@HandleValidAnswerSubmit">
     @if (_answers == true)
     {
         <p>
             <span style="font-weight: bold;">Add answers to your question. Check the box if it is correct answer</span>
         </p>
-        <InputText id="answer" class="half-screen-textbox" @bind-Value="answerModel.Answer" />
+        <InputText id="answer" class="half-screen-textbox" @bind-Value="_answerModel.Answer" />
 
-        <input type="checkbox" class="checkbox-design"  @bind-value="answerModel.IsCorrect" />
+        <input type="checkbox" class="checkbox-design"  @bind-value="_answerModel.IsCorrect" />
 
         <br />
         <button type="submit" class="btn btn-primary">Add answer</button>
@@ -104,6 +105,11 @@
                 </tr>
             </thead>
             <tbody>
+                @{
+                    var correct = "Yes";
+                    var notCorrect ="No";
+                }
+
 
 
                 @foreach (var answ in _listOfAnswers)
@@ -112,7 +118,7 @@
                     <tr>
                         <td>@(answersCounting++)</td>
                         <td>@answ.AnswerContent</td>
-                        <td>@(answ.IsCorrect ? _correct : _notCorrect)</td>
+                        <td>@(answ.IsCorrect ? correct : notCorrect)</td>
                         <td><button @onclick="() => DeletingAnswerAsync(answ.QeGuid, answ.AnswGuid)"><i class="oi oi-trash"></i></button></td>
                     </tr>
 
@@ -137,57 +143,79 @@
  @if (_listOfQuestions == null)
     {
     <p><em>Loading...</em></p>
-    }
+}
 else
 {   
-    _maxResultCount = 10;
-    _skipCount = _pageIndex * 10;
+    
+    
+
     var questionCounting = 1 + _pageIndex * 10;
-        <table class="table">
-            <thead>
+    <table class="table">
+        <thead>
+            <tr>
+                @*<th>Modify</th>*@
+                <th>No.</th>
+                <th>Quetion content</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            @{
+                var count = _listOfQuestions.Count;
+                if (_listOfQuestions.Count > PageSize)
+                { count = PageSize; }
+            }
+
+            
+            @for (int i = 0; i < count; i++)
+           
+                {       
                 <tr>
-                    @*<th>Modify</th>*@
-                    <th>No.</th>
-                    <th>Quetion content</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var ques in _listOfQuestions)
-                {
-                    <tr>
                         @*<td><button @onclick="() => </button></td>*@
                         <td>@(questionCounting++)</td>
-                        <td>@ques.QuestionContent</td>
-                    </tr>
-                }
+                        <td>@_listOfQuestions[i].QuestionContent</td>
+                    </tr>          
+                }     
             </tbody>
+        @if (_pageIndex > 0)
+        {
+
+            <input type="button" class="btn btn-primary" value="Back" @onclick="PreviousPageAsync" />
+        }
+        else
+        {
+            <input type="button" class="btn btn-primary" value="Back" disabled />
+        }
+
+        @if (_listOfQuestions.Count != 0)
+        {
+
+
+            if (_listOfQuestions.Count > PageSize)
+            {
+                <input type="button" class="btn btn-primary" value="Next" @onclick="NextPageAsync" />
+            }
+            else
+            {
+                <input type="button" class="btn btn-primary" value="Next" disabled />
+            }
+        }
+
         </table>
 }
 
-@if (_pageIndex > 0)
-{
 
-    <input type="button" class="btn btn-primary" value="Back"  @onclick="PreviewPageAsync" />
-}
-else
-{
-    <input type="button" class="btn btn-primary" value="Back" disabled />
-}
-
-@*@if*@
-
-<input type="button" class="btn btn-primary" value="Next" @onclick="NextPageAsync" />
 
 
 @code {
-
-
 
     private List<QuestionInfo> _listOfQuestions;
 
     private async Task SearchIssues()
     {
+        _pageIndex = 0;
         await GetQuestionsAsync();
+        
     }
 
     protected override async Task OnInitializedAsync()
@@ -195,11 +223,11 @@ else
         await GetQuestionsAsync();
     }
 
-    private async Task PreviewPageAsync()
+    private async Task PreviousPageAsync()
     {
         _pageIndex -= 1;
         await GetQuestionsAsync();
-        
+
     }
 
     private async Task NextPageAsync()
@@ -209,43 +237,24 @@ else
 
     }
 
-    public class QuestionModel
-    {
-        [Required]
-        public string? Question { get; set; }
+   
+    private QuestionModel _questionModel = new QuestionModel();
 
-        [Required]
-        public int Points { get; set; }
-
-        [Required]
-        public string? Category { get; set; }
-
-        [Required]
-        public string? SelectionMultiplicity { get; set; }  
-    }
-
-    private QuestionModel questionModel = new();
-
+  
     private async Task HandleValidSubmit()
     {
         Logger.LogInformation("Handlesubmit called");
 
         await AddQuestionAsync();
-        questionModel.Question = string.Empty;
-        questionModel.Points = 1;
-        questionModel.Category = "default";
-        questionModel.SelectionMultiplicity = "default";
+        _questionModel.Question = string.Empty;
+        _questionModel.Points = 1;
+        _questionModel.Category = "default";
+        _questionModel.SelectionMultiplicity = "default";
         _answers = true;
     }
 
-    public class AnswerModel
-    {
-        [Required]
-        public string? Answer { get; set; }
-        public bool IsCorrect { get; set; }
-
-    }
-    private AnswerModel answerModel = new();
+    
+    private AnswerModel _answerModel = new();
 
     private async Task HandleValidAnswerSubmit()
     {
@@ -258,24 +267,12 @@ else
     private Guid _returnedguid;
     private Guid _questionID;
     private Guid _answerID;
-    //private string _answer;
     private bool _answers = false;
-    // private bool _isCorrect;
     private string _category = "history";
     private string _searchString = string.Empty;
     private int _pageIndex = 0;
-    private int _skipCount = 0;
-    private int _maxResultCount=10;
+    private const int PageSize = 10;
 
-
-    private string _correct = "Yes";
-    private string _notCorrect = "No";
-
-
-    //public int CountResultsToSkip()
-    //{
-        
-    //}
 
     private List<GetAllInfosAboutAnswer> _listOfAnswers;
 
@@ -286,7 +283,6 @@ else
         _returnedguid = Guid.Empty;
         _listOfQuestions = new List<QuestionInfo>();
         _listOfAnswers = new List<GetAllInfosAboutAnswer>();
-
     }
 
 
@@ -295,7 +291,6 @@ else
     {
         await AddQuestionAnswerAsync();
         await GetListOfAnswersAsync();      
-
     }
 
     private async Task DeletingAnswerAsync(Guid questionID, Guid answerID)
@@ -310,14 +305,14 @@ else
 
     private async Task AddQuestionAsync()
     {
-        _questionID = await QuizApiClient.AddQuestionAsync(questionModel.Question, questionModel.Points, questionModel.Category, questionModel.SelectionMultiplicity);  //metoda dodaje pytanie i zwraca też guida. guid pod prywatne pole, bo będzie potrzebny do dodawania odpowiedzi
+        _questionID = await QuizApiClient.AddQuestionAsync(_questionModel.Question, _questionModel.Points, _questionModel.Category, _questionModel.SelectionMultiplicity);  //metoda dodaje pytanie i zwraca też guida. guid pod prywatne pole, bo będzie potrzebny do dodawania odpowiedzi
 
     }
 
     private async Task AddQuestionAnswerAsync()
     {
 
-        _answerID = await QuizApiClient.AddQuestionAnswerAsync(_questionID, answerModel.Answer, answerModel.IsCorrect);  ////
+        _answerID = await QuizApiClient.AddQuestionAnswerAsync(_questionID, _answerModel.Answer, _answerModel.IsCorrect);  ////
     }
 
     private async Task DeleteAnswerAsync()
@@ -332,7 +327,7 @@ else
 
     private async Task GetQuestionsAsync()
     {
-        _listOfQuestions = await QuizApiClient.GetQuestionsAsync(_category, _skipCount, _maxResultCount, _searchString);
+        _listOfQuestions = await QuizApiClient.GetQuestionsAsync(_category, _pageIndex * PageSize, PageSize + 1, _searchString);
     }
     //private async Task LoadTop5Async()
     //{

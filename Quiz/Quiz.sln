@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Quiz.WebUi", "Quiz.WebUi\Qu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Quiz.WebApi", "Quiz.WebApi\Quiz.WebApi.csproj", "{5651124B-8308-4905-8AC9-87E5BB9CF3C6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Quiz.Contracts", "Quiz.Contracts\Quiz.Contracts.csproj", "{B40879C9-1871-4A41-BC4F-405A1E439D5C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Quiz.Contracts", "Quiz.Contracts\Quiz.Contracts.csproj", "{B40879C9-1871-4A41-BC4F-405A1E439D5C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
