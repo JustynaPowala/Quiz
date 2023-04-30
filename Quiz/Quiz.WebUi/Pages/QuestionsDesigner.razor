@@ -3,7 +3,7 @@
 @using Quiz.Contracts;
 @using Quiz.WebUi.ApiClients;
 @using System.ComponentModel.DataAnnotations; @*//*@
-@using Classes;
+@using Models;
 @inject IQuizApiClient  QuizApiClient;  //property in class QuestionDesginer. Początkowo nie wie mój qestions designer co zrobić. Muszę "połączyć" IQuizApiClient z  HttpQuizApiClient(który ma zawarty ten interfejs). To połączenie jest zrobione poprzez services w klasie program.//
 @inject ILogger<QuestionsDesigner> Logger //
 
@@ -147,15 +147,14 @@
 else
 {   
     
-    
-
     var questionCounting = 1 + _pageIndex * 10;
     <table class="table">
         <thead>
             <tr>
                 @*<th>Modify</th>*@
                 <th>No.</th>
-                <th>Quetion content</th>
+                <th>Question content</th>
+                <th>Remove</th>
             </tr>
         </thead>
         <tbody>
@@ -168,12 +167,18 @@ else
 
             
             @for (int i = 0; i < count; i++)
-           
-                {       
+
+            {
+                var id = _listOfQuestions[i].Guid;
                 <tr>
                         @*<td><button @onclick="() => </button></td>*@
                         <td>@(questionCounting++)</td>
                         <td>@_listOfQuestions[i].QuestionContent</td>
+                        <td><button @onclick="async() => 
+                            {
+                                
+                           await DeletingQuestionWithAssignedAnswers(id);
+                            }"><i class="oi oi-trash"></i></button></td>
                     </tr>          
                 }     
             </tbody>
@@ -210,8 +215,6 @@ else
 @code {
 
     private Guid _returnedguid;
-    private Guid _questionID;
-    private Guid _answerID;
     private bool _answers = false;
     private string _category = "history";
     private string _searchString = string.Empty;
@@ -260,6 +263,7 @@ else
         _questionModel.Category = "default";
         _questionModel.SelectionMultiplicity = "default";
         _answers = true;
+        await GetQuestionsAsync(); 
     }
 
 
@@ -296,11 +300,16 @@ else
 
     private async Task DeletingAnswerAsync(Guid questionID, Guid answerID)
     {
-        _questionID = questionID;
-        _answerID = answerID;
-        await DeleteAnswerAsync();
+        
+        await DeleteAnswerAsync(questionID, answerID);
         await GetListOfAnswersAsync();
 
+    }
+    private async Task DeletingQuestionWithAssignedAnswers(Guid questionID)
+    {
+        
+        await DeleteQuestionAsync(questionID);
+        await GetQuestionsAsync();
     }
 
     //private async Task ModifyQuestion(_questionID)
@@ -317,29 +326,29 @@ else
 
     private async Task AddQuestionAsync()
     {
-        _questionID = await QuizApiClient.AddQuestionAsync(_questionModel.Question, _questionModel.Points, _questionModel.Category, _questionModel.SelectionMultiplicity);  //metoda dodaje pytanie i zwraca też guida. guid pod prywatne pole, bo będzie potrzebny do dodawania odpowiedzi
+        _questionModel.ID = await QuizApiClient.AddQuestionAsync(_questionModel.Question, _questionModel.Points, _questionModel.Category, _questionModel.SelectionMultiplicity);  //metoda dodaje pytanie i zwraca też guida. guid pod prywatne pole, bo będzie potrzebny do dodawania odpowiedzi
 
     }
 
     private async Task AddQuestionAnswerAsync()
     {
 
-        _answerID = await QuizApiClient.AddQuestionAnswerAsync(_questionID, _answerModel.Answer, _answerModel.IsCorrect);  ////
+       await QuizApiClient.AddQuestionAnswerAsync(_questionModel.ID, _answerModel.Answer, _answerModel.IsCorrect);  ////
     }
 
-    private async Task DeleteAnswerAsync()
+    private async Task DeleteAnswerAsync(Guid questionID, Guid answerID)
     {
-        await QuizApiClient.DeleteAnswer(_questionID, _answerID);
+        await QuizApiClient.DeleteAnswer(questionID, answerID);
     }
 
-    private async Task DeleteQuestionAsync()
+    private async Task DeleteQuestionAsync(Guid questionID)
     {
-        await QuizApiClient.DeleteQuestion(_questionID);   //to use!!!!!!
+        await QuizApiClient.DeleteQuestion(questionID);   
     }
 
     private async Task GetListOfAnswersAsync()
     {
-        _listOfAnswers= await QuizApiClient.GetListOfAnswersAsync(_questionID);
+        _listOfAnswers = await QuizApiClient.GetListOfAnswersAsync(_questionModel.ID);
     }
 
     private async Task GetQuestionsAsync()

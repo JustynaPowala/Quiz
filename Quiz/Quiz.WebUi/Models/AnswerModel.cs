@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Quiz.WebUi.Classes
+namespace Quiz.WebUi.Models
 {
     public class AnswerModel
     {

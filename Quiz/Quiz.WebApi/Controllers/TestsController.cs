@@ -166,7 +166,7 @@ namespace Quiz.WebApi.Controllers
         }
 
 
-        [HttpDelete("questions/{questionID}")]      //najpierw trzeba usuwaæ answery, bo s¹ powi¹zanie z questionid
+        [HttpDelete("questions/{questionID}")]      
         public void DeletingQuestion([FromRoute] Guid questionID)
         {
             string connectionString = GetConnectionString();
@@ -177,7 +177,16 @@ namespace Quiz.WebApi.Controllers
 
                 connection.Open();
 
-                string sqlQuery = "DELETE FROM dbo.Questions WHERE ID = @ID";
+                string sqlQuery = @"
+BEGIN TRANSACTION
+BEGIN TRY
+DELETE FROM dbo.Answers WHERE QuestionID = @ID
+DELETE FROM dbo.Questions WHERE ID = @ID
+COMMIT TRANSACTION
+END TRY
+BEGIN CATCH
+ROLLBACK TRANSACTION
+END CATCH";
 
                 using (SqlCommand command = new SqlCommand(sqlQuery, connection))
                 {
