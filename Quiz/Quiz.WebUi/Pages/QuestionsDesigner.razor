@@ -29,7 +29,6 @@
         <span style="font-weight: bold;">Enter content of Your question</span>
         <br />
         <InputText id="question" class="half-screen-textbox"   @bind-Value="_questionModel.Question" />
-    
     </p>
     <p>
         <span style="font-weight: bold;">Choose how many points you can get in this question</span>
@@ -69,10 +68,16 @@
 </EditForm>
 
 <EditForm Model="@_answerModel" OnValidSubmit="@HandleValidAnswerSubmit">
+    
     @if (_answers == true)
     {
+        
+
         <p>
             <span style="font-weight: bold;">Add answers to your question. Check the box if it is correct answer</span>
+        </p>
+        <p>
+            <span style="font-weight: bold;">Question: @_questionContentAboveAnswersList </span>
         </p>
         <InputText id="answer" class="half-screen-textbox" @bind-Value="_answerModel.Answer" />
 
@@ -130,15 +135,15 @@
 }
 
 
-<InputSelect @bind-Value="_category">
+<InputSelect @bind-Value="_category"  @oninput="OnCategoryChange">
     <option value="history">History</option>
     <option value="chemistry">Chemistry</option>
     <option value="mathematics">Mathematics</option>
     <option value="music">Music</option>
     <option value="information technology">Information technology</option>
 </InputSelect>
-<input type="text" @bind-value="@_searchString" />
-<input type="button" value="Search" @onclick="SearchIssues" />
+<input type="text" @bind-value="@_searchString" @oninput="OnSearchStringChange" />
+@*<input type="button" value="Search" @onclick="SearchIssues" />*@
 
  @if (_listOfQuestions == null)
     {
@@ -220,15 +225,30 @@ else
     private string _searchString = string.Empty;
     private int _pageIndex = 0;
     private const int PageSize = 10;
+    private string _questionContentAboveAnswersList = string.Empty;
 
 
     private List<QuestionInfo> _listOfQuestions;
 
-    private async Task SearchIssues()
+    //private async Task SearchIssues()
+    //{
+    //    _pageIndex = 0;
+    //    await GetQuestionsAsync();
+
+    //}
+
+    private async Task OnCategoryChange(ChangeEventArgs e)
     {
         _pageIndex = 0;
+        _category = e.Value.ToString();
         await GetQuestionsAsync();
+    }
 
+    private async Task OnSearchStringChange(ChangeEventArgs e)
+    {
+        _pageIndex = 0;
+        _searchString = e.Value.ToString();
+        await GetQuestionsAsync();
     }
 
     protected override async Task OnInitializedAsync()
@@ -258,12 +278,15 @@ else
         Logger.LogInformation("Handlesubmit called");
 
         await AddQuestionAsync();
+        _questionContentAboveAnswersList = _questionModel.Question;
         _questionModel.Question = string.Empty;
         _questionModel.Points = 1;
         _questionModel.Category = "default";
         _questionModel.SelectionMultiplicity = "default";
         _answers = true;
         await GetQuestionsAsync(); 
+        await GetListOfAnswersAsync();
+        _answerModel.Answer = string.Empty;
     }
 
 
@@ -273,6 +296,7 @@ else
     {
         Logger.LogInformation("Handlesubmit called");
         await AddingAnswerOnButtonClickedAsync();
+        _answerModel.Answer = string.Empty;
 
 
     }
@@ -300,14 +324,14 @@ else
 
     private async Task DeletingAnswerAsync(Guid questionID, Guid answerID)
     {
-        
+
         await DeleteAnswerAsync(questionID, answerID);
         await GetListOfAnswersAsync();
 
     }
     private async Task DeletingQuestionWithAssignedAnswers(Guid questionID)
     {
-        
+
         await DeleteQuestionAsync(questionID);
         await GetQuestionsAsync();
     }
@@ -333,7 +357,7 @@ else
     private async Task AddQuestionAnswerAsync()
     {
 
-       await QuizApiClient.AddQuestionAnswerAsync(_questionModel.ID, _answerModel.Answer, _answerModel.IsCorrect);  ////
+        await QuizApiClient.AddQuestionAnswerAsync(_questionModel.ID, _answerModel.Answer, _answerModel.IsCorrect);  ////
     }
 
     private async Task DeleteAnswerAsync(Guid questionID, Guid answerID)
@@ -353,6 +377,7 @@ else
 
     private async Task GetQuestionsAsync()
     {
+        
         _listOfQuestions = await QuizApiClient.GetQuestionsAsync(_category, _pageIndex * PageSize, PageSize + 1, _searchString);
     }
    
