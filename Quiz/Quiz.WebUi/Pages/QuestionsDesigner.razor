@@ -70,9 +70,7 @@
 <EditForm Model="@_answerModel" OnValidSubmit="@HandleValidAnswerSubmit">
     
     @if (_answers == true)
-    {
-        
-
+    {      
         <p>
             <span style="font-weight: bold;">Add answers to your question. Check the box if it is correct answer</span>
         </p>
@@ -81,7 +79,17 @@
         </p>
         <InputText id="answer" class="half-screen-textbox" @bind-Value="_answerModel.Answer" />
 
-        <input type="checkbox" class="checkbox-design"  @bind-value="_answerModel.IsCorrect" />
+        @if(_anyTrue == false)
+        {
+            <input type="checkbox" class="checkbox-design" @bind-value="_answerModel.IsCorrect" />
+        }
+        else
+        {
+            _answerModel.IsCorrect = false;
+            <input type="checkbox" class="checkbox-design" disabled @bind-value="_answerModel.IsCorrect " />
+        }
+
+      
 
         <br />
         <button type="submit" class="btn btn-primary">Add answer</button>
@@ -113,21 +121,47 @@
                 @{
                     var correct = "Yes";
                     var notCorrect ="No";
+                    var allFalse = true;
+                    _anyTrue = false;
+
                 }
 
 
 
                 @foreach (var answ in _listOfAnswers)
                 {
+                    @if (_questionMultiplicity == "single")
+                    {
 
-                    <tr>
-                        <td>@(answersCounting++)</td>
-                        <td>@answ.AnswerContent</td>
-                        <td>@(answ.IsCorrect ? correct : notCorrect)</td>
-                        <td><button @onclick="() => DeletingAnswerAsync(answ.QeGuid, answ.AnswGuid)"><i class="oi oi-trash"></i></button></td>
-                    </tr>
+                        @if (answ.IsCorrect == true)
+                        {
+                            allFalse = false;
 
+                        }
+                        else
+                        {
+                            allFalse = true;
+                        }
+                        if (allFalse == false)
+                        {
+                            _anyTrue = true;
+                        }
+                        else
+                        {
+                            
+                        }
+
+                    }
+                                          
+                            <tr>
+                                <td>@(answersCounting++)</td>
+                                <td>@answ.AnswerContent</td>
+                                <td>@(answ.IsCorrect ? correct : notCorrect)</td>
+                                <td><button @onclick="() => DeletingAnswerAsync(answ.QeGuid, answ.AnswGuid)"><i class="oi oi-trash"></i></button></td>
+                        ```</tr>
+                   
                 }
+                
 
             </tbody>
         </table>
@@ -226,6 +260,9 @@ else
     private int _pageIndex = 0;
     private const int PageSize = 10;
     private string _questionContentAboveAnswersList = string.Empty;
+    private string _questionMultiplicity;
+    private bool _anyTrue = false;
+
 
 
     private List<QuestionInfo> _listOfQuestions;
@@ -282,11 +319,13 @@ else
         _questionModel.Question = string.Empty;
         _questionModel.Points = 1;
         _questionModel.Category = "default";
+        _questionMultiplicity = _questionModel.SelectionMultiplicity;
         _questionModel.SelectionMultiplicity = "default";
         _answers = true;
         await GetQuestionsAsync(); 
         await GetListOfAnswersAsync();
         _answerModel.Answer = string.Empty;
+        _anyTrue = false;
     }
 
 
