@@ -40,13 +40,13 @@
         <span style="font-weight: bold;">Select question category</span>
         <br />
         <InputSelect @bind-Value="_questionModel.Category">
-
+      
             <option value="default" disabled selected>Select a category</option>
-            <option value="history">History</option>
-            <option value="chemistry">Chemistry</option>
-            <option value="mathematics">Mathematics</option>
-            <option value="music">Music</option>
-            <option value="information technology">Information technology</option>
+            @if(_listOfCategories !=null)
+                foreach (var cat in _listOfCategories)
+                {
+                    <option value="@cat.ID">@cat.Name</option>
+                }
         </InputSelect>
     </p>
     
@@ -54,9 +54,9 @@
         <span style="font-weight: bold;">Select whether the question is single-choice or multiple-choice</span>
         <br />
         <InputSelect @bind-Value="_questionModel.SelectionMultiplicity">
-            <option value="default" disabled selected>Choose selection multiplicity</option>
-            <option value="single">Single</option>
-            <option value="multiple">Multiple</option>
+            @*<option value="default" disabled selected>Choose selection multiplicity</option>*@
+            <option value="@AnswerMultiplicity.Single" selected >Single</option>
+            <option value="@AnswerMultiplicity.Multiple">Multiple</option>
         </InputSelect>
     </p>
     
@@ -130,7 +130,7 @@
 
                 @foreach (var answ in _listOfAnswers)
                 {
-                    @if (_questionMultiplicity == "single")
+                    @if (_questionMultiplicity == AnswerMultiplicity.Single)
                     {
 
                         @if (answ.IsCorrect == true)
@@ -150,9 +150,7 @@
                         {
                             
                         }
-
-                    }
-                                          
+                    }                                        
                             <tr>
                                 <td>@(answersCounting++)</td>
                                 <td>@answ.AnswerContent</td>
@@ -177,7 +175,7 @@
     <option value="information technology">Information technology</option>
 </InputSelect>
 <input type="text" @bind-value="@_searchString" @oninput="OnSearchStringChange" />
-@*<input type="button" value="Search" @onclick="SearchIssues" />*@
+
 
  @if (_listOfQuestions == null)
     {
@@ -260,12 +258,13 @@ else
     private int _pageIndex = 0;
     private const int PageSize = 10;
     private string _questionContentAboveAnswersList = string.Empty;
-    private string _questionMultiplicity;
+    private AnswerMultiplicity _questionMultiplicity;
     private bool _anyTrue = false;
 
 
 
     private List<QuestionInfo> _listOfQuestions;
+    private List<CategoryInfo> _listOfCategories;
 
     //private async Task SearchIssues()
     //{
@@ -291,6 +290,7 @@ else
     protected override async Task OnInitializedAsync()
     {
         await GetQuestionsAsync();
+        await GetCategoriesAsync();
     }
 
     private async Task PreviousPageAsync()
@@ -320,7 +320,7 @@ else
         _questionModel.Points = 1;
         _questionModel.Category = "default";
         _questionMultiplicity = _questionModel.SelectionMultiplicity;
-        _questionModel.SelectionMultiplicity = "default";
+        _questionModel.SelectionMultiplicity = AnswerMultiplicity.Single;
         _answers = true;
         await GetQuestionsAsync(); 
         await GetListOfAnswersAsync();
@@ -341,10 +341,7 @@ else
     }
 
 
-
     private List<GetAllInfosAboutAnswer> _listOfAnswers;
-
-
 
     public QuestionsDesigner()
     {
@@ -416,10 +413,15 @@ else
 
     private async Task GetQuestionsAsync()
     {
-        
+
         _listOfQuestions = await QuizApiClient.GetQuestionsAsync(_category, _pageIndex * PageSize, PageSize + 1, _searchString);
     }
-   
+
+    private async Task GetCategoriesAsync()
+    {
+        _listOfCategories = await QuizApiClient.GetCategoriesAsync();
+    }
+
     }
 
 

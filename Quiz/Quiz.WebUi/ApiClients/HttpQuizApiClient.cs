@@ -13,10 +13,10 @@ namespace Quiz.WebUi.ApiClients
             _configuration = configuration;
         }
        
-        public async Task<Guid> AddQuestionAsync(string questionContent, int points, string category, string selectionMultiplicity)
+        public async Task<Guid> AddQuestionAsync(string questionContent, int points, string category, AnswerMultiplicity selectionMultiplicity)
         {
             var client = CreateHttpClient();
-            var response = await client.PostAsync("tests/questions", JsonContent.Create(new AddQuestionBody()  // 
+            var response = await client.PostAsync("questions", JsonContent.Create(new AddQuestionBody()  // 
             {
                 QuestionContent = questionContent,
                 Points = points,
@@ -33,7 +33,7 @@ namespace Quiz.WebUi.ApiClients
         {
             
             var client = CreateHttpClient();
-            var address = "tests/questions/" + questionID+ "/answers";
+            var address = "questions/" + questionID+ "/answers";
             var response = await client.PostAsync(address, JsonContent.Create(new AddAnswerBody()  // 
             {
                 AnswerContent = answerContent,
@@ -47,14 +47,14 @@ namespace Quiz.WebUi.ApiClients
         public async Task DeleteAnswer(Guid questionID, Guid answerID)
         {
             var client = CreateHttpClient();
-            var address = "tests/questions/" + questionID + "/answers/" + answerID;
+            var address = "questions/" + questionID + "/answers/" + answerID;
             await client.DeleteAsync(address);  
         }
 
         public async Task DeleteQuestion(Guid questionID)
         {
             var client = CreateHttpClient();
-            var address = "tests/questions/" + questionID;
+            var address = "questions/" + questionID;
             await client.DeleteAsync(address);
         }
 
@@ -62,7 +62,7 @@ namespace Quiz.WebUi.ApiClients
         {
 
             var client = CreateHttpClient();
-            var address = "tests/questions/" + questionID + "/answers";
+            var address = "questions/" + questionID + "/answers";
             var response = await client.GetAsync(address);
             var listOfAnswers = await response.Content.ReadFromJsonAsync<List<GetAllInfosAboutAnswer>>();
             return listOfAnswers;
@@ -78,7 +78,7 @@ namespace Quiz.WebUi.ApiClients
 
 
             var client = CreateHttpClient();
-            var address = "tests/questions?category=" + cat + "&skipCount=" + skippedCount + "&maxResultCount=" + maxResult;
+            var address = "questions?category=" + cat + "&skipCount=" + skippedCount + "&maxResultCount=" + maxResult;
             if(searchStr != null)
             {
                 address += "&searchString=" + searchStr;
@@ -89,7 +89,15 @@ namespace Quiz.WebUi.ApiClients
             return listOfQuestions;
         }
 
-
+       public async Task <List<CategoryInfo>> GetCategoriesAsync()
+        {
+            
+            var client = CreateHttpClient();
+            var address = "categories";
+            var response = await client.GetAsync(address);
+            var listOfCategories = await response.Content.ReadFromJsonAsync<List<CategoryInfo>>();
+            return listOfCategories;
+        }
         private HttpClient CreateHttpClient()
         {
             var client= new HttpClient();

@@ -4,7 +4,7 @@ namespace Quiz.WebUi.ApiClients
 {
     public interface IQuizApiClient
     {
-        Task<Guid> AddQuestionAsync(string questionContent, int points, string category, string selectionMultiplicity);
+        Task<Guid> AddQuestionAsync(string questionContent, int points, string category, AnswerMultiplicity selectionMultiplicity);
 
         Task<Guid> AddQuestionAnswerAsync(Guid questionID, string answerContent, bool isCorrect);
 
@@ -13,5 +13,7 @@ namespace Quiz.WebUi.ApiClients
 
         Task<List<GetAllInfosAboutAnswer>> GetListOfAnswersAsync(Guid questionID);
         Task<List<QuestionInfo>> GetQuestionsAsync(string category, int skipCount, int maxResultCount, string? searchString);
+
+        Task<List<CategoryInfo>> GetCategoriesAsync();
     }
 }

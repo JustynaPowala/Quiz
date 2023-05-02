@@ -2,93 +2,49 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Quiz.Contracts;
+using System;
 using System.Security.Cryptography.Xml;
 
 namespace Quiz.WebApi.Controllers
 {
     [ApiController]
-    [Route("tests")]
-    public class TestsController : ControllerBase
+    [Route("questions")]
+    public class QuestionsController : ControllerBase
     {
 
 
-        private readonly ILogger<TestsController> _logger;
+        private readonly ILogger<QuestionsController> _logger;
         private readonly IConfiguration _configuration;
+        private readonly ICategoriesProvider _categoriesProvider;
 
-        public TestsController(ILogger<TestsController> logger, IConfiguration configuration)
+        public QuestionsController(ILogger<QuestionsController> logger, IConfiguration configuration, ICategoriesProvider categoriesProvider)
         {
             _logger = logger;
             _configuration = configuration;
+            _categoriesProvider = categoriesProvider;
         }
 
-        [HttpGet("random-number")]
-        public int GetRandomNumber()
+        [HttpPost("")]
+        public async Task<Guid> AddQuestionAsync([FromBody] AddQuestionBody body)
         {
-            return new Random().Next(0, 100);
-
-        }
-
-        [HttpGet("random-guid")]
-        public Guid GetRandomGuid()
-        {
-            //_logger.LogCritical("abc");
-             return Guid.NewGuid();
-        }
-
-
-
-
-
-//        [HttpGet("top-five")]
-//        public List<GetQuestionIdAndContent> OpenSqlConnection()
-//        {
-//            var listOfTop5 = new List<GetQuestionIdAndContent>();
-
-//            string connectionString = GetConnectionString();
-
-//            using (SqlConnection connection = new SqlConnection(connectionString))
-//            {
-//                connection.ConnectionString = connectionString;
-
-//                connection.Open();
-
-//                string sqlQuery = "SELECT TOP 5 * FROM dbo.Questions";
-
-//                using (SqlCommand command = new SqlCommand(sqlQuery, connection))
-//                {
-//                    using (SqlDataReader reader = command.ExecuteReader())
-//                    {
-//                        while (reader.Read())
-//                        {
-//                            // Retrieve data from the reader and process as needed
-//                            var question = new GetQuestionIdAndContent();
-
-//        string questionId = reader["ID"].ToString();
-//        questionId ??= string.Empty;
-                            
-//                            question.Guid = Guid.Parse(questionId);
-
-
-//                            string questionText = reader["QuestionContent"].ToString();
-//        questionText ??= string.Empty;
-//                            question.QuestionContent = questionText;
-                            
-//                            listOfTop5.Add(question);
-
-
-//                        }
-//}
-//                }
-//            }
-//            return listOfTop5;
-//        }
-
-
-
-        [HttpPost("questions")] //
-        public Guid AddQuestion([FromBody] AddQuestionBody body)
-        {
-            var guid =  GetRandomGuid();
+            if (string.IsNullOrEmpty(body.QuestionContent))
+            {
+                throw new DomainValidationException("Question content field is required");
+            }
+            var categories = await _categoriesProvider.GetCategoriesAsync();
+            if (!categories.Any(c => c.ID == body.Category))
+            {
+                throw new DomainValidationException($"The {body.Category} category is not recognized");
+            }
+            if (body.Points <= 0 || body.Points > 10)
+            {
+                throw new DomainValidationException("The amount of points must be between 1-10");
+            }
+            if (!(body.SelectionMultiplicity is AnswerMultiplicity.Single or AnswerMultiplicity.Multiple ))
+            {
+                throw new DomainValidationException("Unrecognized answer multiplicity");
+            }
+            var id =  Guid.NewGuid();
 
             string connectionString = GetConnectionString();
 
@@ -102,21 +58,21 @@ namespace Quiz.WebApi.Controllers
 
                 using (SqlCommand command = new SqlCommand(sqlQuery, connection))
                 {
-                    command.Parameters.AddWithValue("@Id", guid);
+                    command.Parameters.AddWithValue("@Id", id);
                     command.Parameters.AddWithValue("@QuestionContent", body.QuestionContent);
                     command.Parameters.AddWithValue("@Points", body.Points);
                     command.Parameters.AddWithValue("@Category", body.Category);
-                    command.Parameters.AddWithValue("@SelectionMultiplicity", body.SelectionMultiplicity);
+                    command.Parameters.AddWithValue("@SelectionMultiplicity", body.SelectionMultiplicity.ToString());
                     command.ExecuteNonQuery();
                 }
             }
-            return guid;
+            return id;
         }
 
-        [HttpPost("questions/{questionID}/answers")]
+        [HttpPost("{questionID}/answers")]
         public Guid AddQuestionAnswer([FromRoute] Guid questionID, [FromBody] AddAnswerBody body)
         {
-            var answerGuid = GetRandomGuid();
+            var answerGuid = Guid.NewGuid();
 
             string connectionString = GetConnectionString();
 
@@ -142,7 +98,7 @@ namespace Quiz.WebApi.Controllers
         }
 
 
-        [HttpDelete("questions/{questionID}/answers/{answerID}")]
+        [HttpDelete("{questionID}/answers/{answerID}")]
         public void  DeletingAnswer([FromRoute] Guid questionID, Guid answerID)
         {
 
@@ -166,7 +122,7 @@ namespace Quiz.WebApi.Controllers
         }
 
 
-        [HttpDelete("questions/{questionID}")]      
+        [HttpDelete("{questionID}")]      
         public void DeletingQuestion([FromRoute] Guid questionID)
         {
             string connectionString = GetConnectionString();
@@ -197,9 +153,7 @@ END CATCH";
 
         }
 
-
-
-        [HttpGet("questions/{questionID}/answers")]
+        [HttpGet("{questionID}/answers")]
         public List<GetAllInfosAboutAnswer> ViewListOfAnswers([FromRoute] Guid questionID)
         {
             var listOfAnswers = new List<GetAllInfosAboutAnswer>();
@@ -263,7 +217,7 @@ END CATCH";
         }
 
 
-        [HttpGet("questions")]
+        [HttpGet("")]
         public List<QuestionInfo> GetListOfQuestions([FromQuery] string? category, [FromQuery] string? searchString, [FromQuery] int skipCount, [FromQuery] int maxResultCount)
         {
             var listOfQuestions = new List<QuestionInfo>();

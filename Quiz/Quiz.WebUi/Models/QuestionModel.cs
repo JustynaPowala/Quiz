@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Quiz.Contracts;
+using System.ComponentModel.DataAnnotations;
 
 namespace Quiz.WebUi.Models
 {
@@ -19,7 +20,7 @@ namespace Quiz.WebUi.Models
         public string? Category { get; set; }
 
         [Required]
-        public string? SelectionMultiplicity { get; set; }
+        public AnswerMultiplicity SelectionMultiplicity { get; set; }
 
 
 
