@@ -73,9 +73,7 @@ namespace Quiz.WebUi.ApiClients
             var cat = category.ToLower();  //tolower is to delete
             var searchStr = searchString.ToLower();
             var skippedCount = skipCount;
-            var maxResult = maxResultCount;    //ints to strings?
-
-
+            var maxResult = maxResultCount;    
 
             var client = CreateHttpClient();
             var address = "questions?category=" + cat + "&skipCount=" + skippedCount + "&maxResultCount=" + maxResult;
@@ -98,6 +96,22 @@ namespace Quiz.WebUi.ApiClients
             var listOfCategories = await response.Content.ReadFromJsonAsync<List<CategoryInfo>>();
             return listOfCategories;
         }
+
+
+        public async Task ModifyQuestionAsync(Guid questionID, string questionContent, int points, string category, AnswerMultiplicity selectionMultiplicity)
+        {
+            var content = questionContent;
+            var cat = category;
+            var urlPoints = points;
+            var multiplicity = selectionMultiplicity;
+
+            var client = CreateHttpClient();
+            var address = "questions/" + questionID + "?content=" + content + "&category=" + cat + "&points=" + urlPoints + "&answerMultiplicity=" + multiplicity;
+            var requestContent = new StringContent(string.Empty);
+           await client.PutAsync(address, requestContent);
+        }
+
+   
         private HttpClient CreateHttpClient()
         {
             var client= new HttpClient();

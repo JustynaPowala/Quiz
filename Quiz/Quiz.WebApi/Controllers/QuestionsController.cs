@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Quiz.Contracts;
+using Syncfusion.Blazor;
 using System;
 using System.Security.Cryptography.Xml;
 
@@ -72,7 +73,7 @@ namespace Quiz.WebApi.Controllers
         [HttpPost("{questionID}/answers")]
         public Guid AddQuestionAnswer([FromRoute] Guid questionID, [FromBody] AddAnswerBody body)
         {
-            var answerGuid = Guid.NewGuid();
+            var answerId = Guid.NewGuid();
 
             string connectionString = GetConnectionString();
 
@@ -87,14 +88,14 @@ namespace Quiz.WebApi.Controllers
                 using (SqlCommand command = new SqlCommand(sqlQuery, connection))
                 {
                     command.Parameters.AddWithValue("@QuestionID", questionID);
-                    command.Parameters.AddWithValue("@Id", answerGuid);
+                    command.Parameters.AddWithValue("@Id", answerId);
                     command.Parameters.AddWithValue("@AnswerContent", body.AnswerContent);
                     command.Parameters.AddWithValue("@IsCorrect", body.IsCorrect ?1:0);         //jeœli to co przed? bêdzie true to przyjmie to co przed: a jak false to to co po:. czyli 1 bêdzie true a 0 bêdzie false- tak jak jst w sql.
                     command.Parameters.AddWithValue("@CreationTimestamp", DateTime.Now);
                     command.ExecuteNonQuery();
                 }
             }
-            return answerGuid;
+            return answerId;
         }
 
 
@@ -271,13 +272,7 @@ END CATCH";
                             quesCategory ??= string.Empty;
                             question.Category = quesCategory;
                
-                            listOfQuestions.Add(question);
-
-                           //string skip = reader["@skipCount"].ToString();
-                           //var skipped = int.Parse(skip);
-
-                           //string max = reader["@maxResultCount"].ToString();
-                           //var maxCount = int.Parse(max);
+                            listOfQuestions.Add(question);                      
                         }
                     }
                 }
@@ -285,14 +280,45 @@ END CATCH";
             return listOfQuestions;
         }
 
-        //dodac order by content,wtedy bedzie alfabetycznie + OFFSET @skipcount ROWS, FETCH NEXT,   maxresultoccunt=pagesize(np.10)
+        [HttpPut("{questionID}")]
+        public void ModifyQuestion([FromRoute] Guid Id, [FromQuery] string content, [FromQuery] string category, [FromQuery] int points, [FromQuery] AnswerMultiplicity answerMultiplicity)
+        {
+            string connectionString = GetConnectionString();
+
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.ConnectionString = connectionString;
+
+                connection.Open();
+
+                string sqlQuery = @"
+UPDATE dbo.Questions 
+SET QuestionContent = @QuestionContent, 
+    Points = @Points, 
+    Category = @Category, 
+    SelectionMultiplicity = @SelectionMultiplicity 
+WHERE Id = @Id";
+
+            
+                using (SqlCommand command = new SqlCommand(sqlQuery, connection))
+                {
+                    command.Parameters.AddWithValue("@Id", Id);
+                    command.Parameters.AddWithValue("@QuestionContent", content);
+                    command.Parameters.AddWithValue("@Points", points);
+                    command.Parameters.AddWithValue("@Category", category);
+                    command.Parameters.AddWithValue("@SelectionMultiplicity", answerMultiplicity.ToString());
+                    command.ExecuteNonQuery();
+                }
+            }
+        }
+            
 
 
         private  string GetConnectionString()
             {
             
             return _configuration["ConnectionStrings:Default"];    // appsettings, tam jest path
-        }
+             }
     }
 
   
