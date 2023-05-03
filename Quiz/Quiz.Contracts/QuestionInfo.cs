@@ -14,16 +14,23 @@ namespace Quiz.Contracts
             Guid = Guid.Empty;
             QuestionContent = String.Empty; 
             Category = String.Empty;
+            Points = 0;
+            AnswerMultiplicity = AnswerMultiplicity.Single;
+            
         }
-       public QuestionInfo(Guid guid, string questionContent, string category)  // 2 różne przeciążenia tej samej metody
+       public QuestionInfo(Guid guid, string questionContent, string category, int points, AnswerMultiplicity answerMultiplicity)  // 2 różne przeciążenia tej samej metody
         {
             Guid = guid;
             QuestionContent = questionContent;
             Category = category;
+            Points = points;
+            AnswerMultiplicity = answerMultiplicity;
         }
         public Guid Guid { get; set; } 
         public string QuestionContent { get; set; }
 
         public string Category { get; set; }
+        public int Points { get; set; }
+        public AnswerMultiplicity AnswerMultiplicity { get; set; }
     }
 }

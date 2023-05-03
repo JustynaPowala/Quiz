@@ -6,7 +6,7 @@ namespace Quiz.WebApi
     public class QuestionValidator
     {
 
-        public QuestionValidator(string content, string category, int points, AnswerMultiplicity answerMultiplicity, List<CategoryInfo> listOfCategories)
+        public void Validate(string content, string category, int points, AnswerMultiplicity answerMultiplicity, List<CategoryInfo> listOfCategories)
         {
 
             if (string.IsNullOrEmpty(content))

@@ -17,6 +17,7 @@ namespace Quiz.WebApi.Controllers
         private readonly ILogger<QuestionsController> _logger;
         private readonly IConfiguration _configuration;
         private readonly ICategoriesProvider _categoriesProvider;
+        private QuestionValidator _questionValidator = new QuestionValidator();
 
         public QuestionsController(ILogger<QuestionsController> logger, IConfiguration configuration, ICategoriesProvider categoriesProvider)
         {
@@ -29,7 +30,7 @@ namespace Quiz.WebApi.Controllers
         public async Task<Guid> AddQuestionAsync([FromBody] AddQuestionBody body)
         {
             var categories = await _categoriesProvider.GetCategoriesAsync();
-            var validator = new QuestionValidator(body.QuestionContent, body.Category, body.Points, body.SelectionMultiplicity, categories);
+            _questionValidator.Validate(body.QuestionContent, body.Category, body.Points, body.SelectionMultiplicity, categories);
             //if (string.IsNullOrEmpty(body.QuestionContent))
             //{
             //    throw new DomainValidationException("Question content field is required");
@@ -47,7 +48,7 @@ namespace Quiz.WebApi.Controllers
             //{
             //    throw new DomainValidationException("Unrecognized answer multiplicity");
             //}
-            var id =  Guid.NewGuid();
+            var id = Guid.NewGuid();
 
             string connectionString = GetConnectionString();
 
@@ -92,7 +93,7 @@ namespace Quiz.WebApi.Controllers
                     command.Parameters.AddWithValue("@QuestionID", questionID);
                     command.Parameters.AddWithValue("@Id", answerId);
                     command.Parameters.AddWithValue("@AnswerContent", body.AnswerContent);
-                    command.Parameters.AddWithValue("@IsCorrect", body.IsCorrect ?1:0);         //jeœli to co przed? bêdzie true to przyjmie to co przed: a jak false to to co po:. czyli 1 bêdzie true a 0 bêdzie false- tak jak jst w sql.
+                    command.Parameters.AddWithValue("@IsCorrect", body.IsCorrect ? 1 : 0);         //jeœli to co przed? bêdzie true to przyjmie to co przed: a jak false to to co po:. czyli 1 bêdzie true a 0 bêdzie false- tak jak jst w sql.
                     command.Parameters.AddWithValue("@CreationTimestamp", DateTime.Now);
                     command.ExecuteNonQuery();
                 }
@@ -102,7 +103,7 @@ namespace Quiz.WebApi.Controllers
 
 
         [HttpDelete("{questionID}/answers/{answerID}")]
-        public void  DeletingAnswer([FromRoute] Guid questionID, Guid answerID)
+        public void DeletingAnswer([FromRoute] Guid questionID, Guid answerID)
         {
 
             string connectionString = GetConnectionString();
@@ -121,11 +122,11 @@ namespace Quiz.WebApi.Controllers
                     command.ExecuteNonQuery();
                 }
             }
-            
+
         }
 
 
-        [HttpDelete("{questionID}")]      
+        [HttpDelete("{questionID}")]
         public void DeletingQuestion([FromRoute] Guid questionID)
         {
             string connectionString = GetConnectionString();
@@ -176,7 +177,7 @@ END CATCH";
                     command.Parameters.AddWithValue("@questionID", questionID);
                     using (SqlDataReader reader = command.ExecuteReader())
                     {
-                        
+
                         while (reader.Read())
                         {
                             // Retrieve data from the reader and process as needed
@@ -207,7 +208,7 @@ END CATCH";
                             {
                                 answer.IsCorrect = true;
                             }
-                            
+
 
                             listOfAnswers.Add(answer);
 
@@ -224,7 +225,7 @@ END CATCH";
         public List<QuestionInfo> GetListOfQuestions([FromQuery] string? category, [FromQuery] string? searchString, [FromQuery] int skipCount, [FromQuery] int maxResultCount)
         {
             var listOfQuestions = new List<QuestionInfo>();
-            
+
 
             string connectionString = GetConnectionString();
 
@@ -235,8 +236,9 @@ END CATCH";
                 connection.Open();
                 var sqlQuery = "";
 
-                if(searchString != null) { 
-                 sqlQuery = "SELECT * FROM dbo.Questions where Category = @category and QuestionContent like '%' + @searchString + '%' ORDER BY QuestionContent OFFSET @skipCount ROWS FETCH NEXT @maxResultCount ROWS ONLY";
+                if (searchString != null)
+                {
+                    sqlQuery = "SELECT * FROM dbo.Questions where Category = @category and QuestionContent like '%' + @searchString + '%' ORDER BY QuestionContent OFFSET @skipCount ROWS FETCH NEXT @maxResultCount ROWS ONLY";
                 }
                 else
                 {
@@ -251,7 +253,7 @@ END CATCH";
                     if (searchString != null)
                     {
                         command.Parameters.AddWithValue("@searchString", searchString);
-                       
+
 
                     }
 
@@ -273,8 +275,8 @@ END CATCH";
                             string quesCategory = reader["Category"].ToString();
                             quesCategory ??= string.Empty;
                             question.Category = quesCategory;
-               
-                            listOfQuestions.Add(question);                      
+
+                            listOfQuestions.Add(question);
                         }
                     }
                 }
@@ -286,7 +288,7 @@ END CATCH";
         public async Task ModifyQuestion([FromRoute] Guid questionID, [FromBody] AddQuestionBody body)
         {
             var categories = await _categoriesProvider.GetCategoriesAsync();
-            var validator = new QuestionValidator(body.QuestionContent, body.Category, body.Points, body.SelectionMultiplicity, categories);
+            _questionValidator.Validate(body.QuestionContent, body.Category, body.Points, body.SelectionMultiplicity, categories);
 
             string connectionString = GetConnectionString();
 
@@ -304,7 +306,7 @@ SET QuestionContent = @QuestionContent,
     SelectionMultiplicity = @SelectionMultiplicity 
 WHERE Id = @Id";
 
-            
+
                 using (SqlCommand command = new SqlCommand(sqlQuery, connection))
                 {
                     command.Parameters.AddWithValue("@Id", questionID);
@@ -316,18 +318,71 @@ WHERE Id = @Id";
                 }
             }
         }
-            
 
+        [HttpGet("{questionID}")]
+        public QuestionInfo GetQuestionInfosToModify([FromRoute] Guid questionID)
+        {
+            var questionToModify = new QuestionInfo();
+            string connectionString = GetConnectionString();
 
-        private  string GetConnectionString()
+            using (SqlConnection connection = new SqlConnection(connectionString))
             {
-            
-            return _configuration["ConnectionStrings:Default"];    // appsettings, tam jest path
-             }
+                connection.ConnectionString = connectionString;
+
+                connection.Open();
+
+                string sqlQuery = "SELECT QuestionContent, Points, Category, SelectionMultiplicity FROM dbo.Questions WHERE Id = @Id";
+                using (SqlCommand command = new SqlCommand(sqlQuery, connection))
+                {
+                    command.Parameters.AddWithValue("@Id", questionID);
+
+                    command.ExecuteNonQuery();
+
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            questionToModify.Guid = questionID;
+
+                            string questionText = reader["QuestionContent"].ToString();
+                            questionText ??= string.Empty;
+                            questionToModify.QuestionContent = questionText;
+
+                            string quesCategory = reader["Category"].ToString();
+                            quesCategory ??= string.Empty;
+                            questionToModify.Category = quesCategory;
+
+                            string points = reader["Points"].ToString();
+                            points??= string.Empty;
+                            questionToModify.Points = int.Parse(points);
+
+                            string answerMultiplicity = reader["SelectionMultiplicity"].ToString();
+                            answerMultiplicity ??= string.Empty;
+                            if (answerMultiplicity == "single")
+                            {
+                                questionToModify.AnswerMultiplicity = AnswerMultiplicity.Single;
+                            }
+                            else
+                            {
+                                questionToModify.AnswerMultiplicity = AnswerMultiplicity.Multiple;
+                            }
+                        }
+                    }
+                }
+            }
+            return questionToModify;
+        }
+
+            private string GetConnectionString()
+            {
+
+                return _configuration["ConnectionStrings:Default"];    // appsettings, tam jest path
+            }
+        }
+
+
+
+
+
     }
 
-  
-
-
-   
-}

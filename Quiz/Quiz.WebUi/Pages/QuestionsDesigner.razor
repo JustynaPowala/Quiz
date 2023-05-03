@@ -54,7 +54,6 @@
         <span style="font-weight: bold;">Select whether the question is single-choice or multiple-choice</span>
         <br />
         <InputSelect @bind-Value="_questionModel.SelectionMultiplicity">
-            @*<option value="default" disabled selected>Choose selection multiplicity</option>*@
             <option value="@AnswerMultiplicity.Single" selected >Single</option>
             <option value="@AnswerMultiplicity.Multiple">Multiple</option>
         </InputSelect>
@@ -187,9 +186,9 @@ else
     var questionCounting = 1 + _pageIndex * 10;
     <table class="table">
         <thead>
-            <tr>
-                @*<th>Modify</th>*@
+            <tr>               
                 <th>No.</th>
+                <th>Modify</th>
                 <th>Question content</th>
                 <th>Remove</th>
             </tr>
@@ -207,9 +206,9 @@ else
 
             {
                 var id = _listOfQuestions[i].Guid;
-                <tr>
-                        @*<td><button @onclick="() => </button></td>*@
+                <tr>                  
                         <td>@(questionCounting++)</td>
+                    <td><button @onclick="() => SetModifyMode(id)"><i class="oi oi-trash"></i></button></td>
                         <td>@_listOfQuestions[i].QuestionContent</td>
                         <td><button @onclick="async() => 
                             {
@@ -258,11 +257,14 @@ else
     private string _questionContentAboveAnswersList = string.Empty;
     private AnswerMultiplicity _questionMultiplicity;
     private bool _anyTrue = false;
+    private bool _modifyMode = false;
 
 
 
     private List<QuestionInfo> _listOfQuestions;
     private List<CategoryInfo> _listOfCategories;
+    private List<GetAllInfosAboutAnswer> _listOfAnswers;
+    private QuestionInfo _questionInfo;
 
 
 
@@ -306,8 +308,16 @@ else
     private async Task HandleValidSubmit()
     {
         Logger.LogInformation("Handlesubmit called");
+        if (_modifyMode == false)
+        {         
+            await AddQuestionAsync();
 
-        await AddQuestionAsync();
+        }
+        else
+        {        
+            await ModifyQuestionAsync(_questionModel.ID);     
+            _modifyMode = false;
+        }
         _questionContentAboveAnswersList = _questionModel.Question;
         _questionModel.Question = string.Empty;
         _questionModel.Points = 1;
@@ -315,10 +325,11 @@ else
         _questionMultiplicity = _questionModel.SelectionMultiplicity;
         _questionModel.SelectionMultiplicity = AnswerMultiplicity.Single;
         _answers = true;
-        await GetQuestionsAsync(); 
-        await GetListOfAnswersAsync();
+        await GetQuestionsAsync();
+        await GetListOfAnswersAsync(_questionModel.ID); //
         _answerModel.Answer = string.Empty;
         _anyTrue = false;
+        
     }
 
 
@@ -334,13 +345,14 @@ else
     }
 
 
-    private List<GetAllInfosAboutAnswer> _listOfAnswers;
+
 
     public QuestionsDesigner()
     {
         _returnedguid = Guid.Empty;
         _listOfQuestions = new List<QuestionInfo>();
         _listOfAnswers = new List<GetAllInfosAboutAnswer>();
+        _questionInfo = new QuestionInfo();
     }
 
 
@@ -348,14 +360,14 @@ else
     private async Task AddingAnswerOnButtonClickedAsync()
     {
         await AddQuestionAnswerAsync();
-        await GetListOfAnswersAsync();      
+        await GetListOfAnswersAsync(_questionModel.ID); //
     }
 
     private async Task DeletingAnswerAsync(Guid questionID, Guid answerID)
     {
 
         await DeleteAnswerAsync(questionID, answerID);
-        await GetListOfAnswersAsync();
+        await GetListOfAnswersAsync(_questionModel.ID); //
 
     }
     private async Task DeletingQuestionWithAssignedAnswers(Guid questionID)
@@ -365,12 +377,23 @@ else
         await GetQuestionsAsync();
     }
 
-    //private async Task ModifyQuestion(_questionID)
-    //{
+    private async Task SetModifyMode(Guid questionID) 
+    {
+        await GetQuestionInfosToModifyAsync(questionID);
+        _modifyMode = true; ///// important
+        _questionModel.ID = questionID;
+        _questionModel.Question = _questionInfo.QuestionContent;
+        _questionContentAboveAnswersList = _questionInfo.QuestionContent;
+        _questionModel.Category = _questionInfo.Category;
+        _questionModel.Points = _questionInfo.Points;
+        _questionModel.SelectionMultiplicity = _questionInfo.AnswerMultiplicity;
+        _answers = true;
+        await GetQuestionsAsync();
+        await GetListOfAnswersAsync(questionID);
+    }
 
-    //}
-
-
+   
+  
 
 
 
@@ -399,9 +422,9 @@ else
         await QuizApiClient.DeleteQuestion(questionID);   
     }
 
-    private async Task GetListOfAnswersAsync()
+    private async Task GetListOfAnswersAsync(Guid questionID)
     {
-        _listOfAnswers = await QuizApiClient.GetListOfAnswersAsync(_questionModel.ID);
+        _listOfAnswers = await QuizApiClient.GetListOfAnswersAsync(questionID);
     }
 
     private async Task GetQuestionsAsync()
@@ -415,10 +438,23 @@ else
         _listOfCategories = await QuizApiClient.GetCategoriesAsync();
     }
 
+    private async Task GetQuestionInfosToModifyAsync(Guid questionID)
+    {
+        _questionInfo = await QuizApiClient.GetQuestionInfosToModifyAsync(questionID);
+    }
+
+    private async Task ModifyQuestionAsync(Guid questionID)
+    {
+        await QuizApiClient.ModifyQuestionAsync(questionID,_questionModel.Question, _questionModel.Points, _questionModel.Category, _questionModel.SelectionMultiplicity);
+    }
+
+
+
     }
 
 
     
+   
 
 
 

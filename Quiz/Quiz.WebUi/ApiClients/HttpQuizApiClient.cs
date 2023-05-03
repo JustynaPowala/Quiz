@@ -99,9 +99,7 @@ namespace Quiz.WebUi.ApiClients
 
 
         public async Task ModifyQuestionAsync(Guid questionID, string questionContent, int points, string category, AnswerMultiplicity selectionMultiplicity)
-        {
-            var content = questionContent;
-          
+        {           
             var client = CreateHttpClient();
             var address = "questions/" + questionID;
             await client.PutAsync(address, JsonContent.Create(new AddQuestionBody()
@@ -114,7 +112,18 @@ namespace Quiz.WebUi.ApiClients
             }));
         }
 
-   
+
+        public async Task<QuestionInfo> GetQuestionInfosToModifyAsync(Guid questionID)
+        {
+            var client = CreateHttpClient();
+            var address = "questions/" + questionID;
+            await client.GetAsync(address);
+            var response = await client.GetAsync(address);
+            var infosAboutQuestion = await response.Content.ReadFromJsonAsync<QuestionInfo>();
+            return infosAboutQuestion;
+        }
+
+
         private HttpClient CreateHttpClient()
         {
             var client= new HttpClient();
