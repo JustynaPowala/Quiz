@@ -28,23 +28,25 @@ namespace Quiz.WebApi.Controllers
         [HttpPost("")]
         public async Task<Guid> AddQuestionAsync([FromBody] AddQuestionBody body)
         {
-            if (string.IsNullOrEmpty(body.QuestionContent))
-            {
-                throw new DomainValidationException("Question content field is required");
-            }
             var categories = await _categoriesProvider.GetCategoriesAsync();
-            if (!categories.Any(c => c.ID == body.Category))
-            {
-                throw new DomainValidationException($"The {body.Category} category is not recognized");
-            }
-            if (body.Points <= 0 || body.Points > 10)
-            {
-                throw new DomainValidationException("The amount of points must be between 1-10");
-            }
-            if (!(body.SelectionMultiplicity is AnswerMultiplicity.Single or AnswerMultiplicity.Multiple ))
-            {
-                throw new DomainValidationException("Unrecognized answer multiplicity");
-            }
+            var validator = new QuestionValidator(body.QuestionContent, body.Category, body.Points, body.SelectionMultiplicity, categories);
+            //if (string.IsNullOrEmpty(body.QuestionContent))
+            //{
+            //    throw new DomainValidationException("Question content field is required");
+            //}
+            //var categories = await _categoriesProvider.GetCategoriesAsync();
+            //if (!categories.Any(c => c.ID == body.Category))
+            //{
+            //    throw new DomainValidationException($"The {body.Category} category is not recognized");
+            //}
+            //if (body.Points <= 0 || body.Points > 10)
+            //{
+            //    throw new DomainValidationException("The amount of points must be between 1-10");
+            //}
+            //if (!(body.SelectionMultiplicity is AnswerMultiplicity.Single or AnswerMultiplicity.Multiple ))
+            //{
+            //    throw new DomainValidationException("Unrecognized answer multiplicity");
+            //}
             var id =  Guid.NewGuid();
 
             string connectionString = GetConnectionString();
@@ -281,8 +283,11 @@ END CATCH";
         }
 
         [HttpPut("{questionID}")]
-        public void ModifyQuestion([FromRoute] Guid Id, [FromQuery] string content, [FromQuery] string category, [FromQuery] int points, [FromQuery] AnswerMultiplicity answerMultiplicity)
+        public async Task ModifyQuestion([FromRoute] Guid questionID, [FromBody] AddQuestionBody body)
         {
+            var categories = await _categoriesProvider.GetCategoriesAsync();
+            var validator = new QuestionValidator(body.QuestionContent, body.Category, body.Points, body.SelectionMultiplicity, categories);
+
             string connectionString = GetConnectionString();
 
             using (SqlConnection connection = new SqlConnection(connectionString))
@@ -302,11 +307,11 @@ WHERE Id = @Id";
             
                 using (SqlCommand command = new SqlCommand(sqlQuery, connection))
                 {
-                    command.Parameters.AddWithValue("@Id", Id);
-                    command.Parameters.AddWithValue("@QuestionContent", content);
-                    command.Parameters.AddWithValue("@Points", points);
-                    command.Parameters.AddWithValue("@Category", category);
-                    command.Parameters.AddWithValue("@SelectionMultiplicity", answerMultiplicity.ToString());
+                    command.Parameters.AddWithValue("@Id", questionID);
+                    command.Parameters.AddWithValue("@QuestionContent", body.QuestionContent);
+                    command.Parameters.AddWithValue("@Points", body.Points);
+                    command.Parameters.AddWithValue("@Category", body.Category);
+                    command.Parameters.AddWithValue("@SelectionMultiplicity", body.SelectionMultiplicity.ToString());
                     command.ExecuteNonQuery();
                 }
             }

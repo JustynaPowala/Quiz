@@ -101,14 +101,17 @@ namespace Quiz.WebUi.ApiClients
         public async Task ModifyQuestionAsync(Guid questionID, string questionContent, int points, string category, AnswerMultiplicity selectionMultiplicity)
         {
             var content = questionContent;
-            var cat = category;
-            var urlPoints = points;
-            var multiplicity = selectionMultiplicity;
-
+          
             var client = CreateHttpClient();
-            var address = "questions/" + questionID + "?content=" + content + "&category=" + cat + "&points=" + urlPoints + "&answerMultiplicity=" + multiplicity;
-            var requestContent = new StringContent(string.Empty);
-           await client.PutAsync(address, requestContent);
+            var address = "questions/" + questionID;
+            await client.PutAsync(address, JsonContent.Create(new AddQuestionBody()
+            {
+                QuestionContent = questionContent,
+                Points = points,
+                Category = category,
+                SelectionMultiplicity = selectionMultiplicity
+
+            }));
         }
 
    
