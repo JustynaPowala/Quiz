@@ -24,20 +24,29 @@
     }
 </style>
 
-
+<h1>Questions Designer</h1>
 
 <div class="container">
     <div class="row">
-        <div class="col">
+        <div class="col text-xxl-start">
 
-
-            <h1>Questions Designer</h1>
-
+         
 <EditForm Model="@_questionModel" OnValidSubmit="@HandleValidSubmit">     
     
     <p>
-        <span style="font-weight: bold;">Enter content of Your question</span>
-        <br />
+                    @if (_modifyMode == false)
+                    {
+                        <span style="font-weight: bold;">Enter content of Your question</span>
+                    }
+                    else
+                    {
+                        <span style="font-weight: bold;">
+                            Make changes to the question and press "Save". If you've changed your mind and don't' want to make changes - also click "Save", the question will remain unchanged.
+                        </span>
+                        <br />
+                        <span style="font-weight: bold;">Enter content of Your question</span>
+                    }
+                    <br />
         <InputText id="question"  @bind-Value="_questionModel.Question" />
     </p>
     <p>
@@ -104,8 +113,6 @@
             <input type="checkbox" class="checkbox-design" disabled @bind-value="_answerModel.IsCorrect " />
         }
 
-      
-
         <br />
         <button type="submit" style="font-weight: bold" class="btn btn-info">Add answer</button>
         <DataAnnotationsValidator />
@@ -123,13 +130,13 @@
     else
     {
         var answersCounting = 1;
-        <table class="table">
+                    <table class="table table-striped table-bordered">
             <thead>
                 <tr>
-                    <th>No.</th>
-                    <th>Answer Content</th>
-                    <th>Is Correct?</th>
-                    <th>Remove</th>
+                        <th style="width: 10%; text-align: center;">No.</th>
+                        <th style="width: 70%; text-align: center;">Answer Content</th>
+                        <th style="width: 10%; text-align: center;">Is Correct?</th>
+                        <th style="width: 10%; text-align: center;">Remove</th>
                 </tr>
             </thead>
             <tbody>
@@ -142,7 +149,7 @@
                 }
 
 
-                @foreach ( var answer in _listOfAnswers)
+                    @foreach (var answer in _listOfAnswers) //this is to check if at least one answer is correct (no matter if it is single or multiple-choice)
                 {
                     if(answer.IsCorrect == true)
                     {
@@ -157,15 +164,17 @@
                         if (answ.IsCorrect == true)
                         {
                             _anyTrue = true;
-
                         }                    
-                       
-                    }                                        
-                            <tr>
-                                <td>@(answersCounting++)</td>
+                     }
+                    else
+                    {
+                        _anyTrue = false;
+                    }
+                                <tr>
+                                <td style="text-align: center;">@(answersCounting++)</td>
                                 <td>@answ.AnswerContent</td>
-                                <td>@(answ.IsCorrect ? correct : notCorrect)</td>
-                                <td><button @onclick="() => DeletingAnswerAsync(answ.QeGuid, answ.AnswGuid)"><i class="oi oi-trash"></i></button></td>
+                                <td style ="text-align: center;">@(answ.IsCorrect ? correct : notCorrect)</td>
+                                <td style="text-align: center;"><button @onclick="() => DeletingAnswerAsync(answ.QeGuid, answ.AnswGuid)"><i class="oi oi-trash"></i></button></td>
                         ```</tr>
                    
                 }
@@ -310,6 +319,8 @@ else
     {
         await GetQuestionsAsync();
         await GetCategoriesAsync();
+        _anyTrue = false;
+
     }
 
     private async Task PreviousPageAsync()
@@ -327,7 +338,7 @@ else
     }
 
     private QuestionModel _questionModel = new QuestionModel();
-    
+
 
     //Button Save function (HandleValidSubmit) depends on _modifyMode.
     //The "SetModifyMode" function changes _modifyMode to true. Then, the data from the selected question is substituted into the fields for entering information about the question.
@@ -341,7 +352,7 @@ else
         if (_modifyMode == false)
         {         
             await AddQuestionAsync();
-
+            await GetListOfAnswersAsync(_questionModel.ID);
         }
         else
         {        
@@ -353,13 +364,11 @@ else
         _questionModel.Points = 1;
         _questionModel.Category = "default";
         _questionMultiplicity = _questionModel.SelectionMultiplicity;
-        _questionModel.SelectionMultiplicity = AnswerMultiplicity.Single;
+        //_questionModel.SelectionMultiplicity = AnswerMultiplicity.Single;
         _answers = true;
         await GetQuestionsAsync();
-        await GetListOfAnswersAsync(_questionModel.ID); //
         _answerModel.Answer = string.Empty;
-        _anyTrue = false;
-        
+
     }
 
 
@@ -415,9 +424,12 @@ else
         _questionModel.Category = _questionInfo.Category;
         _questionModel.Points = _questionInfo.Points;
         _questionModel.SelectionMultiplicity = _questionInfo.AnswerMultiplicity;
+        _questionMultiplicity = _questionModel.SelectionMultiplicity;
         _answers = true;
         await GetQuestionsAsync();
         await GetListOfAnswersAsync(questionID);
+       
+
     }
 
    
