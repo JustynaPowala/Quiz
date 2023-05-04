@@ -31,23 +31,7 @@ namespace Quiz.WebApi.Controllers
         {
             var categories = await _categoriesProvider.GetCategoriesAsync();
             _questionValidator.Validate(body.QuestionContent, body.Category, body.Points, body.SelectionMultiplicity, categories);
-            //if (string.IsNullOrEmpty(body.QuestionContent))
-            //{
-            //    throw new DomainValidationException("Question content field is required");
-            //}
-            //var categories = await _categoriesProvider.GetCategoriesAsync();
-            //if (!categories.Any(c => c.ID == body.Category))
-            //{
-            //    throw new DomainValidationException($"The {body.Category} category is not recognized");
-            //}
-            //if (body.Points <= 0 || body.Points > 10)
-            //{
-            //    throw new DomainValidationException("The amount of points must be between 1-10");
-            //}
-            //if (!(body.SelectionMultiplicity is AnswerMultiplicity.Single or AnswerMultiplicity.Multiple ))
-            //{
-            //    throw new DomainValidationException("Unrecognized answer multiplicity");
-            //}
+           
             var id = Guid.NewGuid();
 
             string connectionString = GetConnectionString();

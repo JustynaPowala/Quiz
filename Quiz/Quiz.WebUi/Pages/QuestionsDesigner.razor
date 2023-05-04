@@ -9,26 +9,36 @@
 
 <PageTitle>Questions Designer</PageTitle>
 
-<h1>Questions Designer</h1>
 
-<style>
-    .half-screen-textbox {
-        width: 50vw;
-    }
-</style>
 
 <style>
     .checkbox-design{
         height:30px; width:30px
     }
 </style>
+<style>
+    .input-container {
+        display: flex;
+        width: 100%;
+        margin-bottom: 10px;
+    }
+</style>
+
+
+
+<div class="container">
+    <div class="row">
+        <div class="col">
+
+
+            <h1>Questions Designer</h1>
 
 <EditForm Model="@_questionModel" OnValidSubmit="@HandleValidSubmit">     
     
     <p>
         <span style="font-weight: bold;">Enter content of Your question</span>
         <br />
-        <InputText id="question" class="half-screen-textbox"   @bind-Value="_questionModel.Question" />
+        <InputText id="question"  @bind-Value="_questionModel.Question" />
     </p>
     <p>
         <span style="font-weight: bold;">Choose how many points you can get in this question</span>
@@ -63,9 +73,11 @@
     <DataAnnotationsValidator />
     <ValidationSummary />
     <br />
-    <button type="submit" class="btn btn-primary" >Save</button>  
+    <button type="submit" style="font-weight: bold" class="btn btn-info">Save</button>
 </EditForm>
 
+
+ 
 <EditForm Model="@_answerModel" OnValidSubmit="@HandleValidAnswerSubmit">
     
     @if (_answers == true)
@@ -80,7 +92,7 @@
         <p>
             <span style="font-weight: bold;">Question: @_questionContentAboveAnswersList </span>
         </p>
-        <InputText id="answer" class="half-screen-textbox" @bind-Value="_answerModel.Answer" />
+        <InputText id="answer" @bind-Value="_answerModel.Answer" />
 
         @if(_anyTrue == false)
         {
@@ -95,7 +107,7 @@
       
 
         <br />
-        <button type="submit" class="btn btn-primary">Add answer</button>
+        <button type="submit" style="font-weight: bold" class="btn btn-info">Add answer</button>
         <DataAnnotationsValidator />
         <ValidationSummary />
     }
@@ -163,8 +175,13 @@
         </table>
     }
 }
+        </div>
 
-
+<div class="col">
+    <div>
+                <span style="font-weight: bold;">List of questions</span>
+    </div>
+            <div class="input-container">
 <InputSelect @bind-Value="_category"  @oninput="OnCategoryChange">
     <option value="history">History</option>
     <option value="chemistry">Chemistry</option>
@@ -172,8 +189,9 @@
     <option value="music">Music</option>
     <option value="information technology">Information technology</option>
 </InputSelect>
-<input type="text" @bind-value="@_searchString" @oninput="OnSearchStringChange" />
-
+              
+                <input type="text" placeholder="Search"  @bind-value="@_searchString" @oninput="OnSearchStringChange" />
+</div>
 
  @if (_listOfQuestions == null)
     {
@@ -183,13 +201,13 @@ else
 {   
     
     var questionCounting = 1 + _pageIndex * 10;
-    <table class="table">
+                <table class="table table-striped table-bordered">
         <thead>
             <tr>               
-                <th>No.</th>
-                <th>Modify</th>
-                <th>Question content</th>
-                <th>Remove</th>
+                <th style="width: 10%; text-align: center;">No.</th>
+                <th style="width: 10%;  text-align: center;">Modify</th>
+                <th style="width: 70%;  text-align: center;">Question content</th>
+                <th style="width: 10%;  text-align: center;">Remove</th>
             </tr>
         </thead>
         <tbody>
@@ -206,10 +224,10 @@ else
             {
                 var id = _listOfQuestions[i].Guid;
                 <tr>                  
-                        <td>@(questionCounting++)</td>
-                    <td><button @onclick="() => SetModifyMode(id)"><i class="oi oi-check"></i></button></td>
+                        <td style="text-align: center;">@(questionCounting++)</td>
+                        <td style="text-align: center;"><button @onclick="() => SetModifyMode(id)"><i class="oi oi-check"></i></button></td>
                         <td>@_listOfQuestions[i].QuestionContent</td>
-                        <td><button @onclick="async() => 
+                        <td style="text-align: center;"><button @onclick="async() =>
                             {
                                 
                            await DeletingQuestionWithAssignedAnswers(id);
@@ -217,32 +235,38 @@ else
                     </tr>          
                 }     
             </tbody>
-        @if (_pageIndex > 0)
-        {
-
-            <input type="button" class="btn btn-primary" value="Back" @onclick="PreviousPageAsync" />
-        }
-        else
-        {
-            <input type="button" class="btn btn-primary" value="Back" disabled />
-        }
-
-        @if (_listOfQuestions.Count != 0)
-        {
-
-
-            if (_listOfQuestions.Count > PageSize)
-            {
-                <input type="button" class="btn btn-primary" value="Next" @onclick="NextPageAsync" />
-            }
-            else
-            {
-                <input type="button" class="btn btn-primary" value="Next" disabled />
-            }
-        }
+          
 
         </table>
+                <div style="display: flex; justify-content: center;">
+                    @if (_pageIndex > 0)
+                    {
+
+                        <input type="button" style="font-weight: bold" class="btn btn-info" value="Back" @onclick="PreviousPageAsync" />
+                    }
+                    else
+                    {
+                        <input type="button" style="font-weight: bold" class="btn btn-info" value="Back" disabled />
+                    }
+
+                    @if (_listOfQuestions.Count != 0)
+                    {
+
+
+                        if (_listOfQuestions.Count > PageSize)
+                        {
+                            <input type="button" style="font-weight: bold" class="btn btn-info" value="Next" @onclick="NextPageAsync" />
+                        }
+                        else
+                        {
+                            <input type="button" style="font-weight: bold" class="btn btn-info" value="Next" disabled />
+                        }
+                    }
+                </div>
 }
+        </div>
+    </div>
+</div>
 
 
 @code {
