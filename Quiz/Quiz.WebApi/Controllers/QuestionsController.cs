@@ -320,9 +320,9 @@ WHERE Id = @Id";
         }
 
         [HttpGet("{questionID}")]
-        public QuestionInfo GetQuestionInfosToModify([FromRoute] Guid questionID)
+        public QuestionInfo GetQuestionInfo([FromRoute] Guid questionID)
         {
-            var questionToModify = new QuestionInfo();
+            var question= new QuestionInfo();
             string connectionString = GetConnectionString();
 
             using (SqlConnection connection = new SqlConnection(connectionString))
@@ -342,35 +342,29 @@ WHERE Id = @Id";
                     {
                         while (reader.Read())
                         {
-                            questionToModify.Guid = questionID;
+                            question.Guid = questionID;
 
                             string questionText = reader["QuestionContent"].ToString();
                             questionText ??= string.Empty;
-                            questionToModify.QuestionContent = questionText;
+                            question.QuestionContent = questionText;
 
                             string quesCategory = reader["Category"].ToString();
                             quesCategory ??= string.Empty;
-                            questionToModify.Category = quesCategory;
+                            question.Category = quesCategory;
 
                             string points = reader["Points"].ToString();
                             points??= string.Empty;
-                            questionToModify.Points = int.Parse(points);
+                            question.Points = int.Parse(points);
 
                             string answerMultiplicity = reader["SelectionMultiplicity"].ToString();
                             answerMultiplicity ??= string.Empty;
-                            if (answerMultiplicity == "single")
-                            {
-                                questionToModify.AnswerMultiplicity = AnswerMultiplicity.Single;
-                            }
-                            else
-                            {
-                                questionToModify.AnswerMultiplicity = AnswerMultiplicity.Multiple;
-                            }
+
+                            question.AnswerMultiplicity = Enum.Parse<AnswerMultiplicity>(answerMultiplicity);                     
                         }
                     }
                 }
             }
-            return questionToModify;
+            return question;
         }
 
             private string GetConnectionString()

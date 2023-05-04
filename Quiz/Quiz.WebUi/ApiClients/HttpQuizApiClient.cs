@@ -113,14 +113,14 @@ namespace Quiz.WebUi.ApiClients
         }
 
 
-        public async Task<QuestionInfo> GetQuestionInfosToModifyAsync(Guid questionID)
+        public async Task<QuestionInfo> GetQuestionInfo(Guid questionID)
         {
             var client = CreateHttpClient();
             var address = "questions/" + questionID;
             await client.GetAsync(address);
             var response = await client.GetAsync(address);
-            var infosAboutQuestion = await response.Content.ReadFromJsonAsync<QuestionInfo>();
-            return infosAboutQuestion;
+            var infoAboutQuestion = await response.Content.ReadFromJsonAsync<QuestionInfo>();
+            return infoAboutQuestion;
         }
 
 

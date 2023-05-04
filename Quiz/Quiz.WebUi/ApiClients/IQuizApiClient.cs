@@ -16,6 +16,6 @@ namespace Quiz.WebUi.ApiClients
 
         Task<List<CategoryInfo>> GetCategoriesAsync();
         Task ModifyQuestionAsync(Guid questionID, string questionContent, int points, string category, AnswerMultiplicity selectionMultiplicity);
-        Task<QuestionInfo> GetQuestionInfosToModifyAsync(Guid questionID);
+        Task<QuestionInfo> GetQuestionInfo(Guid questionID);
     }
 }

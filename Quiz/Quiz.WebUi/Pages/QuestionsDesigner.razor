@@ -73,6 +73,10 @@
         <p>
             <span style="font-weight: bold;">Add answers to your question. Check the box if it is correct answer</span>
         </p>
+        @if(_allFalse == true)
+        {
+            <span style="font-weight: bold; color: red;">Your question does not have a correct answer yet</span>
+        }
         <p>
             <span style="font-weight: bold;">Question: @_questionContentAboveAnswersList </span>
         </p>
@@ -120,35 +124,30 @@
                 @{
                     var correct = "Yes";
                     var notCorrect ="No";
-                    var allFalse = true;
                     _anyTrue = false;
+                    _allFalse = true;
 
                 }
 
 
+                @foreach ( var answer in _listOfAnswers)
+                {
+                    if(answer.IsCorrect == true)
+                    {
+                        _allFalse = false;
+                    }
+                }
 
                 @foreach (var answ in _listOfAnswers)
                 {
-                    @if (_questionMultiplicity == AnswerMultiplicity.Single)
+                    if (_questionMultiplicity == AnswerMultiplicity.Single)
                     {
-
-                        @if (answ.IsCorrect == true)
-                        {
-                            allFalse = false;
-
-                        }
-                        else
-                        {
-                            allFalse = true;
-                        }
-                        if (allFalse == false)
+                        if (answ.IsCorrect == true)
                         {
                             _anyTrue = true;
-                        }
-                        else
-                        {
-                            
-                        }
+
+                        }                    
+                       
                     }                                        
                             <tr>
                                 <td>@(answersCounting++)</td>
@@ -208,7 +207,7 @@ else
                 var id = _listOfQuestions[i].Guid;
                 <tr>                  
                         <td>@(questionCounting++)</td>
-                    <td><button @onclick="() => SetModifyMode(id)"><i class="oi oi-trash"></i></button></td>
+                    <td><button @onclick="() => SetModifyMode(id)"><i class="oi oi-check"></i></button></td>
                         <td>@_listOfQuestions[i].QuestionContent</td>
                         <td><button @onclick="async() => 
                             {
@@ -257,6 +256,7 @@ else
     private string _questionContentAboveAnswersList = string.Empty;
     private AnswerMultiplicity _questionMultiplicity;
     private bool _anyTrue = false;
+    private bool _allFalse = true;
     private bool _modifyMode = false;
 
 
@@ -303,8 +303,14 @@ else
     }
 
     private QuestionModel _questionModel = new QuestionModel();
+    
 
-
+    //Button Save function (HandleValidSubmit) depends on _modifyMode.
+    //The "SetModifyMode" function changes _modifyMode to true. Then, the data from the selected question is substituted into the fields for entering information about the question.
+    //You can modify them and click save, then the change will go to the data base. _modifyMode will then be ==false,
+    //so the Save button will have the function of adding a question, not modifying.
+    //The list of answers is displayed for the question that was modified. After adding a new question,
+    //you will be able to add an answer to the new question and the new list will be displayed.
     private async Task HandleValidSubmit()
     {
         Logger.LogInformation("Handlesubmit called");
@@ -345,8 +351,6 @@ else
     }
 
 
-
-
     public QuestionsDesigner()
     {
         _returnedguid = Guid.Empty;
@@ -379,7 +383,7 @@ else
 
     private async Task SetModifyMode(Guid questionID) 
     {
-        await GetQuestionInfosToModifyAsync(questionID);
+        await GetQuestionInfoAsync(questionID);
         _modifyMode = true; ///// important
         _questionModel.ID = questionID;
         _questionModel.Question = _questionInfo.QuestionContent;
@@ -438,9 +442,9 @@ else
         _listOfCategories = await QuizApiClient.GetCategoriesAsync();
     }
 
-    private async Task GetQuestionInfosToModifyAsync(Guid questionID)
+    private async Task GetQuestionInfoAsync(Guid questionID)
     {
-        _questionInfo = await QuizApiClient.GetQuestionInfosToModifyAsync(questionID);
+        _questionInfo = await QuizApiClient.GetQuestionInfo(questionID);
     }
 
     private async Task ModifyQuestionAsync(Guid questionID)
