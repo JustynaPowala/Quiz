@@ -15,13 +15,14 @@ namespace Quiz.WebUi
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.RootComponents.Add<App>("#app");
             builder.RootComponents.Add<HeadOutlet>("head::after");
+            builder.Services.AddBlazoredToast();
 
-            
+
 
             var services = builder.Services;
             services.AddSingleton<IQuizApiClient, HttpQuizApiClient>(); // wszêdzie gdzie poproszê o wstrzykniêcie Iquiz(...) dostanê new HttpQuizApiClient
 
-            services.AddBlazoredToast();
+           
 
             await builder.Build().RunAsync();
         }

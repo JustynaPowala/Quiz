@@ -12,8 +12,20 @@
 
 
 <PageTitle>Questions Designer</PageTitle>
-
-
+@*
+<style>
+    .blazored-toast {
+        position: fixed;
+        bottom: 50px;
+        right: 50px;
+        padding: 20px;
+        background-color: white;
+        color: green;
+        border-radius: 50px;
+        box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+        z-index: 9999;
+    }
+</style>*@
 
 <style>
     .checkbox-design{
@@ -276,12 +288,14 @@ else
         </div>
     </div>
 
-    <BlazoredToasts Position="ToastPosition.BottomRight"
-                    Timeout="8"
-                    ShowProgressBar="@true"
-                    ShowCloseButton="@true"
-                    MaxToastCount="3">
-    </BlazoredToasts>
+<BlazoredToasts Position="Blazored.Toast.Configuration.ToastPosition.BottomRight"
+            Timeout="8"
+            ShowProgressBar="@true"
+            ShowCloseButton="@true"
+            MaxToastCount="3">
+</BlazoredToasts>
+
+
 </div>
 
 
@@ -303,7 +317,7 @@ else
     private List<GetAllInfosAboutAnswer> _listOfAnswers;
     private QuestionInfo _questionInfo;
 
-
+    
 
     private async Task OnCategoryChange(ChangeEventArgs e)
     {
@@ -351,13 +365,13 @@ else
         Logger.LogInformation("Handlesubmit called");
         if (_modifyMode == false)
         {
-            ToastService.ShowSuccess("git");     
+            ToastService.ShowSuccess("Your question has been added");     
             await AddQuestionAsync();
             await GetListOfAnswersAsync(_questionModel.ID);
         }
         else
         {       
-            ToastService.ShowSuccess("git");
+            ToastService.ShowSuccess("Your question has been modified");
             await ModifyQuestionAsync(_questionModel.ID);     
         } 
         _answers = true;
@@ -366,6 +380,8 @@ else
 
     }
 
+
+  
     private void ClearQuestionModel()
     {
         _questionModel.Question = string.Empty;
