@@ -1,11 +1,15 @@
 ﻿@page "/questions-designer"
-
+@using Blazored.Toast.Configuration
+@using Blazored.Toast
+@using Blazored.Toast.Services
 @using Quiz.Contracts;
 @using Quiz.WebUi.ApiClients;
 @using System.ComponentModel.DataAnnotations; @*//*@
 @using Models;
 @inject IQuizApiClient  QuizApiClient;  //property in class QuestionDesginer. Początkowo nie wie mój qestions designer co zrobić. Muszę "połączyć" IQuizApiClient z  HttpQuizApiClient(który ma zawarty ten interfejs). To połączenie jest zrobione poprzez services w klasie program.//
 @inject ILogger<QuestionsDesigner> Logger //
+@inject IToastService ToastService
+
 
 <PageTitle>Questions Designer</PageTitle>
 
@@ -24,29 +28,23 @@
     }
 </style>
 
+
+
 <h1>Questions Designer</h1>
 
 <div class="container">
     <div class="row">
         <div class="col text-xxl-start">
 
+<input type="button" style="font-weight: bold" class="btn btn-info" value="New" @onclick="ClearQuestionModel" />
          
 <EditForm Model="@_questionModel" OnValidSubmit="@HandleValidSubmit">     
     
     <p>
-                    @if (_modifyMode == false)
-                    {
-                        <span style="font-weight: bold;">Enter content of Your question</span>
-                    }
-                    else
-                    {
-                        <span style="font-weight: bold;">
-                            Make changes to the question and press "Save". If you've changed your mind and don't' want to make changes - also click "Save", the question will remain unchanged.
-                        </span>
-                        <br />
-                        <span style="font-weight: bold;">Enter content of Your question</span>
-                    }
-                    <br />
+                    
+     <span style="font-weight: bold;">Enter content of Your question</span>                   
+                  
+     <br />
         <InputText id="question"  @bind-Value="_questionModel.Question" />
     </p>
     <p>
@@ -82,10 +80,14 @@
     <DataAnnotationsValidator />
     <ValidationSummary />
     <br />
-    <button type="submit" style="font-weight: bold" class="btn btn-info">Save</button>
+
+
+    <button type="submit" style="font-weight: bold" class="btn btn-info" onclick="showToast()">Save</button>
+         
+        
 </EditForm>
 
-
+           
  
 <EditForm Model="@_answerModel" OnValidSubmit="@HandleValidAnswerSubmit">
     
@@ -98,9 +100,7 @@
         {
             <span style="font-weight: bold; color: red;">Your question does not have a correct answer yet</span>
         }
-        <p>
-            <span style="font-weight: bold;">Question: @_questionContentAboveAnswersList </span>
-        </p>
+      
         <InputText id="answer" @bind-Value="_answerModel.Answer" />
 
         @if(_anyTrue == false)
@@ -149,7 +149,7 @@
                 }
 
 
-                    @foreach (var answer in _listOfAnswers) //this is to check if at least one answer is correct (no matter if it is single or multiple-choice)
+                    @foreach (var answer in _listOfAnswers) 
                 {
                     if(answer.IsCorrect == true)
                     {
@@ -158,8 +158,8 @@
                 }
 
                 @foreach (var answ in _listOfAnswers)
-                {
-                    if (_questionMultiplicity == AnswerMultiplicity.Single)
+                {           
+                    if (_questionModel.SelectionMultiplicity == AnswerMultiplicity.Single) 
                     {
                         if (answ.IsCorrect == true)
                         {
@@ -275,6 +275,13 @@ else
 }
         </div>
     </div>
+
+    <BlazoredToasts Position="ToastPosition.BottomRight"
+                    Timeout="8"
+                    ShowProgressBar="@true"
+                    ShowCloseButton="@true"
+                    MaxToastCount="3">
+    </BlazoredToasts>
 </div>
 
 
@@ -286,12 +293,9 @@ else
     private string _searchString = string.Empty;
     private int _pageIndex = 0;
     private const int PageSize = 10;
-    private string _questionContentAboveAnswersList = string.Empty;
-    private AnswerMultiplicity _questionMultiplicity;
     private bool _anyTrue = false;
     private bool _allFalse = true;
     private bool _modifyMode = false;
-
 
 
     private List<QuestionInfo> _listOfQuestions;
@@ -320,7 +324,6 @@ else
         await GetQuestionsAsync();
         await GetCategoriesAsync();
         _anyTrue = false;
-
     }
 
     private async Task PreviousPageAsync()
@@ -334,43 +337,44 @@ else
     {
         _pageIndex += 1;
         await GetQuestionsAsync();
-
     }
+
 
     private QuestionModel _questionModel = new QuestionModel();
 
 
     //Button Save function (HandleValidSubmit) depends on _modifyMode.
     //The "SetModifyMode" function changes _modifyMode to true. Then, the data from the selected question is substituted into the fields for entering information about the question.
-    //You can modify them and click save, then the change will go to the data base. _modifyMode will then be ==false,
-    //so the Save button will have the function of adding a question, not modifying.
-    //The list of answers is displayed for the question that was modified. After adding a new question,
-    //you will be able to add an answer to the new question and the new list will be displayed.
+    //You can modify them and click save, then the change will go to the data base. Button "New"  changes _modifyMode to false.
     private async Task HandleValidSubmit()
     {
         Logger.LogInformation("Handlesubmit called");
         if (_modifyMode == false)
-        {         
+        {
+            ToastService.ShowSuccess("git");     
             await AddQuestionAsync();
             await GetListOfAnswersAsync(_questionModel.ID);
         }
         else
-        {        
+        {       
+            ToastService.ShowSuccess("git");
             await ModifyQuestionAsync(_questionModel.ID);     
-            _modifyMode = false;
-        }
-        _questionContentAboveAnswersList = _questionModel.Question;
-        _questionModel.Question = string.Empty;
-        _questionModel.Points = 1;
-        _questionModel.Category = "default";
-        _questionMultiplicity = _questionModel.SelectionMultiplicity;
-        //_questionModel.SelectionMultiplicity = AnswerMultiplicity.Single;
+        } 
         _answers = true;
         await GetQuestionsAsync();
-        _answerModel.Answer = string.Empty;
+        //_answerModel.Answer = string.Empty;
 
     }
 
+    private void ClearQuestionModel()
+    {
+        _questionModel.Question = string.Empty;
+        _questionModel.Points = 1;
+        _questionModel.Category = "default";
+        _questionModel.SelectionMultiplicity = AnswerMultiplicity.Single;
+        _modifyMode = false;
+        _answers = false;
+    }
 
     private AnswerModel _answerModel = new();
 
@@ -379,10 +383,7 @@ else
         Logger.LogInformation("Handlesubmit called");
         await AddingAnswerOnButtonClickedAsync();
         _answerModel.Answer = string.Empty;
-
-
     }
-
 
     public QuestionsDesigner()
     {
@@ -391,7 +392,6 @@ else
         _listOfAnswers = new List<GetAllInfosAboutAnswer>();
         _questionInfo = new QuestionInfo();
     }
-
 
 
     private async Task AddingAnswerOnButtonClickedAsync()
@@ -420,22 +420,16 @@ else
         _modifyMode = true; ///// important
         _questionModel.ID = questionID;
         _questionModel.Question = _questionInfo.QuestionContent;
-        _questionContentAboveAnswersList = _questionInfo.QuestionContent;
         _questionModel.Category = _questionInfo.Category;
         _questionModel.Points = _questionInfo.Points;
         _questionModel.SelectionMultiplicity = _questionInfo.AnswerMultiplicity;
-        _questionMultiplicity = _questionModel.SelectionMultiplicity;
         _answers = true;
         await GetQuestionsAsync();
-        await GetListOfAnswersAsync(questionID);
-       
-
+        await GetListOfAnswersAsync(questionID);    
     }
 
    
   
-
-
 
     //Below: QuizApiClient methods
 
