@@ -351,7 +351,41 @@ WHERE Id = @Id";
             return question;
         }
 
-            private string GetConnectionString()
+
+        [HttpPut("{questionID}/answers/{answerID}")]
+        public void ChangeCorrectnessOfAsnwer([FromRoute] Guid answerID, [FromBody] AddAnswerBody body)
+        {
+
+            string connectionString = GetConnectionString();
+
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.ConnectionString = connectionString;
+
+                connection.Open();
+
+                string sqlQuery = "UPDATE dbo.Answers SET IsCorrect = @IsCorrect  WHERE ID = @ID";
+
+                using (SqlCommand command = new SqlCommand(sqlQuery, connection))
+                {
+                    command.Parameters.AddWithValue("@ID", answerID);
+                    if(body.IsCorrect == true)
+                    {
+                        command.Parameters.AddWithValue("@IsCorrect", 0);
+                    }
+                    else
+                    {
+                        command.Parameters.AddWithValue("@IsCorrect", 1);
+                    }
+                    command.ExecuteNonQuery();
+                }
+            }
+
+        }
+
+
+
+        private string GetConnectionString()
             {
 
                 return _configuration["ConnectionStrings:Default"];    // appsettings, tam jest path

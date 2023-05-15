@@ -7,11 +7,7 @@ namespace Quiz.WebApi.Controllers
     [Route("categories")]
     public class CategoriesController : ControllerBase
     {
-
-
         private readonly ICategoriesProvider _categoriesProvider;
-        
-
         public CategoriesController(ICategoriesProvider categoriesProvider)
         {
             _categoriesProvider = categoriesProvider;
@@ -19,12 +15,11 @@ namespace Quiz.WebApi.Controllers
         }
 
         [HttpGet("")]
-      public async Task <List<CategoryInfo>> GetCategoriesAsync()
+        public async Task<List<CategoryInfo>> GetCategoriesAsync()
         {
             return await _categoriesProvider.GetCategoriesAsync();
-            
         }
-      
+
     }
 }
 
