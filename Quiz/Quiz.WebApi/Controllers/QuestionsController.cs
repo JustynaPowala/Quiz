@@ -142,9 +142,9 @@ END CATCH";
         }
 
         [HttpGet("{questionID}/answers")]
-        public List<GetAllInfosAboutAnswer> ViewListOfAnswers([FromRoute] Guid questionID)
+        public List<AnswerInfo> ViewListOfAnswers([FromRoute] Guid questionID)
         {
-            var listOfAnswers = new List<GetAllInfosAboutAnswer>();
+            var listOfAnswers = new List<AnswerInfo>();
 
             string connectionString = GetConnectionString();
 
@@ -165,7 +165,7 @@ END CATCH";
                         while (reader.Read())
                         {
                             // Retrieve data from the reader and process as needed
-                            var answer = new GetAllInfosAboutAnswer();
+                            var answer = new AnswerInfo();
 
                             string questionId = reader["questionID"].ToString();
                             questionId ??= string.Empty;
@@ -353,7 +353,7 @@ WHERE Id = @Id";
 
 
         [HttpPut("{questionID}/answers/{answerID}")]
-        public void ChangeCorrectnessOfAsnwer([FromRoute] Guid answerID, [FromBody] AddAnswerBody body)
+        public void ModifyAnswer([FromRoute] Guid questionID, [FromRoute] Guid answerID, [FromBody] AddAnswerBody body)
         {
 
             string connectionString = GetConnectionString();
@@ -364,19 +364,16 @@ WHERE Id = @Id";
 
                 connection.Open();
 
-                string sqlQuery = "UPDATE dbo.Answers SET IsCorrect = @IsCorrect  WHERE ID = @ID";
+                //string sqlQuery = "Select count(*) from dbo.Questions WHERE ID = @questionID AND "
 
-                using (SqlCommand command = new SqlCommand(sqlQuery, connection))
+                string sqlQuery2 = "UPDATE dbo.Answers SET IsCorrect = @IsCorrect, AnswerContent = @AnswerContent WHERE ID = @ID";
+
+                using (SqlCommand command = new SqlCommand(sqlQuery2, connection))
                 {
                     command.Parameters.AddWithValue("@ID", answerID);
-                    if(body.IsCorrect == true)
-                    {
-                        command.Parameters.AddWithValue("@IsCorrect", 0);
-                    }
-                    else
-                    {
-                        command.Parameters.AddWithValue("@IsCorrect", 1);
-                    }
+                    command.Parameters.AddWithValue("@AnswerContent", body.AnswerContent);
+                    command.Parameters.AddWithValue("@IsCorrect", body.IsCorrect ? 1 : 0);
+               
                     command.ExecuteNonQuery();
                 }
             }

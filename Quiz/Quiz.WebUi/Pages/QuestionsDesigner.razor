@@ -238,16 +238,17 @@
                     }
                                 <tr>
                                 <td style="text-align: center;">@(answersCounting++)</td>
-                                <td>@answ.AnswerContent</td>
+                                @*<td>@answ.AnswerContent</td>*@
+                                    <input type="text" @bind-value="@answ.AnswerContent" @oninput="()=> ChangeAnswer(answ)" />
                                @* <td style ="text-align: center;">@(answ.IsCorrect ? correct : notCorrect)</td>*@
                                  <td style="text-align: center;">
                                         @if (_questionModel.SelectionMultiplicity == AnswerMultiplicity.Single)
                                         {
-                                            <input type="radio" name="IsCorrect" checked="@answ.IsCorrect" />
+                                            <input type="radio" name="IsCorrect" checked="@answ.IsCorrect" class="checkbox-design2" @onchange="() => ChangeAnswer(answ)" />
                                         }
                                         else
                                         {
-                                            <input type="checkbox" name="IsCorrect" checked="@answ.IsCorrect" class="checkbox-design2" />
+                                            <input type="checkbox" name="IsCorrect" checked="@answ.IsCorrect" class="checkbox-design2" @onchange="() => ChangeAnswer(answ)"  />
                                         }
                                  </td>
                                 <td style="text-align: center;"><button @onclick="() => DeletingAnswerAsync(answ.QeGuid, answ.AnswGuid)"><i class="oi oi-trash"></i></button></td>
@@ -379,10 +380,10 @@ else
 
     private List<QuestionInfo> _listOfQuestions;
     private List<CategoryInfo> _listOfCategories;
-    private List<GetAllInfosAboutAnswer> _listOfAnswers;
+    private List<AnswerInfo> _listOfAnswers;
     private QuestionInfo _questionInfo;
 
-    
+
 
     private async Task OnCategoryChange(ChangeEventArgs e)
     {
@@ -446,7 +447,7 @@ else
     }
 
 
-  
+
     private void ClearQuestionModel()
     {
         _questionModel.Question = string.Empty;
@@ -470,7 +471,7 @@ else
     {
         _returnedguid = Guid.Empty;
         _listOfQuestions = new List<QuestionInfo>();
-        _listOfAnswers = new List<GetAllInfosAboutAnswer>();
+        _listOfAnswers = new List<AnswerInfo>();
         _questionInfo = new QuestionInfo();
     }
 
@@ -509,8 +510,14 @@ else
         await GetListOfAnswersAsync(questionID);    
     }
 
-   
-  
+    private async Task ChangeAnswer(AnswerInfo answerInfo)
+    {
+        await ModifyAnswerAsync(answerInfo);
+        await GetListOfAnswersAsync(_questionModel.ID);
+    }
+
+
+
 
     //Below: QuizApiClient methods
 
@@ -561,6 +568,11 @@ else
     private async Task ModifyQuestionAsync(Guid questionID)
     {
         await QuizApiClient.ModifyQuestionAsync(questionID,_questionModel.Question, _questionModel.Points, _questionModel.Category, _questionModel.SelectionMultiplicity);
+    }
+
+    private async Task ModifyAnswerAsync(AnswerInfo answerInfo)
+    {
+        await QuizApiClient.ModifyAnswerAsync(answerInfo.QeGuid, answerInfo.AnswGuid, answerInfo.AnswerContent, !answerInfo.IsCorrect);
     }
 
 

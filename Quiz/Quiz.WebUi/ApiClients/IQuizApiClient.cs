@@ -11,11 +11,13 @@ namespace Quiz.WebUi.ApiClients
         Task DeleteAnswer(Guid questionID, Guid answerID);   //async?
         Task DeleteQuestion(Guid questionID);
 
-        Task<List<GetAllInfosAboutAnswer>> GetListOfAnswersAsync(Guid questionID);
+        Task<List<AnswerInfo>> GetListOfAnswersAsync(Guid questionID);
         Task<List<QuestionInfo>> GetQuestionsAsync(string category, int skipCount, int maxResultCount, string? searchString);
 
         Task<List<CategoryInfo>> GetCategoriesAsync();
         Task ModifyQuestionAsync(Guid questionID, string questionContent, int points, string category, AnswerMultiplicity selectionMultiplicity);
         Task<QuestionInfo> GetQuestionInfo(Guid questionID);
+
+        Task ModifyAnswerAsync(Guid questionID, Guid answerID, string answerContent, bool isCorrect);
     }
 }

@@ -58,13 +58,13 @@ namespace Quiz.WebUi.ApiClients
             await client.DeleteAsync(address);
         }
 
-        public async Task<List<GetAllInfosAboutAnswer>> GetListOfAnswersAsync(Guid questionID)
+        public async Task<List<AnswerInfo>> GetListOfAnswersAsync(Guid questionID)
         {
 
             var client = CreateHttpClient();
             var address = "questions/" + questionID + "/answers";
             var response = await client.GetAsync(address);
-            var listOfAnswers = await response.Content.ReadFromJsonAsync<List<GetAllInfosAboutAnswer>>();
+            var listOfAnswers = await response.Content.ReadFromJsonAsync<List<AnswerInfo>>();
             return listOfAnswers;
         }
 
@@ -121,6 +121,17 @@ namespace Quiz.WebUi.ApiClients
             var response = await client.GetAsync(address);
             var infoAboutQuestion = await response.Content.ReadFromJsonAsync<QuestionInfo>();
             return infoAboutQuestion;
+        }
+
+        public async Task ModifyAnswerAsync(Guid questionID, Guid answerID, string answerContent, bool isCorrect)
+        {
+            var client = CreateHttpClient();
+            var address = "questions/" + questionID + "/answers/" + answerID;
+            var response = await client.PutAsync(address, JsonContent.Create(new AddAnswerBody()  
+            {
+                AnswerContent = answerContent,
+                IsCorrect = isCorrect
+            })); ;
         }
 
 

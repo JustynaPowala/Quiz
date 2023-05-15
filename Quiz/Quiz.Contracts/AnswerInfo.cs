@@ -6,16 +6,16 @@ using System.Threading.Tasks;
 
 namespace Quiz.Contracts
 {
-    public class GetAllInfosAboutAnswer
+    public class AnswerInfo
     {
-       public GetAllInfosAboutAnswer() 
+       public AnswerInfo() 
         {
             QeGuid = Guid.Empty;
             AnswGuid = Guid.Empty;
             AnswerContent = String.Empty;
             IsCorrect = false;
         }
-       public GetAllInfosAboutAnswer(Guid qeGuid, Guid answGuid, string answerContent, bool isCorrect)  // 2 różne przeciążenia tej samej metody
+       public AnswerInfo(Guid qeGuid, Guid answGuid, string answerContent, bool isCorrect)  // 2 różne przeciążenia tej samej metody
         {
             QeGuid=qeGuid;
             AnswGuid=answGuid;
