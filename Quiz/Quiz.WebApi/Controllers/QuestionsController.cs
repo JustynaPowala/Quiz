@@ -18,6 +18,7 @@ namespace Quiz.WebApi.Controllers
         private readonly IConfiguration _configuration;
         private readonly ICategoriesProvider _categoriesProvider;
         private QuestionValidator _questionValidator = new QuestionValidator();
+        private AnswerValidator _answerValidator = new AnswerValidator();
 
         public QuestionsController(ILogger<QuestionsController> logger, IConfiguration configuration, ICategoriesProvider categoriesProvider)
         {
@@ -60,6 +61,7 @@ namespace Quiz.WebApi.Controllers
         [HttpPost("{questionID}/answers")]
         public Guid AddQuestionAnswer([FromRoute] Guid questionID, [FromBody] AnswerBody body)
         {
+            _answerValidator.Validate(body.AnswerContent, body.IsCorrect);
             var answerId = Guid.NewGuid();
 
             string connectionString = GetConnectionString();
@@ -384,7 +386,7 @@ WHERE Id = @Id";
         [HttpPut("{questionID}/answers/{answerID}")]
         public void ModifyAnswer([FromRoute] Guid questionID, [FromRoute] Guid answerID, [FromBody] AnswerBody body)
         {
-
+            _answerValidator.Validate(body.AnswerContent, body.IsCorrect);
             string connectionString = GetConnectionString();
 
             using (SqlConnection connection = new SqlConnection(connectionString))
@@ -401,12 +403,15 @@ WHERE Id = @Id";
 
                     if (selectionMultiplicity == "Single" && body.IsCorrect)
                     {
-                        string sqlQuery2 = "UPDATE dbo.Answers SET IsCorrect = CASE WHEN ID = @ID THEN 1 ELSE 0 END WHERE QuestionID = @questionID";
+                        string sqlQuery2 = @"
+UPDATE dbo.Answers SET AnswerContent = @AnswerContent WHERE ID = @ID
+UPDATE dbo.Answers SET IsCorrect = CASE WHEN ID = @ID THEN 1 ELSE 0 END WHERE QuestionID = @questionID";
 
                         using (SqlCommand command2 = new SqlCommand(sqlQuery2, connection))
                         {
                             command2.Parameters.AddWithValue("@ID", answerID);
                             command2.Parameters.AddWithValue("@questionID", questionID);
+                            command2.Parameters.AddWithValue("@AnswerContent", body.AnswerContent);
                             command2.ExecuteNonQuery();
                         }
                     }
