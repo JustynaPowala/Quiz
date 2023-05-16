@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Quiz.Contracts
 {
-    public class AddAnswerBody
+    public class AnswerBody
     {
         //public Guid QuestionID { get; set; }
 

@@ -90,7 +90,7 @@
     {
         var sqlquery = new HttpClient();
         sqlquery.BaseAddress = new Uri("http://localhost:5271");
-        var response = await sqlquery.PostAsync("tests/to-database", JsonContent.Create(new AddQuestionBody()
+        var response = await sqlquery.PostAsync("tests/to-database", JsonContent.Create(new QuestionBody()
             {
                 QuestionContent = _question,
                 Points = _points

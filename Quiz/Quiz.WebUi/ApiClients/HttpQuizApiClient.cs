@@ -16,7 +16,7 @@ namespace Quiz.WebUi.ApiClients
         public async Task<Guid> AddQuestionAsync(string questionContent, int points, string category, AnswerMultiplicity selectionMultiplicity)
         {
             var client = CreateHttpClient();
-            var response = await client.PostAsync("questions", JsonContent.Create(new AddQuestionBody()  // 
+            var response = await client.PostAsync("questions", JsonContent.Create(new QuestionBody()  // 
             {
                 QuestionContent = questionContent,
                 Points = points,
@@ -34,7 +34,7 @@ namespace Quiz.WebUi.ApiClients
             
             var client = CreateHttpClient();
             var address = "questions/" + questionID+ "/answers";
-            var response = await client.PostAsync(address, JsonContent.Create(new AddAnswerBody()  // 
+            var response = await client.PostAsync(address, JsonContent.Create(new AnswerBody()  // 
             {
                 AnswerContent = answerContent,
                 IsCorrect = isCorrect
@@ -102,7 +102,7 @@ namespace Quiz.WebUi.ApiClients
         {           
             var client = CreateHttpClient();
             var address = "questions/" + questionID;
-            await client.PutAsync(address, JsonContent.Create(new AddQuestionBody()
+            await client.PutAsync(address, JsonContent.Create(new QuestionBody()
             {
                 QuestionContent = questionContent,
                 Points = points,
@@ -127,7 +127,7 @@ namespace Quiz.WebUi.ApiClients
         {
             var client = CreateHttpClient();
             var address = "questions/" + questionID + "/answers/" + answerID;
-            var response = await client.PutAsync(address, JsonContent.Create(new AddAnswerBody()  
+            var response = await client.PutAsync(address, JsonContent.Create(new AnswerBody()  
             {
                 AnswerContent = answerContent,
                 IsCorrect = isCorrect

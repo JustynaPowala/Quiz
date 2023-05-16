@@ -27,7 +27,7 @@ namespace Quiz.WebApi.Controllers
         }
 
         [HttpPost("")]
-        public async Task<Guid> AddQuestionAsync([FromBody] AddQuestionBody body)
+        public async Task<Guid> AddQuestionAsync([FromBody] QuestionBody body)
         {
             var categories = await _categoriesProvider.GetCategoriesAsync();
             _questionValidator.Validate(body.QuestionContent, body.Category, body.Points, body.SelectionMultiplicity, categories);
@@ -58,7 +58,7 @@ namespace Quiz.WebApi.Controllers
         }
 
         [HttpPost("{questionID}/answers")]
-        public Guid AddQuestionAnswer([FromRoute] Guid questionID, [FromBody] AddAnswerBody body)
+        public Guid AddQuestionAnswer([FromRoute] Guid questionID, [FromBody] AnswerBody body)
         {
             var answerId = Guid.NewGuid();
 
@@ -164,7 +164,7 @@ END CATCH";
 
                         while (reader.Read())
                         {
-                            // Retrieve data from the reader and process as needed
+                           
                             var answer = new AnswerInfo();
 
                             string questionId = reader["questionID"].ToString();
@@ -269,20 +269,19 @@ END CATCH";
         }
 
         [HttpPut("{questionID}")]
-        public async Task ModifyQuestion([FromRoute] Guid questionID, [FromBody] AddQuestionBody body)
+        public async Task ModifyQuestion([FromRoute] Guid questionID, [FromBody] QuestionBody body)
         {
             var categories = await _categoriesProvider.GetCategoriesAsync();
             _questionValidator.Validate(body.QuestionContent, body.Category, body.Points, body.SelectionMultiplicity, categories);
 
             string connectionString = GetConnectionString();
 
+
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                connection.ConnectionString = connectionString;
-
                 connection.Open();
 
-                string sqlQuery = @"
+                string sqlQuery4 = @"
 UPDATE dbo.Questions 
 SET QuestionContent = @QuestionContent, 
     Points = @Points, 
@@ -291,7 +290,7 @@ SET QuestionContent = @QuestionContent,
 WHERE Id = @Id";
 
 
-                using (SqlCommand command = new SqlCommand(sqlQuery, connection))
+                using (SqlCommand command = new SqlCommand(sqlQuery4, connection))
                 {
                     command.Parameters.AddWithValue("@Id", questionID);
                     command.Parameters.AddWithValue("@QuestionContent", body.QuestionContent);
@@ -300,6 +299,36 @@ WHERE Id = @Id";
                     command.Parameters.AddWithValue("@SelectionMultiplicity", body.SelectionMultiplicity.ToString());
                     command.ExecuteNonQuery();
                 }
+
+
+                string sqlQuery1 = "SELECT SelectionMultiplicity FROM dbo.Questions WHERE ID = @questionID";
+                using (SqlCommand command1 = new SqlCommand(sqlQuery1, connection))
+                {
+                    command1.Parameters.AddWithValue("@questionID", questionID);
+                    string selectionMultiplicity = command1.ExecuteScalar()?.ToString();
+
+                    if (selectionMultiplicity == "Single")
+                    {
+                        string sqlQuery2 = "SELECT COUNT(*) FROM dbo.Answers WHERE QuestionID = @questionID AND IsCorrect = 1";
+                        using (SqlCommand command2 = new SqlCommand(sqlQuery2, connection))
+                        {
+                            command2.Parameters.AddWithValue("@questionID", questionID);
+                            int correctAnswerCount = Convert.ToInt32(command2.ExecuteScalar());
+
+                            if (correctAnswerCount > 1)
+                            {
+                                string sqlQuery3 = "UPDATE dbo.Answers SET IsCorrect = 0 WHERE QuestionID = @questionID";
+                                using (SqlCommand command3 = new SqlCommand(sqlQuery3, connection))
+                                {
+                                    command3.Parameters.AddWithValue("@questionID", questionID);
+                                    command3.ExecuteNonQuery();
+                                }
+                            }
+                        }
+                    }
+                }
+
+               
             }
         }
 
@@ -353,36 +382,53 @@ WHERE Id = @Id";
 
 
         [HttpPut("{questionID}/answers/{answerID}")]
-        public void ModifyAnswer([FromRoute] Guid questionID, [FromRoute] Guid answerID, [FromBody] AddAnswerBody body)
+        public void ModifyAnswer([FromRoute] Guid questionID, [FromRoute] Guid answerID, [FromBody] AnswerBody body)
         {
 
             string connectionString = GetConnectionString();
 
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                connection.ConnectionString = connectionString;
-
                 connection.Open();
 
-                //string sqlQuery = "Select count(*) from dbo.Questions WHERE ID = @questionID AND "
 
-                string sqlQuery2 = "UPDATE dbo.Answers SET IsCorrect = @IsCorrect, AnswerContent = @AnswerContent WHERE ID = @ID";
+                string sqlQuery1 = "SELECT SelectionMultiplicity FROM dbo.Questions WHERE ID = @questionID";
 
-                using (SqlCommand command = new SqlCommand(sqlQuery2, connection))
+                using (SqlCommand command1 = new SqlCommand(sqlQuery1, connection))
                 {
-                    command.Parameters.AddWithValue("@ID", answerID);
-                    command.Parameters.AddWithValue("@AnswerContent", body.AnswerContent);
-                    command.Parameters.AddWithValue("@IsCorrect", body.IsCorrect ? 1 : 0);
-               
-                    command.ExecuteNonQuery();
+                    command1.Parameters.AddWithValue("@questionID", questionID);
+                    string selectionMultiplicity = command1.ExecuteScalar()?.ToString();
+
+                    if (selectionMultiplicity == "Single" && body.IsCorrect)
+                    {
+                        string sqlQuery2 = "UPDATE dbo.Answers SET IsCorrect = CASE WHEN ID = @ID THEN 1 ELSE 0 END WHERE QuestionID = @questionID";
+
+                        using (SqlCommand command2 = new SqlCommand(sqlQuery2, connection))
+                        {
+                            command2.Parameters.AddWithValue("@ID", answerID);
+                            command2.Parameters.AddWithValue("@questionID", questionID);
+                            command2.ExecuteNonQuery();
+                        }
+                    }
+                    else
+                    {
+                        string sqlQuery3 = "UPDATE dbo.Answers SET IsCorrect = @IsCorrect, AnswerContent = @AnswerContent WHERE ID = @ID";
+
+                        using (SqlCommand command3 = new SqlCommand(sqlQuery3, connection))
+                        {
+                            command3.Parameters.AddWithValue("@ID", answerID);
+                            command3.Parameters.AddWithValue("@AnswerContent", body.AnswerContent);
+                            command3.Parameters.AddWithValue("@IsCorrect", body.IsCorrect ? 1 : 0);
+                            command3.ExecuteNonQuery();
+                        }
+                    }
                 }
             }
-
         }
 
 
 
-        private string GetConnectionString()
+            private string GetConnectionString()
             {
 
                 return _configuration["ConnectionStrings:Default"];    // appsettings, tam jest path

@@ -90,7 +90,11 @@
 </style>
 
 
-
+<style>
+    .full-width-input {
+        width: 100%;
+    }
+</style>
 
 <h1>Questions Designer</h1>
 
@@ -107,18 +111,18 @@
      <span style="font-weight: bold;">Enter content of Your question</span>                   
                   
      <br />
-        <InputText id="question"  @bind-Value="_questionModel.Question" />
+                    <InputText id="question" @bind-Value="_questionModel.Question" @onclick="Set_answersToFalse" style="width: 500px;" />
     </p>
     <p>
         <span style="font-weight: bold;">Choose how many points you can get in this question</span>
         <br />
-        <input type="number" additionalatributes max="10" min="1" @bind-value="_questionModel.Points" />
+                    <input type="number" additionalatributes max="10" min="1" @bind-value="_questionModel.Points" @onclick="Set_answersToFalse" />
     </p>
   
         <p>
         <span style="font-weight: bold;">Select question category</span>
         <br />
-        <InputSelect @bind-Value="_questionModel.Category">
+                    <InputSelect @bind-Value="_questionModel.Category" @onclick="Set_answersToFalse">
       
             <option value="default" disabled selected>Select a category</option>
             @if(_listOfCategories !=null)
@@ -132,7 +136,7 @@
     <p>
         <span style="font-weight: bold;">Select whether the question is single-choice or multiple-choice</span>
         <br />
-        <InputSelect @bind-Value="_questionModel.SelectionMultiplicity">
+        <InputSelect @bind-Value="_questionModel.SelectionMultiplicity" @onclick="Set_answersToFalse">
             <option value="@AnswerMultiplicity.Single" selected >Single</option>
             <option value="@AnswerMultiplicity.Multiple">Multiple</option>
         </InputSelect>
@@ -141,9 +145,20 @@
 
     <DataAnnotationsValidator />
     <ValidationSummary />
+                @if (_saveButtonAble == true)
+                {
+                    <button type="submit" style="font-weight: bold" class="btn btn-info">Save</button>
+                }
+                else
+                {
+                    <button type="submit" style="font-weight: bold" class="btn btn-info" disabled>Save</button>            
+                }
 
-    <button type="submit" style="font-weight: bold" class="btn btn-info">Save</button>
-    <div> <br />  </div>
+                @if (_modifyMode && !_answers)
+                {<br />
+                    <span style="font-weight: bold;"> Press "Save" to save question and add or modify answers.</span>
+                }
+                <div> <br />  </div>
          
         
 </EditForm>
@@ -154,30 +169,24 @@
     
     @if (_answers == true)
     {      
-        <div>
-            <span style="font-weight: bold;">Add answers to your question. Check the box if it is correct answer</span>
-        </div>
-        <div>
+       <p>
+    <span style="font-weight: bold;">Add answers to your question.<br>
+    Check the box in the table with answers if it is the correct answer.</span>
+                    </p>
+        <p>
+
+
         @if(_allFalse == true)
         {
             <span style="font-weight: bold; color: red;">Your question does not have a correct answer yet</span>
         }
-        </div>
-      <div style="display:flex; align-items:center;">
+        </p>
+      <p style="display:flex; align-items:center;">
              <InputText id="answer" @bind-Value="_answerModel.Answer" style="flex:1; height:25px;" />
 
-        @if(_anyTrue == false)
-        {
-            <input type="checkbox" class="checkbox-design" @bind-value="_answerModel.IsCorrect" />
-        }
-        else
-        {
-            _answerModel.IsCorrect = false;
-                <input type="checkbox" class="checkbox-design" disabled @bind-value="_answerModel.IsCorrect " />
-        }
-        </div>
+        </p>
 
-         <div> <br /></div>
+ 
         <button type="submit" style="font-weight: bold" class="btn btn-info">Add answer</button>
                     
         <DataAnnotationsValidator />
@@ -206,12 +215,8 @@
                 </tr>
             </thead>
             <tbody>
-                @{
-                    var correct = "Yes";
-                    var notCorrect ="No";
-                    _anyTrue = false;
+                @{                 
                     _allFalse = true;
-
                 }
 
 
@@ -225,30 +230,19 @@
 
                 @foreach (var answ in _listOfAnswers)
                 {           
-                    if (_questionModel.SelectionMultiplicity == AnswerMultiplicity.Single) 
-                    {
-                        if (answ.IsCorrect == true)
-                        {
-                            _anyTrue = true;
-                        }                    
-                     }
-                    else
-                    {
-                        _anyTrue = false;
-                    }
                                 <tr>
                                 <td style="text-align: center;">@(answersCounting++)</td>
-                                @*<td>@answ.AnswerContent</td>*@
-                                    <input type="text" @bind-value="@answ.AnswerContent" @oninput="()=> ChangeAnswer(answ)" />
-                               @* <td style ="text-align: center;">@(answ.IsCorrect ? correct : notCorrect)</td>*@
+                                <td style="text-align: center;">
+                                <input type="text" @bind="@answ.AnswerContent" @oninput="e => OnAnswerContentChange(e, answ)" class="full-width-input" />
+                                </td>
                                  <td style="text-align: center;">
                                         @if (_questionModel.SelectionMultiplicity == AnswerMultiplicity.Single)
                                         {
-                                            <input type="radio" name="IsCorrect" checked="@answ.IsCorrect" class="checkbox-design2" @onchange="() => ChangeAnswer(answ)" />
+                                            <input type="radio" name="IsCorrect" checked="@answ.IsCorrect" class="checkbox-design2" @onchange="() => ChangeAnswerCorectness(answ)" />
                                         }
                                         else
                                         {
-                                            <input type="checkbox" name="IsCorrect" checked="@answ.IsCorrect" class="checkbox-design2" @onchange="() => ChangeAnswer(answ)"  />
+                                            <input type="checkbox" name="IsCorrect" checked="@answ.IsCorrect" class="checkbox-design2" @onchange="() => ChangeAnswerCorectness(answ)" />
                                         }
                                  </td>
                                 <td style="text-align: center;"><button @onclick="() => DeletingAnswerAsync(answ.QeGuid, answ.AnswGuid)"><i class="oi oi-trash"></i></button></td>
@@ -373,9 +367,9 @@ else
     private string _searchString = string.Empty;
     private int _pageIndex = 0;
     private const int PageSize = 10;
-    private bool _anyTrue = false;
     private bool _allFalse = true;
     private bool _modifyMode = false;
+    private bool _saveButtonAble = true;
 
 
     private List<QuestionInfo> _listOfQuestions;
@@ -403,7 +397,6 @@ else
     {
         await GetQuestionsAsync();
         await GetCategoriesAsync();
-        _anyTrue = false;
     }
 
     private async Task PreviousPageAsync()
@@ -433,7 +426,8 @@ else
         {
             ToastService.ShowSuccess("Your question has been added");     
             await AddQuestionAsync();
-            await GetListOfAnswersAsync(_questionModel.ID);
+            _saveButtonAble = false;
+
         }
         else
         {       
@@ -442,10 +436,18 @@ else
         } 
         _answers = true;
         await GetQuestionsAsync();
+        await GetListOfAnswersAsync(_questionModel.ID);
         //_answerModel.Answer = string.Empty;
 
     }
 
+    private void Set_answersToFalse()
+    {
+        if(_modifyMode == true)
+        {
+            _answers = false;
+        }
+    }
 
 
     private void ClearQuestionModel()
@@ -456,6 +458,7 @@ else
         _questionModel.SelectionMultiplicity = AnswerMultiplicity.Single;
         _modifyMode = false;
         _answers = false;
+        _saveButtonAble = true;
     }
 
     private AnswerModel _answerModel = new();
@@ -491,31 +494,44 @@ else
     }
     private async Task DeletingQuestionWithAssignedAnswers(Guid questionID)
     {
-
         await DeleteQuestionAsync(questionID);
         await GetQuestionsAsync();
+        ClearQuestionModel();
     }
 
     private async Task SetModifyMode(Guid questionID) 
     {
         await GetQuestionInfoAsync(questionID);
-        _modifyMode = true; ///// important
+        _modifyMode = true; 
         _questionModel.ID = questionID;
         _questionModel.Question = _questionInfo.QuestionContent;
         _questionModel.Category = _questionInfo.Category;
         _questionModel.Points = _questionInfo.Points;
         _questionModel.SelectionMultiplicity = _questionInfo.AnswerMultiplicity;
         _answers = true;
+        _saveButtonAble = true;
         await GetQuestionsAsync();
         await GetListOfAnswersAsync(questionID);    
     }
 
-    private async Task ChangeAnswer(AnswerInfo answerInfo)
+    private async Task ChangeAnswerCorectness(AnswerInfo answerInfo)
     {
-        await ModifyAnswerAsync(answerInfo);
+        await ModifyAnswerCorectnessAsync(answerInfo);
         await GetListOfAnswersAsync(_questionModel.ID);
+       
     }
 
+    private async Task OnAnswerContentChange(ChangeEventArgs e, AnswerInfo answerInfo)
+    {
+        answerInfo.AnswerContent = e.Value.ToString();
+        await ChangeAnswerContent(answerInfo);
+    }
+
+    private async Task ChangeAnswerContent(AnswerInfo answerInfo)
+    {
+        await ModifyAnswerContentAsync(answerInfo);
+        await GetListOfAnswersAsync(_questionModel.ID);
+    }
 
 
 
@@ -570,14 +586,16 @@ else
         await QuizApiClient.ModifyQuestionAsync(questionID,_questionModel.Question, _questionModel.Points, _questionModel.Category, _questionModel.SelectionMultiplicity);
     }
 
-    private async Task ModifyAnswerAsync(AnswerInfo answerInfo)
+    private async Task ModifyAnswerCorectnessAsync(AnswerInfo answerInfo)
     {
         await QuizApiClient.ModifyAnswerAsync(answerInfo.QeGuid, answerInfo.AnswGuid, answerInfo.AnswerContent, !answerInfo.IsCorrect);
     }
 
-
-
+    private async Task ModifyAnswerContentAsync(AnswerInfo answerInfo)
+    {
+        await QuizApiClient.ModifyAnswerAsync(answerInfo.QeGuid, answerInfo.AnswGuid, answerInfo.AnswerContent, answerInfo.IsCorrect);
     }
+}
 
 
     
