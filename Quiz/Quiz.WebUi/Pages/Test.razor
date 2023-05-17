@@ -6,29 +6,84 @@
 
 <PageTitle>Test</PageTitle>
 
-<h1>Test</h1>
+<h1>Quiz</h1>
 
+<style>
+    .select-input {
+        border: 2px solid black;
+        border-radius: 0;
+        padding: 8px;
+        font-size: 20px;
+        width: 250px;
+        height: 100px;
+        background-color: #EAF5FF;
+        color: black;
+        font-weight: bold;
+    }
 
-
-<InputSelect @bind-Value="_selectedCategories">
-    @if (_listOfCategories != null)
-        foreach (var cat in _listOfCategories)
-        {
-            <option value="@cat.ID">@cat.Name</option>
+        .select-input option {
+            font-size: 20px;
+            color: black;
+            background-color: #EAF5FF;
         }
-</InputSelect>
 
+            .select-input option:nth-child(even) {
+                background-color: #D6EBFF;
+            }
 
-<input type="button" style="font-weight: bold" class="btn btn-info" value="Create new test" @onclick="CreateTestOnClick" />
+    .frame {
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        padding: 16px;
+        background-color: #f5f5f5;
+        
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
 
+    .frame-title {
+        font-weight: bold;
+        margin-bottom: 16px;
+        text-align: left; /* Align the text to the left */
+    }
+</style>
 
+@if (_startMode)
+{
+    <div class="frame">
+        <span class="frame-title">
+            Hi!<br>
+            Try your hand at taking the quiz. Select a question category.<br>
+            If you want to take a test from several categories - pressing Ctrl on the keyboard, select them with the mouse.
+        </span>
 
+        <div style="margin-top: 10px;">
+            <div class="centered">
+                <InputSelect class="select-input" @bind-Value="_selectedCategories">
+                    @if (_listOfCategories != null)
+                    {
+                        @foreach (var cat in _listOfCategories)
+                        {
+                            <option value="@cat.ID">@cat.Name</option>
+                        }
+                    }
+                </InputSelect>
+            </div>
 
+            <p style="margin-top: 10px;">
+                <div class="centered">
+                    <input type="button" style="font-weight: bold;" class="btn btn-info" value="Create new test" @onclick="CreateTestOnClick" />
+                </div>
+            </p>
+        </div>
+    </div>
+}
 
-
-
-
-
+@if (_testGeneratedButNotStarted)
+{
+    
+}
 
 
 @code{
@@ -37,6 +92,8 @@
     private string [] _selectedCategories= new string[0];
     private Guid _testGuid;
 
+    private bool _startMode = true;
+    private bool _testGeneratedButNotStarted = true;  // it will be false after pressing the "start" button, which will start the test
 
 
     protected override async Task OnInitializedAsync()
@@ -47,6 +104,7 @@
     private async Task CreateTestOnClick()
     {
         await CreateTestAsync();
+        _startMode = false;                //false until the test is canceled or the test is completed and you can return to the "start page"
     }
 
 
