@@ -135,6 +135,19 @@ namespace Quiz.WebUi.ApiClients
         }
 
 
+        public async Task<Guid> CreateTestAsync(List<string> listOfCategoriesIds)
+        {
+            var client = CreateHttpClient();
+            var response = await client.PostAsync("tests", JsonContent.Create(new CreateTestBody()  
+            {
+             CategoriesIds = listOfCategoriesIds              
+            })); 
+
+            var body = await response.Content.ReadFromJsonAsync<Guid>();
+            return body;
+        }
+
+
         private HttpClient CreateHttpClient()
         {
             var client= new HttpClient();

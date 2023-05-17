@@ -1,5 +1,8 @@
-﻿@page "/test"
-@inject HttpClient Http
+﻿
+@page "/test"
+@using Quiz.Contracts;
+@using Quiz.WebUi.ApiClients;
+@inject IQuizApiClient QuizApiClient;
 
 <PageTitle>Test</PageTitle>
 
@@ -7,8 +10,16 @@
 
 
 
+<InputSelect @bind-Value="_selectedCategories">
+    @if (_listOfCategories != null)
+        foreach (var cat in _listOfCategories)
+        {
+            <option value="@cat.ID">@cat.Name</option>
+        }
+</InputSelect>
 
 
+<input type="button" style="font-weight: bold" class="btn btn-info" value="Create new test" @onclick="CreateTestOnClick" />
 
 
 
@@ -22,7 +33,35 @@
 
 @code{
 
+    private List<CategoryInfo> _listOfCategories;
+    private string [] _selectedCategories= new string[0];
+    private Guid _testGuid;
 
 
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetCategoriesAsync();
+    }
+
+    private async Task CreateTestOnClick()
+    {
+        await CreateTestAsync();
+    }
+
+
+    //QuizApiClient methods below
+    private async Task GetCategoriesAsync()
+    {
+        _listOfCategories = await QuizApiClient.GetCategoriesAsync();
+    }
+
+
+    private async Task CreateTestAsync()
+    {
+        _testGuid =  await QuizApiClient.CreateTestAsync(_selectedCategories.ToList());
+    }
+
+   
 
 }

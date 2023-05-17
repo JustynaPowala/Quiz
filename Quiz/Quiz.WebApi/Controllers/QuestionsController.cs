@@ -61,7 +61,7 @@ namespace Quiz.WebApi.Controllers
         [HttpPost("{questionID}/answers")]
         public Guid AddQuestionAnswer([FromRoute] Guid questionID, [FromBody] AnswerBody body)
         {
-            _answerValidator.Validate(body.AnswerContent, body.IsCorrect);
+            _answerValidator.Validate(body.AnswerContent);
             var answerId = Guid.NewGuid();
 
             string connectionString = GetConnectionString();
@@ -386,7 +386,7 @@ WHERE Id = @Id";
         [HttpPut("{questionID}/answers/{answerID}")]
         public void ModifyAnswer([FromRoute] Guid questionID, [FromRoute] Guid answerID, [FromBody] AnswerBody body)
         {
-            _answerValidator.Validate(body.AnswerContent, body.IsCorrect);
+            _answerValidator.Validate(body.AnswerContent);
             string connectionString = GetConnectionString();
 
             using (SqlConnection connection = new SqlConnection(connectionString))

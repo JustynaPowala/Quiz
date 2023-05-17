@@ -37,3 +37,48 @@ GO
 
 ALTER TABLE [dbo].[Answers] CHECK CONSTRAINT [FK_Answers_Questions]
 GO
+
+CREATE TABLE [dbo].[Tests](
+	[ID] [uniqueidentifier] NOT NULL,
+	[Status] [nvarchar](200) NOT NULL,
+	[Started] [datetime], 
+	[Completed] [datetime] 
+ CONSTRAINT [PK_Tests] PRIMARY KEY CLUSTERED 
+(
+	[ID] ASC
+))
+
+CREATE TABLE [dbo].[TestQuestions](
+	[ID] [uniqueidentifier] NOT NULL,
+	[QuestionID] [uniqueidentifier] NOT NULL,
+	[TestID] [uniqueidentifier] NOT NULL
+ CONSTRAINT [PK_TestQuestions] PRIMARY KEY CLUSTERED 
+(
+	[ID] ASC
+))
+
+ALTER TABLE [dbo].[TestQuestions]  WITH CHECK ADD  CONSTRAINT [FK_TestQuestions_Tests] FOREIGN KEY([TestID])
+REFERENCES [dbo].[Tests] ([ID])
+GO
+
+ALTER TABLE [dbo].[TestQuestions]  WITH CHECK ADD  CONSTRAINT [FK_TestQuestions_Questions] FOREIGN KEY([QuestionID])
+REFERENCES [dbo].[Questions] ([ID])
+GO
+
+
+CREATE TABLE [dbo].[TestAnswers](
+	[ID] [uniqueidentifier] NOT NULL,
+	[AnswerID] [uniqueidentifier] NOT NULL,
+	[TestQuestionsID] [uniqueidentifier] NOT NULL
+ CONSTRAINT [PK_TestAnswers] PRIMARY KEY CLUSTERED 
+(
+	[ID] ASC
+))
+
+ALTER TABLE [dbo].[TestAnswers]  WITH CHECK ADD  CONSTRAINT [FK_TestAnswers_TestQuestions] FOREIGN KEY([TestQuestionsID])
+REFERENCES [dbo].[TestQuestions] ([ID])
+GO
+
+ALTER TABLE [dbo].[TestAnswers]  WITH CHECK ADD  CONSTRAINT [FK_TestAnswers_Answers] FOREIGN KEY([AnswerID])
+REFERENCES [dbo].[Answers] ([ID])
+GO

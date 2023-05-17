@@ -5,7 +5,7 @@
 @using Quiz.Contracts;
 @using Quiz.WebUi.ApiClients;
 @using System.ComponentModel.DataAnnotations; @*//*@
-@using Models;
+@using Quiz.WebUi.Models.QuestionDesigner;
 @inject IQuizApiClient  QuizApiClient;  //property in class QuestionDesginer. Początkowo nie wie mój qestions designer co zrobić. Muszę "połączyć" IQuizApiClient z  HttpQuizApiClient(który ma zawarty ten interfejs). To połączenie jest zrobione poprzez services w klasie program.//
 @inject ILogger<QuestionsDesigner> Logger //
 @inject IToastService ToastService
@@ -122,7 +122,7 @@
         <p>
         <span style="font-weight: bold;">Select question category</span>
         <br />
-                    <InputSelect @bind-Value="_questionModel.Category" @onclick="Set_answersToFalse">
+            <InputSelect @bind-Value="_questionModel.Category" @onclick="Set_answersToFalse">
       
             <option value="default" disabled selected>Select a category</option>
             @if(_listOfCategories !=null)
@@ -145,14 +145,9 @@
 
     <DataAnnotationsValidator />
     <ValidationSummary />
-                @if (_saveButtonAble == true)
-                {
+                
                     <button type="submit" style="font-weight: bold" class="btn btn-info">Save</button>
-                }
-                else
-                {
-                    <button type="submit" style="font-weight: bold" class="btn btn-info" disabled>Save</button>            
-                }
+                
 
                 @if (_modifyMode && !_answers)
                 {<br />
@@ -264,11 +259,11 @@
     </div>
             <div class="input-container">
 <InputSelect @bind-Value="_category"  @oninput="OnCategoryChange">
-    <option value="history">History</option>
-    <option value="chemistry">Chemistry</option>
-    <option value="mathematics">Mathematics</option>
-    <option value="music">Music</option>
-    <option value="information technology">Information technology</option>
+                    @if (_listOfCategories != null)
+                        foreach (var cat in _listOfCategories)
+                        {
+                            <option value="@cat.ID">@cat.Name</option>
+                        }
 </InputSelect>
               
                 <input type="text" placeholder="Search"  @bind-value="@_searchString" @oninput="OnSearchStringChange" />
@@ -369,7 +364,6 @@ else
     private const int PageSize = 10;
     private bool _allFalse = true;
     private bool _modifyMode = false;
-    private bool _saveButtonAble = true;
 
 
     private List<QuestionInfo> _listOfQuestions;
@@ -426,7 +420,7 @@ else
         {
             ToastService.ShowSuccess("Your question has been added");     
             await AddQuestionAsync();
-            _saveButtonAble = false;
+            _modifyMode = true;
 
         }
         else
@@ -458,7 +452,6 @@ else
         _questionModel.SelectionMultiplicity = AnswerMultiplicity.Single;
         _modifyMode = false;
         _answers = false;
-        _saveButtonAble = true;
     }
 
     private AnswerModel _answerModel = new();
@@ -509,7 +502,6 @@ else
         _questionModel.Points = _questionInfo.Points;
         _questionModel.SelectionMultiplicity = _questionInfo.AnswerMultiplicity;
         _answers = true;
-        _saveButtonAble = true;
         await GetQuestionsAsync();
         await GetListOfAnswersAsync(questionID);    
     }

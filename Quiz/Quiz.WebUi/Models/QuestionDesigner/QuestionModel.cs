@@ -1,7 +1,7 @@
 ﻿using Quiz.Contracts;
 using System.ComponentModel.DataAnnotations;
 
-namespace Quiz.WebUi.Models
+namespace Quiz.WebUi.Models.QuestionDesigner
 {
     public class QuestionModel
     {

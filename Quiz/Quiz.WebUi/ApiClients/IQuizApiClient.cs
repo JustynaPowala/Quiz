@@ -19,5 +19,8 @@ namespace Quiz.WebUi.ApiClients
         Task<QuestionInfo> GetQuestionInfo(Guid questionID);
 
         Task ModifyAnswerAsync(Guid questionID, Guid answerID, string answerContent, bool isCorrect);
+
+        // Test methods below:9
+        Task<Guid> CreateTestAsync(List<string> listOfCategoriesIds);
     }
 }
