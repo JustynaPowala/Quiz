@@ -13,7 +13,7 @@
         border: 2px solid black;
         border-radius: 0;
         padding: 8px;
-        font-size: 20px;
+        font-size: 18px;
         width: 250px;
         height: 100px;
         background-color: #EAF5FF;
@@ -22,9 +22,10 @@
     }
 
         .select-input option {
-            font-size: 20px;
+            font-size: 18px;
             color: black;
             background-color: #EAF5FF;
+            font-weight: bold;
         }
 
             .select-input option:nth-child(even) {
@@ -36,53 +37,97 @@
         border-radius: 8px;
         padding: 16px;
         background-color: #f5f5f5;
-        
         flex-direction: column;
-        align-items: center;
         text-align: center;
+        display: flex;
+        justify-content: center;
     }
 
     .frame-title {
         font-weight: bold;
         margin-bottom: 16px;
-        text-align: left; /* Align the text to the left */
+        text-align: left;
+    }
+
+    .frame-left {
+        text-align: left;
+        margin-right: 16px;
+    }
+
+    .frame-center {
+        text-align: center;
     }
 </style>
 
 @if (_startMode)
 {
     <div class="frame">
-        <span class="frame-title">
-            Hi!<br>
-            Try your hand at taking the quiz. Select a question category.<br>
-            If you want to take a test from several categories - pressing Ctrl on the keyboard, select them with the mouse.
-        </span>
+        <div class="frame-left">
+            <span class="frame-title">
+                Hi!<br>
+                Try your hand at taking the quiz. Select a question category.<br>
+                If you want to take a test from several categories - select them with the mouse, pressing Ctrl on the keyboard.
+            </span>
+        </div>
 
-        <div style="margin-top: 10px;">
-            <div class="centered">
-                <InputSelect class="select-input" @bind-Value="_selectedCategories">
-                    @if (_listOfCategories != null)
-                    {
-                        @foreach (var cat in _listOfCategories)
-                        {
-                            <option value="@cat.ID">@cat.Name</option>
-                        }
-                    }
-                </InputSelect>
-            </div>
-
-            <p style="margin-top: 10px;">
+        <div class="frame-center">
+            <div style="margin-top: 10px;">
                 <div class="centered">
-                    <input type="button" style="font-weight: bold;" class="btn btn-info" value="Create new test" @onclick="CreateTestOnClick" />
+                    <InputSelect class="select-input" @bind-Value="_selectedCategories">
+                        @if (_listOfCategories != null)
+                        {
+                            @foreach (var cat in _listOfCategories)
+                            {
+                                <option value="@cat.ID">@cat.Name</option>
+                            }
+                        }
+                    </InputSelect>
                 </div>
-            </p>
+
+                <p style="margin-top: 10px;">
+                    <div class="centered">
+                        <input type="button" style="font-weight: bold;" class="btn btn-info" value="Create new test" @onclick="CreateTestOnClick" />
+                    </div>
+                </p>
+            </div>
         </div>
     </div>
 }
 
-@if (_testGeneratedButNotStarted)
+@if (_testGeneratedButNotStarted && !_startMode)
 {
-    
+    <input type="button" style="font-weight: bold;" class="btn btn-info" value="Start" @onclick="StartTest" />
+}
+
+@if( _testMode && !_testGeneratedButNotStarted && !_startMode)
+{
+
+    <span style="font-weight: bold;">@_questionContent</span>
+
+  
+
+    @if (_testPageIndex > 0)
+    {
+
+        <input type="button" style="font-weight: bold" class="btn btn-info" value="Back" @onclick="PreviousTestPageAsync" />
+    }
+    else
+    {
+        <input type="button" style="font-weight: bold" class="btn btn-info" value="Back" disabled />
+    }
+
+
+
+    if (_testPageIndex < TestSize)
+    {
+        <input type="button" style="font-weight: bold" class="btn btn-info" value="Next" @onclick="NextTestPageAsync" />
+    }
+    else
+    {
+        <input type="button" style="font-weight: bold" class="btn btn-info" value="Next" disabled />
+
+    }
+
 }
 
 
@@ -91,9 +136,13 @@
     private List<CategoryInfo> _listOfCategories;
     private string [] _selectedCategories= new string[0];
     private Guid _testGuid;
+    private int _testPageIndex = 0;
+    private const int TestSize = 10;
+    private string _questionContent = " xx";
 
     private bool _startMode = true;
-    private bool _testGeneratedButNotStarted = true;  // it will be false after pressing the "start" button, which will start the test
+    private bool _testGeneratedButNotStarted;  // it will be false after pressing the "start" button, which will start the test
+    private bool _testMode;
 
 
     protected override async Task OnInitializedAsync()
@@ -105,6 +154,29 @@
     {
         await CreateTestAsync();
         _startMode = false;                //false until the test is canceled or the test is completed and you can return to the "start page"
+        _testGeneratedButNotStarted = true;
+    }
+    private void StartTest()   //here will be, among other things, a method that adds a start datetime to the Tests table
+    {
+        GetTestQuestionAsync();
+        _testGeneratedButNotStarted = false;
+        _testMode = true;
+
+    }
+
+    private async Task PreviousTestPageAsync()
+    {
+        _testPageIndex -= 1;
+        GetTestQuestionAsync();
+
+
+    }
+
+    private async Task NextTestPageAsync()
+    {
+        _testPageIndex += 1;
+        GetTestQuestionAsync();
+
     }
 
 
@@ -120,6 +192,13 @@
         _testGuid =  await QuizApiClient.CreateTestAsync(_selectedCategories.ToList());
     }
 
+  
+
+    private async Task GetTestQuestionAsync()
+    {
+       _questionContent = await QuizApiClient.GetTestQuestionAsync(_testGuid, _testPageIndex);
+    }
+   
    
 
 }

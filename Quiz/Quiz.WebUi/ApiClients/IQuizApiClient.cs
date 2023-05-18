@@ -8,19 +8,21 @@ namespace Quiz.WebUi.ApiClients
 
         Task<Guid> AddQuestionAnswerAsync(Guid questionID, string answerContent, bool isCorrect);
 
-        Task DeleteAnswer(Guid questionID, Guid answerID);   //async?
+        Task DeleteAnswer(Guid questionID, Guid answerID);   
         Task DeleteQuestion(Guid questionID);
 
         Task<List<AnswerInfo>> GetListOfAnswersAsync(Guid questionID);
         Task<List<QuestionInfo>> GetQuestionsAsync(string category, int skipCount, int maxResultCount, string? searchString);
 
-        Task<List<CategoryInfo>> GetCategoriesAsync();
+        Task<List<CategoryInfo>> GetCategoriesAsync();  //for both
         Task ModifyQuestionAsync(Guid questionID, string questionContent, int points, string category, AnswerMultiplicity selectionMultiplicity);
         Task<QuestionInfo> GetQuestionInfo(Guid questionID);
 
         Task ModifyAnswerAsync(Guid questionID, Guid answerID, string answerContent, bool isCorrect);
 
-        // Test methods below:9
+        // Test methods below:
         Task<Guid> CreateTestAsync(List<string> listOfCategoriesIds);
+
+        Task<string> GetTestQuestionAsync(Guid testID, int skipCount);
     }
 }
