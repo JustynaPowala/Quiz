@@ -43,7 +43,10 @@ namespace Quiz.WebApi.Controllers
                 connection.ConnectionString = connectionString;
 
                 connection.Open();
-                var testsCategories = string.Join(",", "'", body.CategoriesIds, "'");
+                //var testsCategories = string.Join(",",body.CategoriesIds);
+                var testsCategories2 = body.CategoriesIds.Select(x => "'" + x + "'").ToList();
+                var testsCategories = string.Join(",", testsCategories2);
+
                 string sqlQuery = @"
 BEGIN TRANSACTION
 INSERT INTO dbo.Tests (ID, Status) VALUES (@Id, @Status)
@@ -86,20 +89,20 @@ FROM dbo.TestQuestions as TQ
 inner join dbo.Questions as Q
 on TQ.QuestionID = Q.ID
 WHERE TQ.TestID = @testID
+ORDER BY Q.QuestionContent 
 OFFSET @skipCount ROWS FETCH NEXT 1 ROWS ONLY";
                 using (SqlCommand command = new SqlCommand(sqlQuery, connection))
                 {
                     command.Parameters.AddWithValue("@testID", testID);
                     command.Parameters.AddWithValue("@skipCount", skipCount);
 
-                    command.ExecuteNonQuery();
 
                     using (SqlDataReader reader = command.ExecuteReader())
                     {
                         while (reader.Read())
                         {
 
-                            questionContent = reader["Q.QuestionContent"].ToString();
+                            questionContent = reader["QuestionContent"].ToString();
                             questionContent ??= string.Empty;
 
 

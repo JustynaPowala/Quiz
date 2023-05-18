@@ -151,9 +151,9 @@ namespace Quiz.WebUi.ApiClients
         {
             var skippedCount = skipCount;
             var client = CreateHttpClient();
-            var address = "tests/" + testID + "/?skipCount=" + skippedCount;
+            var address = "tests/" + testID + "/questions/" + "?skipCount=" + skippedCount;
             var response = await client.GetAsync(address);
-            var questionContent = await response.Content.ReadFromJsonAsync<string>();
+            var questionContent = await response.Content.ReadAsStringAsync();
             return questionContent;
 
         }
