@@ -120,7 +120,7 @@
 
 
 
-    if (_testPageIndex < TestSize)
+    if (_testPageIndex < _countOfQuestions - 1)
     {
         <input type="button" style="font-weight: bold" class="btn btn-info" value="Next" @onclick="NextTestPageAsync" />
     }
@@ -139,8 +139,8 @@
     private string [] _selectedCategories= new string[0];
     private Guid _testGuid;
     private int _testPageIndex = 0;
-    private const int TestSize = 10;
-    //private string _questionContent = " xx";
+    //private const int TestSize = 10;
+    private int _countOfQuestions = 0;
 
     private bool _startMode = true;
     private bool _testGeneratedButNotStarted;  // it will be false after pressing the "start" button, which will start the test
@@ -165,10 +165,11 @@
         await CreateTestAsync();
         _startMode = false;                //false until the test is canceled or the test is completed and you can return to the "start page"
         _testGeneratedButNotStarted = true;
-        
+
     }
     private async Task StartTest()   //here will be, among other things, a method that adds a start datetime to the Tests table
     {
+        await GetQuestionsCountAsync();
         await GetTestQuestionAsync();
         _testGeneratedButNotStarted = false;
         _testMode = true;
@@ -203,13 +204,18 @@
         _testGuid =  await QuizApiClient.CreateTestAsync(_selectedCategories.ToList());
     }
 
-  
+
 
     private async Task GetTestQuestionAsync()
     {
         _TestQ = await QuizApiClient.GetTestQuestionAsync(_testGuid, _testPageIndex);
     }
-   
+
+    private async Task GetQuestionsCountAsync()
+    {
+        _countOfQuestions = await QuizApiClient.GetQuestionsCountAsync(_testGuid);
+    }
+
    
 
 }

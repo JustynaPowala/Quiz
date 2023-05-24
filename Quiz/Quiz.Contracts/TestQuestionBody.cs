@@ -14,18 +14,18 @@ namespace Quiz.Contracts
             QuestionContent = String.Empty;
             Points = 0;
             AnswerMultiplicity = AnswerMultiplicity.Single;
-            TestGuid = Guid.Empty;
+            QGuid = Guid.Empty;
             //AnswerContent = String.Empty;
             //IsCorrect = false;
             //AnswGuid = Guid.Empty;
 
         }
-        public TestQuestionBody(string questionContent, int points, AnswerMultiplicity answerMultiplicity, Guid testGuid)  
+        public TestQuestionBody(string questionContent, int points, AnswerMultiplicity answerMultiplicity, Guid qGuid)  
         {
             QuestionContent = questionContent;            
             Points = points;
             AnswerMultiplicity = answerMultiplicity;
-            TestGuid= testGuid;
+            QGuid= qGuid;
             //AnswerContent = answerContent;
             //IsCorrect = isCorrect;
             //AnswGuid = answGuid;
@@ -34,7 +34,7 @@ namespace Quiz.Contracts
         public string QuestionContent { get; set; }
         public int Points { get; set; }
         public AnswerMultiplicity AnswerMultiplicity { get; set; }  
-        public Guid TestGuid { get; set; }
+        public Guid QGuid { get; set; }
         //public string AnswerContent { get; set; }
         //public bool IsCorrect { get; set; }
         //public Guid AnswGuid { get; set; }

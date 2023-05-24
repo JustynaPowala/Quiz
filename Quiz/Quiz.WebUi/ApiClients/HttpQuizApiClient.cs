@@ -175,7 +175,15 @@ namespace Quiz.WebUi.ApiClients
 
         }
 
-
+        public async Task<int> GetQuestionsCountAsync(Guid testID)
+        {
+            var client = CreateHttpClient();
+            var address = "tests/" + testID + "/questions/count";
+            var response = await client.GetAsync(address);
+            var stringCount = await response.Content.ReadAsStringAsync();
+            var count = int.Parse(stringCount);
+            return count;             
+        }
 
 
         private HttpClient CreateHttpClient()

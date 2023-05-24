@@ -58,16 +58,17 @@ WHERE Status = @Status2";
 
 if (body.CategoriesIds.Any())
                 {
-                    sqlQuery += " WHERE Category IN(" + testsCategories + ") ";
+                    sqlQuery += " AND Category IN(" + testsCategories + ") ";
                 }
 
-sqlQuery +=  " ORDER BY NEWID()  COMMIT TRANSACTION";
+sqlQuery +=  " ORDER BY NEWID()  COMMIT TRANSACTION";  ////
 
                 using (SqlCommand command = new SqlCommand(sqlQuery, connection))
                 {
                     command.Parameters.AddWithValue("@Id", id);
                     command.Parameters.AddWithValue("@Status", TestStatus.Generated.ToString());
                     command.Parameters.AddWithValue("@Status2", QuestionActivityStatus.Active.ToString());
+                    command.ExecuteNonQuery();
                 }
             }
             return id;
@@ -122,7 +123,7 @@ OFFSET @skipCount ROWS FETCH NEXT 1 ROWS ONLY";
                             string QuesId = reader["ID"].ToString();
                             QuesId ??= string.Empty;
 
-                            TestQ.TestGuid = Guid.Parse(QuesId);
+                            TestQ.QGuid = Guid.Parse(QuesId);
 
 
                         }
@@ -133,34 +134,38 @@ OFFSET @skipCount ROWS FETCH NEXT 1 ROWS ONLY";
             }
         }
 
+        [HttpGet("{testID}/questions/count")]  // this method is needed when there would be less than 10 possible questions to be drawn in the database.
+        public int GetQuestionsCount([FromRoute] Guid testID)
+        {
+            string connectionString = GetConnectionString();
+            var count = 0;
+
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.ConnectionString = connectionString;
+
+                connection.Open();
+
+                string sqlQuery = @"
+
+SELECT COUNT(*)
+FROM  dbo.Questions as Q 
+inner join dbo.TestQuestions as TQ
+on TQ.QuestionID = Q.ID
+WHERE TQ.TestID = @testID";
+                using (SqlCommand command = new SqlCommand(sqlQuery, connection))
+                {
+                    command.Parameters.AddWithValue("@testID", testID);
+                    count = (int)command.ExecuteScalar();
+                }
+            }
+            return count;
+        }
 
 
 
 
-
-//        string answerText = reader["AnswerContent"].ToString();
-//        answerText ??= string.Empty;
-//                            TestQA.AnswerContent = answerText;
-
-//                            string isCorrect = reader["IsCorrect"].ToString();
-//        isCorrect ??= string.Empty;
-//                            if (isCorrect == "False")
-//                            {
-//                                TestQA.IsCorrect = false;
-//                            }
-//                            else if (isCorrect == "True")
-//                            {
-//                                TestQA.IsCorrect = true;
-//                            }
-
-//string answerId = reader["ID"].ToString();
-//answerId ??= string.Empty;
-
-//TestQA.AnswGuid = Guid.Parse(answerId);
-
-
-
-private string GetConnectionString()
+        private string GetConnectionString()
         {
 
             return _configuration["ConnectionStrings:Default"];

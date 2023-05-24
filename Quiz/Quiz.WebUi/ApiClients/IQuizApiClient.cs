@@ -28,5 +28,7 @@ namespace Quiz.WebUi.ApiClients
         Task<Guid> CreateTestAsync(List<string> listOfCategoriesIds);
 
         Task<TestQuestionBody> GetTestQuestionAsync(Guid testID, int skipCount);
+
+        Task<int> GetQuestionsCountAsync(Guid testID);
     }
 }
