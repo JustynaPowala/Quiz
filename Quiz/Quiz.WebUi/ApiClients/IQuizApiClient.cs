@@ -20,9 +20,13 @@ namespace Quiz.WebUi.ApiClients
 
         Task ModifyAnswerAsync(Guid questionID, Guid answerID, string answerContent, bool isCorrect);
 
+        Task ModifyQuestionStatusToActiveAsync(Guid questionID);
+
+        Task <Guid> CloneQuestionAsync(Guid questionID);
+
         // Test methods below:
         Task<Guid> CreateTestAsync(List<string> listOfCategoriesIds);
 
-        Task<string> GetTestQuestionAsync(Guid testID, int skipCount);
+        Task<TestQuestionBody> GetTestQuestionAsync(Guid testID, int skipCount);
     }
 }

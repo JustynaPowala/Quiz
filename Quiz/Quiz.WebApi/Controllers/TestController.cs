@@ -51,8 +51,10 @@ namespace Quiz.WebApi.Controllers
 BEGIN TRANSACTION
 INSERT INTO dbo.Tests (ID, Status) VALUES (@Id, @Status)
 
-INSERT  INTO dbo.TestQuestions(ID, QuestionID, TestID)
-SELECT TOP 10 NEWID(), ID, @Id FROM dbo.Questions";
+INSERT INTO dbo.TestQuestions(ID, QuestionID, TestID)
+SELECT TOP 10 NEWID(), ID, @Id FROM dbo.Questions
+WHERE Status = @Status2";
+               
 
 if (body.CategoriesIds.Any())
                 {
@@ -64,18 +66,19 @@ sqlQuery +=  " ORDER BY NEWID()  COMMIT TRANSACTION";
                 using (SqlCommand command = new SqlCommand(sqlQuery, connection))
                 {
                     command.Parameters.AddWithValue("@Id", id);
-                    command.Parameters.AddWithValue("@Status", TestStatus.Generated.ToString());             
-                    command.ExecuteNonQuery();
+                    command.Parameters.AddWithValue("@Status", TestStatus.Generated.ToString());
+                    command.Parameters.AddWithValue("@Status2", QuestionActivityStatus.Active.ToString());
                 }
             }
             return id;
         }
 
         [HttpGet("{testID}/questions")]
-        public string GetTestQuestion([FromRoute] Guid testID, [FromQuery] int skipCount)
+        public TestQuestionBody GetTestQuestion([FromRoute] Guid testID, [FromQuery] int skipCount)
         {
-            var questionContent = "";
+            var TestQ = new TestQuestionBody();
             string connectionString = GetConnectionString();
+            
 
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
@@ -84,9 +87,10 @@ sqlQuery +=  " ORDER BY NEWID()  COMMIT TRANSACTION";
                 connection.Open();
 
                 string sqlQuery = @"
-SELECT Q.QuestionContent 
-FROM dbo.TestQuestions as TQ
-inner join dbo.Questions as Q
+
+SELECT Q.QuestionContent,Points,SelectionMultiplicity,Q.ID
+FROM  dbo.Questions as Q 
+inner join dbo.TestQuestions as TQ
 on TQ.QuestionID = Q.ID
 WHERE TQ.TestID = @testID
 ORDER BY Q.QuestionContent 
@@ -102,14 +106,29 @@ OFFSET @skipCount ROWS FETCH NEXT 1 ROWS ONLY";
                         while (reader.Read())
                         {
 
-                            questionContent = reader["QuestionContent"].ToString();
+                            string questionContent = reader["QuestionContent"].ToString();
                             questionContent ??= string.Empty;
+                            TestQ.QuestionContent = questionContent;
+
+                            string points = reader["Points"].ToString();
+                            points ??= string.Empty;
+                            TestQ.Points = int.Parse(points);
+
+                            string answerMultiplicity = reader["SelectionMultiplicity"].ToString();
+                            answerMultiplicity ??= string.Empty;
+
+                            TestQ.AnswerMultiplicity = Enum.Parse<AnswerMultiplicity>(answerMultiplicity);
+
+                            string QuesId = reader["ID"].ToString();
+                            QuesId ??= string.Empty;
+
+                            TestQ.TestGuid = Guid.Parse(QuesId);
 
 
                         }
                     }
                 }
-                return questionContent;
+                return TestQ;
 
             }
         }
@@ -117,7 +136,31 @@ OFFSET @skipCount ROWS FETCH NEXT 1 ROWS ONLY";
 
 
 
-        private string GetConnectionString()
+
+
+//        string answerText = reader["AnswerContent"].ToString();
+//        answerText ??= string.Empty;
+//                            TestQA.AnswerContent = answerText;
+
+//                            string isCorrect = reader["IsCorrect"].ToString();
+//        isCorrect ??= string.Empty;
+//                            if (isCorrect == "False")
+//                            {
+//                                TestQA.IsCorrect = false;
+//                            }
+//                            else if (isCorrect == "True")
+//                            {
+//                                TestQA.IsCorrect = true;
+//                            }
+
+//string answerId = reader["ID"].ToString();
+//answerId ??= string.Empty;
+
+//TestQA.AnswGuid = Guid.Parse(answerId);
+
+
+
+private string GetConnectionString()
         {
 
             return _configuration["ConnectionStrings:Default"];

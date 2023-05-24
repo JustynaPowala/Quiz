@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Quiz.Contracts;
 using Syncfusion.Blazor;
 using System;
+using System.Collections.Generic;
 using System.Security.Cryptography.Xml;
 
 namespace Quiz.WebApi.Controllers
@@ -124,19 +125,14 @@ namespace Quiz.WebApi.Controllers
                 connection.Open();
 
                 string sqlQuery = @"
-BEGIN TRANSACTION
-BEGIN TRY
-DELETE FROM dbo.Answers WHERE QuestionID = @ID
-DELETE FROM dbo.Questions WHERE ID = @ID
-COMMIT TRANSACTION
-END TRY
-BEGIN CATCH
-ROLLBACK TRANSACTION
-END CATCH";
-
+UPDATE dbo.Questions 
+SET Status = @Status
+WHERE Id = @ID";
+                               
                 using (SqlCommand command = new SqlCommand(sqlQuery, connection))
                 {
                     command.Parameters.AddWithValue("@ID", questionID);
+                    command.Parameters.AddWithValue("@Status", QuestionActivityStatus.Deleted.ToString());
                     command.ExecuteNonQuery();
                 }
             }
@@ -224,11 +220,11 @@ END CATCH";
 
                 if (searchString != null)
                 {
-                    sqlQuery = "SELECT * FROM dbo.Questions where Category = @category and QuestionContent like '%' + @searchString + '%' ORDER BY QuestionContent OFFSET @skipCount ROWS FETCH NEXT @maxResultCount ROWS ONLY";
+                    sqlQuery = "SELECT * FROM dbo.Questions where (Status = @status1 or Status = @status2) and Category = @category and QuestionContent like '%' + @searchString + '%' ORDER BY QuestionContent OFFSET @skipCount ROWS FETCH NEXT @maxResultCount ROWS ONLY";
                 }
                 else
                 {
-                    sqlQuery = "SELECT * FROM dbo.Questions where Category = @category ORDER BY QuestionContent OFFSET @skipCount ROWS FETCH NEXT @maxResultCount ROWS ONLY";
+                    sqlQuery = "SELECT * FROM dbo.Questions where (Status = @status1 or Status = @status2) and Category = @category ORDER BY QuestionContent OFFSET @skipCount ROWS FETCH NEXT @maxResultCount ROWS ONLY";
                 }
 
                 using (SqlCommand command = new SqlCommand(sqlQuery, connection))
@@ -236,6 +232,8 @@ END CATCH";
                     command.Parameters.AddWithValue("@category", category);
                     command.Parameters.AddWithValue("@skipCount", skipCount);
                     command.Parameters.AddWithValue("@maxResultCount", maxResultCount);
+                    command.Parameters.AddWithValue("@status1", QuestionActivityStatus.Active.ToString());
+                    command.Parameters.AddWithValue("@status2", QuestionActivityStatus.InPreparation.ToString());
                     if (searchString != null)
                     {
                         command.Parameters.AddWithValue("@searchString", searchString);
@@ -261,6 +259,12 @@ END CATCH";
                             string quesCategory = reader["Category"].ToString();
                             quesCategory ??= string.Empty;
                             question.Category = quesCategory;
+
+                            string activityStatus = reader["Status"].ToString();
+                            activityStatus ??= string.Empty;
+
+                            question.ActivityStatus = Enum.Parse<QuestionActivityStatus>(activityStatus);
+
 
                             listOfQuestions.Add(question);
                         }
@@ -334,6 +338,36 @@ WHERE Id = @Id";
             }
         }
 
+
+        [HttpPost("{questionID}/activate")]
+        public async Task ModifyQuestionStatusToActive([FromRoute] Guid questionID)
+        {
+            string connectionString = GetConnectionString();
+
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.ConnectionString = connectionString;
+
+                connection.Open();
+
+                string sqlQuery = @"
+UPDATE dbo.Questions 
+SET Status = @Status
+WHERE Id = @ID";
+
+                using (SqlCommand command = new SqlCommand(sqlQuery, connection))
+                {
+                    command.Parameters.AddWithValue("@ID", questionID);
+                    command.Parameters.AddWithValue("@Status", QuestionActivityStatus.Active.ToString());
+                    command.ExecuteNonQuery();
+                }
+            }
+
+        }
+    
+            
+
+
         [HttpGet("{questionID}")]
         public QuestionInfo GetQuestionInfo([FromRoute] Guid questionID)
         {
@@ -346,7 +380,7 @@ WHERE Id = @Id";
 
                 connection.Open();
 
-                string sqlQuery = "SELECT QuestionContent, Points, Category, SelectionMultiplicity FROM dbo.Questions WHERE Id = @Id";
+                string sqlQuery = "SELECT QuestionContent, Points, Category, SelectionMultiplicity, Status FROM dbo.Questions WHERE Id = @Id";
                 using (SqlCommand command = new SqlCommand(sqlQuery, connection))
                 {
                     command.Parameters.AddWithValue("@Id", questionID);
@@ -374,7 +408,12 @@ WHERE Id = @Id";
                             string answerMultiplicity = reader["SelectionMultiplicity"].ToString();
                             answerMultiplicity ??= string.Empty;
 
-                            question.AnswerMultiplicity = Enum.Parse<AnswerMultiplicity>(answerMultiplicity);                     
+                            question.AnswerMultiplicity = Enum.Parse<AnswerMultiplicity>(answerMultiplicity);
+
+                            string activityStatus= reader["Status"].ToString();
+                            activityStatus ??= string.Empty;
+
+                            question.ActivityStatus = Enum.Parse<QuestionActivityStatus>(activityStatus);
                         }
                     }
                 }
@@ -430,6 +469,50 @@ UPDATE dbo.Answers SET IsCorrect = CASE WHEN ID = @ID THEN 1 ELSE 0 END WHERE Qu
                 }
             }
         }
+        [HttpPost("{questionID}/clone")]
+        public Guid CloneQuestion([FromRoute] Guid questionID)
+        {
+            var newID = Guid.NewGuid();
+
+
+            string connectionString = GetConnectionString();
+
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.ConnectionString = connectionString;
+
+                connection.Open();
+
+                string sqlQuery = @"
+BEGIN TRANSACTION
+UPDATE dbo.Questions
+SET STATUS = @Status
+WHERE ID = @Id
+
+INSERT INTO dbo.Questions(ID, QuestionContent, Points, Category, SelectionMultiplicity)
+SELECT @newID, QuestionContent, Points, Category, SelectionMultiplicity FROM dbo.Questions
+WHERE ID = @Id
+
+INSERT INTO dbo.Answers(QuestionID, ID, AnswerContent, IsCorrect, CreationTimestamp)
+SELECT @newID, NEWID(),AnswerContent, IsCorrect, @CreationTimestamp FROM dbo.Answers
+WHERE QuestioniD = @Id
+
+COMMIT TRANSACTION
+";
+
+                using (SqlCommand command = new SqlCommand(sqlQuery, connection))
+                {
+                    command.Parameters.AddWithValue("@Id", questionID);
+                    command.Parameters.AddWithValue("@newID", newID);
+                    command.Parameters.AddWithValue("@Status", QuestionActivityStatus.Archived.ToString());
+                    command.Parameters.AddWithValue("@CreationTimestamp", DateTime.Now);
+                    command.ExecuteNonQuery();
+
+                }
+            }
+            return newID;
+        }
+
 
 
 

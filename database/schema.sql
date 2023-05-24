@@ -8,6 +8,7 @@ CREATE TABLE [dbo].[Questions](
 	[Points] [int] NOT NULL,
 	[Category] [varchar](50) NOT NULL,
 	[SelectionMultiplicity] [varchar](10) NOT NULL,
+	[Status] [varchar](50) NOT NULL DEFAULT ('InPreparation'),
  CONSTRAINT [PK_Questions] PRIMARY KEY CLUSTERED 
 (
 	[ID] ASC

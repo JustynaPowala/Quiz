@@ -134,6 +134,23 @@ namespace Quiz.WebUi.ApiClients
             })); ;
         }
 
+        public async Task ModifyQuestionStatusToActiveAsync(Guid questionID)
+        {
+            var client = CreateHttpClient();
+            var address = "questions/" + questionID + "/activate";
+            await client.PostAsync(address, null);
+        }
+
+        public async Task<Guid> CloneQuestionAsync(Guid questionID)
+        {
+            var client = CreateHttpClient();
+            var address = "questions/" + questionID + "/clone";
+            var response = await client.PostAsync(address, null);
+            var body = await response.Content.ReadFromJsonAsync<Guid>();  
+            return body;
+        }
+
+
 
         public async Task<Guid> CreateTestAsync(List<string> listOfCategoriesIds)
         {
@@ -147,14 +164,14 @@ namespace Quiz.WebUi.ApiClients
             return body;
         }
 
-        public async Task<string> GetTestQuestionAsync(Guid testID, int skipCount)
+        public async Task<TestQuestionBody> GetTestQuestionAsync(Guid testID, int skipCount)
         {
             var skippedCount = skipCount;
             var client = CreateHttpClient();
             var address = "tests/" + testID + "/questions/" + "?skipCount=" + skippedCount;
             var response = await client.GetAsync(address);
-            var questionContent = await response.Content.ReadAsStringAsync();
-            return questionContent;
+            var TestQA = await response.Content.ReadFromJsonAsync<TestQuestionBody>();
+            return TestQA;
 
         }
 
@@ -177,4 +194,3 @@ namespace Quiz.WebUi.ApiClients
 
 
 
-//dependency injection

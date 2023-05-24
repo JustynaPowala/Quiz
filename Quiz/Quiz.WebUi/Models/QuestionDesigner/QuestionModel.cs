@@ -22,6 +22,8 @@ namespace Quiz.WebUi.Models.QuestionDesigner
         [Required]
         public AnswerMultiplicity SelectionMultiplicity { get; set; }
 
+        public QuestionActivityStatus ActivityStatus { get; set; }
+
 
 
     }

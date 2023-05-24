@@ -102,7 +102,9 @@
 @if( _testMode && !_testGeneratedButNotStarted && !_startMode)
 {
 
-    <span style="font-weight: bold;">@_questionContent</span>
+    <span style="font-weight: bold;">@_TestQ.QuestionContent</span>
+    <br />
+    
 
   
 
@@ -138,12 +140,20 @@
     private Guid _testGuid;
     private int _testPageIndex = 0;
     private const int TestSize = 10;
-    private string _questionContent = " xx";
+    //private string _questionContent = " xx";
 
     private bool _startMode = true;
     private bool _testGeneratedButNotStarted;  // it will be false after pressing the "start" button, which will start the test
     private bool _testMode;
 
+    private TestQuestionBody _TestQ;
+
+
+    public Test()
+    {
+        _TestQ = new TestQuestionBody();
+
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -155,10 +165,11 @@
         await CreateTestAsync();
         _startMode = false;                //false until the test is canceled or the test is completed and you can return to the "start page"
         _testGeneratedButNotStarted = true;
+        
     }
-    private void StartTest()   //here will be, among other things, a method that adds a start datetime to the Tests table
+    private async Task StartTest()   //here will be, among other things, a method that adds a start datetime to the Tests table
     {
-        GetTestQuestionAsync();
+        await GetTestQuestionAsync();
         _testGeneratedButNotStarted = false;
         _testMode = true;
 
@@ -167,7 +178,7 @@
     private async Task PreviousTestPageAsync()
     {
         _testPageIndex -= 1;
-        GetTestQuestionAsync();
+        await GetTestQuestionAsync();
 
 
     }
@@ -175,7 +186,7 @@
     private async Task NextTestPageAsync()
     {
         _testPageIndex += 1;
-        GetTestQuestionAsync();
+        await GetTestQuestionAsync();
 
     }
 
@@ -196,7 +207,7 @@
 
     private async Task GetTestQuestionAsync()
     {
-       _questionContent = await QuizApiClient.GetTestQuestionAsync(_testGuid, _testPageIndex);
+        _TestQ = await QuizApiClient.GetTestQuestionAsync(_testGuid, _testPageIndex);
     }
    
    
