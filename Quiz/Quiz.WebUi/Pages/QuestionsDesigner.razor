@@ -561,16 +561,16 @@ else
 
     private async Task OnAnswerContentChange(ChangeEventArgs e, AnswerInfo answerInfo)
     {     
-    answerInfo.AnswerContent = e.Value.ToString();
-        
+        answerInfo.AnswerContent = e.Value.ToString();
+
     }
 
     private async Task OnAnswerContentChanged(AnswerInfo answerInfo)
     {
-      await ChangeAnswerContent(answerInfo);
+        await ChangeAnswerContent(answerInfo);
     }
 
-   
+
 
     private async Task ChangeAnswerContent(AnswerInfo answerInfo)
     {
@@ -671,6 +671,8 @@ else
     {
         _questionModel.ID = await QuizApiClient.CloneQuestionAsync(questionID);
     }
+
+
 
 }
 

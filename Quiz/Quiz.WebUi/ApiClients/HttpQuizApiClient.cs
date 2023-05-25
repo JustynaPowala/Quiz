@@ -185,6 +185,22 @@ namespace Quiz.WebUi.ApiClients
             return count;             
         }
 
+        public async Task GetTestStartDateTimeAsync(Guid testID)
+        {
+            var client = CreateHttpClient();
+            var address = "tests/" + testID + "/start";
+            await client.PutAsync(address, null);
+        }
+
+       
+        public async Task<List<TestQuestionAnswerBody>> GetListOfQuestionAnswers(Guid testID, Guid questionID)
+        {
+            var client = CreateHttpClient();
+            var address = "tests/" + testID + "/questions/" + questionID + "/answers";
+            var response = await client.GetAsync(address);
+            var listOfQuestionAnswers = await response.Content.ReadFromJsonAsync<List<TestQuestionAnswerBody>>();
+            return listOfQuestionAnswers;
+        }
 
         private HttpClient CreateHttpClient()
         {

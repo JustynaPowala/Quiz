@@ -94,7 +94,7 @@ FROM  dbo.Questions as Q
 inner join dbo.TestQuestions as TQ
 on TQ.QuestionID = Q.ID
 WHERE TQ.TestID = @testID
-ORDER BY Q.QuestionContent 
+ORDER BY NEWID()
 OFFSET @skipCount ROWS FETCH NEXT 1 ROWS ONLY";
                 using (SqlCommand command = new SqlCommand(sqlQuery, connection))
                 {
@@ -134,6 +134,77 @@ OFFSET @skipCount ROWS FETCH NEXT 1 ROWS ONLY";
             }
         }
 
+        [HttpGet("{testID}/questions/{questionID}/answers")]
+        public List<TestQuestionAnswerBody> GetListOfQuestionAnswers([FromRoute] Guid testID,[FromRoute] Guid questionID)
+        {
+            var listOfAnswers = new List<TestQuestionAnswerBody>();
+
+            string connectionString = GetConnectionString();
+
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.ConnectionString = connectionString;
+
+                connection.Open();
+
+                string sqlQuery = @"
+SELECT A.*, TA.AnswerID
+FROM dbo.Answers as A
+INNER JOIN dbo.Questions AS Q
+on A.QuestionID = Q.ID
+INNER JOIN dbo.TestQuestions as TQ
+on Q.ID = TQ.QuestionID
+LEFT JOIN dbo.TestAnswers as TA
+on TQ.ID = TA.TestQuestionsID and A.ID = TA.AnswerID
+where A.QuestionID = @questionID AND TQ.TestID = @testID
+order by A.CreationTimestamp";
+
+                using (SqlCommand command = new SqlCommand(sqlQuery, connection))
+                {
+                    command.Parameters.AddWithValue("@testID", testID);
+                    command.Parameters.AddWithValue("@questionID", questionID);               
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+
+                        while (reader.Read())
+                        {
+
+                            var answer = new  TestQuestionAnswerBody();
+                   
+                            string answerId = reader["ID"].ToString();
+                            answerId ??= string.Empty;
+
+                            answer.AnswGuid = Guid.Parse(answerId);
+
+
+                            string answerText = reader["AnswerContent"].ToString();
+                            answerText ??= string.Empty;
+                            answer.AnswerContent = answerText;
+
+                            string isSelected = reader["AnswerID"].ToString();
+                            
+                            if (isSelected == string.Empty)
+                            {
+                                answer.IsSelected = false;
+                            }
+                            else
+                            {
+                                answer.IsSelected = true;
+                            }
+
+
+                            listOfAnswers.Add(answer);
+                        }
+                    }
+                }
+            }
+            return listOfAnswers;
+        }
+    
+
+
+
+
         [HttpGet("{testID}/questions/count")]  // this method is needed when there would be less than 10 possible questions to be drawn in the database.
         public int GetQuestionsCount([FromRoute] Guid testID)
         {
@@ -163,6 +234,30 @@ WHERE TQ.TestID = @testID";
         }
 
 
+
+        [HttpPut("{testID}/start")]
+        public void GetTestStartDateTime([FromRoute] Guid testID)
+        {
+            string connectionString = GetConnectionString();
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.ConnectionString = connectionString;
+
+                connection.Open();
+
+                string sqlQuery = @"
+UPDATE dbo.Tests
+SET Started = @Started
+WHERE ID = @testID";
+
+                using (SqlCommand command = new SqlCommand(sqlQuery, connection))
+                {
+                    command.Parameters.AddWithValue("@testID", testID);
+                    command.Parameters.AddWithValue("@Started", DateTime.Now);
+                    command.ExecuteNonQuery();
+                }
+            }
+        }
 
 
         private string GetConnectionString()

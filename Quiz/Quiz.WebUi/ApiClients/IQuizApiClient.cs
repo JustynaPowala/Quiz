@@ -30,5 +30,9 @@ namespace Quiz.WebUi.ApiClients
         Task<TestQuestionBody> GetTestQuestionAsync(Guid testID, int skipCount);
 
         Task<int> GetQuestionsCountAsync(Guid testID);
+
+        Task GetTestStartDateTimeAsync(Guid testID);
+
+        Task<List<TestQuestionAnswerBody>> GetListOfQuestionAnswers(Guid testID, Guid questionID);
     }
 }

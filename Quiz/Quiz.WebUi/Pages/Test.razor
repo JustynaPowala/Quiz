@@ -58,6 +58,67 @@
         text-align: center;
     }
 </style>
+@*///*@
+<style>
+    input[type="radio"] {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        position: relative;
+        margin: -1px 4px 0 0;
+        vertical-align: middle;
+        cursor: pointer;
+        background-color: white;
+    }
+
+        input[type="radio"]:checked::before {
+            content: "\2714";
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            text-align: center;
+            line-height: 16px;
+        }
+</style>
+
+<style>
+    .checkbox-design2 {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        position: relative;
+        margin: -1px 4px 0 0;
+        vertical-align: middle;
+        cursor: pointer;
+        background-color: white;
+    }
+
+    input[type="checkbox"]:checked::before {
+        content: "\2714";
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        text-align: center;
+        line-height: 16px;
+    }
+
+</style>
 
 @if (_startMode)
 {
@@ -104,6 +165,48 @@
 
     <span style="font-weight: bold;">@_TestQ.QuestionContent</span>
     <br />
+
+    @if (_listOfQuestionAnswers == null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else
+    {
+        <table class="table table-striped table-bordered">
+            <thead>
+                <tr>                   
+                    <th style="width: 70%; text-align: center;">Answer Content</th>
+                    <th style="width: 10%; text-align: center;">Select</th>                
+                </tr>
+            </thead>
+            <tbody>
+
+                @foreach (var answ in _listOfQuestionAnswers)
+                {
+                    <tr>                 
+                        <td style="text-align: center;">
+                            <input type="text" @bind-value="@answ.AnswerContent" />
+                        </td>
+                        <td style="text-align: center;">
+                            @if (_TestQ.AnswerMultiplicity == AnswerMultiplicity.Single)
+                            {
+                                <input type="radio" name="IsSelected" checked="@answ.IsSelected" class="checkbox-design2"  />
+                            }
+                            else
+                            {
+                                <input type="checkbox" name="IsSelected" checked="@answ.IsSelected" class="checkbox-design2"   />
+                            }
+                        </td>
+
+                    </tr>
+                }
+
+
+            </tbody>
+        </table>
+    }
+        
+ @*   @onchange="() => ChangeAnswerCorectness(answ)"*@
     
 
   
@@ -141,6 +244,7 @@
     private int _testPageIndex = 0;
     //private const int TestSize = 10;
     private int _countOfQuestions = 0;
+    private List<TestQuestionAnswerBody> _listOfQuestionAnswers;
 
     private bool _startMode = true;
     private bool _testGeneratedButNotStarted;  // it will be false after pressing the "start" button, which will start the test
@@ -167,12 +271,15 @@
         _testGeneratedButNotStarted = true;
 
     }
-    private async Task StartTest()   //here will be, among other things, a method that adds a start datetime to the Tests table
+    private async Task StartTest()   
     {
         await GetQuestionsCountAsync();
         await GetTestQuestionAsync();
+        await GetTestStartDateTimeAsync();
+        await GetListOfQuestionAnswers();
         _testGeneratedButNotStarted = false;
         _testMode = true;
+
 
     }
 
@@ -180,15 +287,14 @@
     {
         _testPageIndex -= 1;
         await GetTestQuestionAsync();
-
-
+        await GetListOfQuestionAnswers();
     }
 
     private async Task NextTestPageAsync()
     {
         _testPageIndex += 1;
         await GetTestQuestionAsync();
-
+        await GetListOfQuestionAnswers();
     }
 
 
@@ -216,6 +322,15 @@
         _countOfQuestions = await QuizApiClient.GetQuestionsCountAsync(_testGuid);
     }
 
-   
+    private async Task GetTestStartDateTimeAsync()
+    {
+        await QuizApiClient.GetTestStartDateTimeAsync(_testGuid);
+    }
+
+    private async Task GetListOfQuestionAnswers()
+    {
+        _listOfQuestionAnswers =  await QuizApiClient.GetListOfQuestionAnswers(_testGuid, _TestQ.QGuid);
+    }
+
 
 }
