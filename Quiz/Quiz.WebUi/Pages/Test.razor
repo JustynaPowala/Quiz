@@ -273,9 +273,9 @@
     }
     private async Task StartTest()   
     {
+        await StartTestAsync();
         await GetQuestionsCountAsync();
         await GetTestQuestionAsync();
-        await GetTestStartDateTimeAsync();
         await GetListOfQuestionAnswers();
         _testGeneratedButNotStarted = false;
         _testMode = true;
@@ -322,9 +322,9 @@
         _countOfQuestions = await QuizApiClient.GetQuestionsCountAsync(_testGuid);
     }
 
-    private async Task GetTestStartDateTimeAsync()
+    private async Task StartTestAsync()
     {
-        await QuizApiClient.GetTestStartDateTimeAsync(_testGuid);
+        await QuizApiClient.StartTestAsync(_testGuid);
     }
 
     private async Task GetListOfQuestionAnswers()

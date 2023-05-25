@@ -236,7 +236,7 @@ WHERE TQ.TestID = @testID";
 
 
         [HttpPut("{testID}/start")]
-        public void GetTestStartDateTime([FromRoute] Guid testID)
+        public void StartTest([FromRoute] Guid testID)
         {
             string connectionString = GetConnectionString();
             using (SqlConnection connection = new SqlConnection(connectionString))
@@ -247,13 +247,14 @@ WHERE TQ.TestID = @testID";
 
                 string sqlQuery = @"
 UPDATE dbo.Tests
-SET Started = @Started
+SET Started = @Started, Status = @Status
 WHERE ID = @testID";
 
                 using (SqlCommand command = new SqlCommand(sqlQuery, connection))
                 {
                     command.Parameters.AddWithValue("@testID", testID);
                     command.Parameters.AddWithValue("@Started", DateTime.Now);
+                    command.Parameters.AddWithValue("@Status", TestStatus.Started.ToString());
                     command.ExecuteNonQuery();
                 }
             }

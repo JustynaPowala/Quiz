@@ -31,7 +31,7 @@ namespace Quiz.WebUi.ApiClients
 
         Task<int> GetQuestionsCountAsync(Guid testID);
 
-        Task GetTestStartDateTimeAsync(Guid testID);
+        Task StartTestAsync(Guid testID);
 
         Task<List<TestQuestionAnswerBody>> GetListOfQuestionAnswers(Guid testID, Guid questionID);
     }

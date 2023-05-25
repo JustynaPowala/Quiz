@@ -185,7 +185,7 @@ namespace Quiz.WebUi.ApiClients
             return count;             
         }
 
-        public async Task GetTestStartDateTimeAsync(Guid testID)
+        public async Task StartTestAsync(Guid testID)
         {
             var client = CreateHttpClient();
             var address = "tests/" + testID + "/start";
