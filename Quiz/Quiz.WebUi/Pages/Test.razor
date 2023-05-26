@@ -311,9 +311,19 @@
 
     private async Task ChangeAnswerSelection(TestQuestionAnswerBody testQuestionAnswerBody)
     {
-        var body = new AddAnswerToTestAnswersBody(testQuestionAnswerBody.AnswGuid);
-        await AddAnswerToTestAnswers(body);
-        await GetListOfQuestionAnswers();
+        if (_TestQ.AnswerMultiplicity == AnswerMultiplicity.Single || (_TestQ.AnswerMultiplicity == AnswerMultiplicity.Multiple && testQuestionAnswerBody.IsSelected == false))
+        {
+            var body = new AddAnswerToTestAnswersBody(testQuestionAnswerBody.AnswGuid);
+            await AddAnswerToTestAnswers(body);
+            await GetListOfQuestionAnswers();
+        }
+        else
+        {
+            await DeleteAnswerFromTestAnswers(testQuestionAnswerBody);
+            await GetListOfQuestionAnswers();
+        }
+
+
     }
 
 
@@ -341,6 +351,10 @@
     private async Task AddAnswerToTestAnswers(AddAnswerToTestAnswersBody addAnswerToTestAnswersBody)
     {
         await QuizApiClient.AddAnswerToTestAnswers(_testGuid, _TestQ.QGuid, addAnswerToTestAnswersBody.AnswGuid);
+    }
+    private async Task DeleteAnswerFromTestAnswers(TestQuestionAnswerBody testQuestionAnswerBody)
+    {
+        await QuizApiClient.DeleteAnswerFromTestAnswers(_testGuid, _TestQ.QGuid, testQuestionAnswerBody.AnswGuid);
     }
 
 

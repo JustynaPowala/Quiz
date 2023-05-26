@@ -36,5 +36,7 @@ namespace Quiz.WebUi.ApiClients
         Task<List<TestQuestionAnswerBody>> GetListOfQuestionAnswers(Guid testID, Guid questionID);
 
         Task<Guid> AddAnswerToTestAnswers(Guid testID, Guid testQuestionID, Guid testAnswerID);
+
+        Task DeleteAnswerFromTestAnswers(Guid testID, Guid testQuestionID, Guid answerID);
     }
 }

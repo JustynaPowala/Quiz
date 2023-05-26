@@ -214,7 +214,14 @@ namespace Quiz.WebUi.ApiClients
             var body = await response.Content.ReadFromJsonAsync<Guid>();
             return body;
         }
-    
+
+        public async Task DeleteAnswerFromTestAnswers(Guid testID, Guid testQuestionID, Guid answerID)
+        {
+            var client = CreateHttpClient();
+            var address = "tests/" + testID + "/test-questions/" + testQuestionID + "/test-answers/" + answerID;
+            var response = await client.DeleteAsync(address);
+        }
+
         private HttpClient CreateHttpClient()
         {
             var client= new HttpClient();

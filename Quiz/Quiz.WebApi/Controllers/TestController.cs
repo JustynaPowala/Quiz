@@ -315,7 +315,32 @@ WHERE testID = @testID and QuestionID = @questionID";
             return id;  /// 
         }
 
-    
+        [HttpDelete("{testID}/test-questions/{testQuestionID}/test-answers/{answerID}")]
+        public void DeleteAnswerFromTestAnswers([FromRoute] Guid testID, [FromRoute] Guid testQuestionID, [FromRoute] Guid answerID)  // method that will be used for multiple choice questions when unchecking the checkbox
+        {
+            string connectionString = GetConnectionString();
+
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.ConnectionString = connectionString;
+
+                connection.Open();
+
+                string sqlQuery = @"
+DELETE TA FROM dbo.TestAnswers as TA
+INNER JOIN dbo.TestQuestions as TQ on TA.TestQuestionsID = TQ.ID
+WHERE TQ.testID = @testID and TQ.QuestionID = @questionID and TA.AnswerID = @answerID";
+
+                using (SqlCommand command = new SqlCommand(sqlQuery, connection))
+                {
+                    command.Parameters.AddWithValue("@testID", testID);
+                    command.Parameters.AddWithValue("@questionID", testQuestionID);
+                    command.Parameters.AddWithValue("@answerID", answerID);
+                    command.ExecuteNonQuery();
+                }
+
+            }
+        }
 
 
 
