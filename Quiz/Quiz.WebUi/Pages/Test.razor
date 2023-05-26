@@ -165,6 +165,8 @@
 
     <span style="font-weight: bold;">@_TestQ.QuestionContent</span>
     <br />
+    <span style="font-weight: bold;">@_TestQ.AnswerMultiplicity.ToString()</span>
+    <br />
 
     @if (_listOfQuestionAnswers == null)
     {
@@ -190,11 +192,11 @@
                         <td style="text-align: center;">
                             @if (_TestQ.AnswerMultiplicity == AnswerMultiplicity.Single)
                             {
-                                <input type="radio" name="IsSelected" checked="@answ.IsSelected" class="checkbox-design2"  />
+                                <input type="radio" name="IsSelected" checked="@answ.IsSelected" class="checkbox-design2" @onchange="() => ChangeAnswerSelection(answ)" />
                             }
                             else
                             {
-                                <input type="checkbox" name="IsSelected" checked="@answ.IsSelected" class="checkbox-design2"   />
+                                <input type="checkbox" name="IsSelected" checked="@answ.IsSelected" class="checkbox-design2" @onchange="() => ChangeAnswerSelection(answ)" />
                             }
                         </td>
 
@@ -205,11 +207,8 @@
             </tbody>
         </table>
     }
-        
- @*   @onchange="() => ChangeAnswerCorectness(answ)"*@
+   
     
-
-  
 
     @if (_testPageIndex > 0)
     {
@@ -310,6 +309,13 @@
         _testGuid =  await QuizApiClient.CreateTestAsync(_selectedCategories.ToList());
     }
 
+    private async Task ChangeAnswerSelection(TestQuestionAnswerBody testQuestionAnswerBody)
+    {
+        var body = new AddAnswerToTestAnswersBody(testQuestionAnswerBody.AnswGuid);
+        await AddAnswerToTestAnswers(body);
+        await GetListOfQuestionAnswers();
+    }
+
 
 
     private async Task GetTestQuestionAsync()
@@ -330,6 +336,11 @@
     private async Task GetListOfQuestionAnswers()
     {
         _listOfQuestionAnswers =  await QuizApiClient.GetListOfQuestionAnswers(_testGuid, _TestQ.QGuid);
+    }
+
+    private async Task AddAnswerToTestAnswers(AddAnswerToTestAnswersBody addAnswerToTestAnswersBody)
+    {
+        await QuizApiClient.AddAnswerToTestAnswers(_testGuid, _TestQ.QGuid, addAnswerToTestAnswersBody.AnswGuid);
     }
 
 

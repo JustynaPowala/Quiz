@@ -25,7 +25,7 @@ namespace Quiz.WebApi.Controllers
         {
             var categories = await _categoriesProvider.GetCategoriesAsync();
 
-            foreach(var category in body.CategoriesIds ) 
+            foreach (var category in body.CategoriesIds)
             {
                 if (!categories.Any(c => c.ID == category))
                 {
@@ -54,14 +54,14 @@ INSERT INTO dbo.Tests (ID, Status) VALUES (@Id, @Status)
 INSERT INTO dbo.TestQuestions(ID, QuestionID, TestID)
 SELECT TOP 10 NEWID(), ID, @Id FROM dbo.Questions
 WHERE Status = @Status2";
-               
 
-if (body.CategoriesIds.Any())
+
+                if (body.CategoriesIds.Any())
                 {
                     sqlQuery += " AND Category IN(" + testsCategories + ") ";
                 }
 
-sqlQuery +=  " ORDER BY NEWID()  COMMIT TRANSACTION";  ////
+                sqlQuery += " ORDER BY NEWID()  COMMIT TRANSACTION";  ////
 
                 using (SqlCommand command = new SqlCommand(sqlQuery, connection))
                 {
@@ -79,7 +79,7 @@ sqlQuery +=  " ORDER BY NEWID()  COMMIT TRANSACTION";  ////
         {
             var TestQ = new TestQuestionBody();
             string connectionString = GetConnectionString();
-            
+
 
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
@@ -94,7 +94,7 @@ FROM  dbo.Questions as Q
 inner join dbo.TestQuestions as TQ
 on TQ.QuestionID = Q.ID
 WHERE TQ.TestID = @testID
-ORDER BY NEWID()
+ORDER BY Q.QuestionContent
 OFFSET @skipCount ROWS FETCH NEXT 1 ROWS ONLY";
                 using (SqlCommand command = new SqlCommand(sqlQuery, connection))
                 {
@@ -135,7 +135,7 @@ OFFSET @skipCount ROWS FETCH NEXT 1 ROWS ONLY";
         }
 
         [HttpGet("{testID}/questions/{questionID}/answers")]
-        public List<TestQuestionAnswerBody> GetListOfQuestionAnswers([FromRoute] Guid testID,[FromRoute] Guid questionID)
+        public List<TestQuestionAnswerBody> GetListOfQuestionAnswers([FromRoute] Guid testID, [FromRoute] Guid questionID)
         {
             var listOfAnswers = new List<TestQuestionAnswerBody>();
 
@@ -162,15 +162,15 @@ order by A.CreationTimestamp";
                 using (SqlCommand command = new SqlCommand(sqlQuery, connection))
                 {
                     command.Parameters.AddWithValue("@testID", testID);
-                    command.Parameters.AddWithValue("@questionID", questionID);               
+                    command.Parameters.AddWithValue("@questionID", questionID);
                     using (SqlDataReader reader = command.ExecuteReader())
                     {
 
                         while (reader.Read())
                         {
 
-                            var answer = new  TestQuestionAnswerBody();
-                   
+                            var answer = new TestQuestionAnswerBody();
+
                             string answerId = reader["ID"].ToString();
                             answerId ??= string.Empty;
 
@@ -182,7 +182,7 @@ order by A.CreationTimestamp";
                             answer.AnswerContent = answerText;
 
                             string isSelected = reader["AnswerID"].ToString();
-                            
+
                             if (isSelected == string.Empty)
                             {
                                 answer.IsSelected = false;
@@ -200,7 +200,7 @@ order by A.CreationTimestamp";
             }
             return listOfAnswers;
         }
-    
+
 
 
 
@@ -260,6 +260,65 @@ WHERE ID = @testID";
             }
         }
 
+        [HttpPost("{testID}/test-questions/{testQuestionID}/test-answers")]
+        public Guid AddAnswerToTestAnswers([FromRoute] Guid testID, [FromRoute] Guid testQuestionID, [FromBody] AddAnswerToTestAnswersBody body)
+        {
+            var id = Guid.NewGuid();
+
+            string connectionString = GetConnectionString();
+
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.ConnectionString = connectionString;
+
+                connection.Open();
+              
+                string sqlQuery1 = "SELECT SelectionMultiplicity FROM dbo.Questions WHERE ID = @questionID";
+
+                using (SqlCommand command1 = new SqlCommand(sqlQuery1, connection))
+                {
+                    command1.Parameters.AddWithValue("@questionID", testQuestionID);
+                    string selectionMultiplicity = command1.ExecuteScalar()?.ToString();
+
+                    if (selectionMultiplicity == "Single")
+                    {
+                        string sqlQuery2 = @"
+DELETE TA FROM dbo.TestAnswers as TA
+INNER JOIN dbo.TestQuestions as TQ on TA.TestQuestionsID = TQ.ID
+WHERE TQ.testID = @testID and TQ.QuestionID = @questionID";
+
+                        using (SqlCommand command2 = new SqlCommand(sqlQuery2, connection))
+                        {
+                            command2.Parameters.AddWithValue("@testID", testID);
+                            command2.Parameters.AddWithValue("@questionID", testQuestionID);
+                            command2.ExecuteNonQuery();
+                        }
+                    }
+                    
+                    string sqlQuery3 = @"
+
+INSERT INTO dbo.TestAnswers(ID, AnswerID, TestQuestionsID)
+SELECT @Id, @answerID, ID FROM dbo.TestQuestions
+WHERE testID = @testID and QuestionID = @questionID";
+
+                    using (SqlCommand command3 = new SqlCommand(sqlQuery3, connection))
+                    {
+                        command3.Parameters.AddWithValue("@Id", id);
+                        command3.Parameters.AddWithValue("@answerID", body.AnswGuid);
+                        command3.Parameters.AddWithValue("@testID", testID);
+                        command3.Parameters.AddWithValue("@questionID", testQuestionID);
+                        command3.ExecuteNonQuery();
+                    }
+
+                }
+            }
+            return id;  /// 
+        }
+
+    
+
+
+
 
         private string GetConnectionString()
         {
@@ -267,9 +326,9 @@ WHERE ID = @testID";
             return _configuration["ConnectionStrings:Default"];
         }
 
-        }
-
     }
 
-    
+}
+
+
 

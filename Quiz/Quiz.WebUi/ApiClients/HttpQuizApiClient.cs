@@ -1,4 +1,5 @@
 ﻿using Quiz.Contracts;
+using Quiz.WebUi.Pages;
 using System.Net.Http;
 using System.Net.Http.Json;
 
@@ -202,6 +203,18 @@ namespace Quiz.WebUi.ApiClients
             return listOfQuestionAnswers;
         }
 
+        public async Task<Guid> AddAnswerToTestAnswers(Guid testID, Guid testQuestionID, Guid testAnswerID)
+        {
+            var client = CreateHttpClient();
+            var address = "tests/" + testID + "/test-questions/" + testQuestionID + "/test-answers";
+            var response = await client.PostAsync(address, JsonContent.Create(new AddAnswerToTestAnswersBody()
+            {
+                AnswGuid = testAnswerID
+            }));
+            var body = await response.Content.ReadFromJsonAsync<Guid>();
+            return body;
+        }
+    
         private HttpClient CreateHttpClient()
         {
             var client= new HttpClient();

@@ -34,5 +34,7 @@ namespace Quiz.WebUi.ApiClients
         Task StartTestAsync(Guid testID);
 
         Task<List<TestQuestionAnswerBody>> GetListOfQuestionAnswers(Guid testID, Guid questionID);
+
+        Task<Guid> AddAnswerToTestAnswers(Guid testID, Guid testQuestionID, Guid testAnswerID);
     }
 }
