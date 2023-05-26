@@ -342,6 +342,31 @@ WHERE TQ.testID = @testID and TQ.QuestionID = @questionID and TA.AnswerID = @ans
             }
         }
 
+//        [HttpGet("{testID}/test-questions/{testQuestionID}/test-answers")]
+//        public double EndTest([FromRoute] Guid testID, [FromRoute] Guid testQuestionID)
+//        {
+//            var maxPointsToAchieve = 0;
+//            string connectionString = GetConnectionString();
+
+//            using (SqlConnection connection = new SqlConnection(connectionString))
+//            {
+//                connection.ConnectionString = connectionString;
+
+//                connection.Open();
+
+//                string sqlQuery1 = @"
+//SELECT SUM(Q.Points) as p from dbo.TestQuestions as TQ
+//INNER JOIN dbo.Questions as Q on  TQ.QuestionID = Q.ID
+//WHERE TQ.testID = @testID
+//";
+//                using (SqlCommand command1 = new SqlCommand(sqlQuery1, connection))
+//                {
+//                    command1.Parameters.AddWithValue("@testID", testID);                 
+//                    maxPointsToAchieve = int.Parse(command1.ExecuteScalar()?.ToString()); // ?
+//                }
+
+//            }
+//        }
 
 
 
