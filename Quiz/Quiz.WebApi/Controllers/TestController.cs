@@ -342,31 +342,206 @@ WHERE TQ.testID = @testID and TQ.QuestionID = @questionID and TA.AnswerID = @ans
             }
         }
 
-//        [HttpGet("{testID}/test-questions/{testQuestionID}/test-answers")]
-//        public double EndTest([FromRoute] Guid testID, [FromRoute] Guid testQuestionID)
-//        {
-//            var maxPointsToAchieve = 0;
-//            string connectionString = GetConnectionString();
+        [HttpGet("{testID}/result")]
+        public TestResultAndTestMaxBody EndTest([FromRoute] Guid testID)
+        {
+            var maxPointsToAchieve = 0;
+            var listOfQuestions = new List<Guid>();
+            double sumOfAchievedPoints = 0;
+            var testResultAndTestMaxBody = new TestResultAndTestMaxBody();
+            var listOfSelectedAnswersInMultipleQuestion = new List<Guid>();
 
-//            using (SqlConnection connection = new SqlConnection(connectionString))
-//            {
-//                connection.ConnectionString = connectionString;
+            string connectionString = GetConnectionString();
 
-//                connection.Open();
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.ConnectionString = connectionString;
 
-//                string sqlQuery1 = @"
-//SELECT SUM(Q.Points) as p from dbo.TestQuestions as TQ
-//INNER JOIN dbo.Questions as Q on  TQ.QuestionID = Q.ID
-//WHERE TQ.testID = @testID
-//";
-//                using (SqlCommand command1 = new SqlCommand(sqlQuery1, connection))
-//                {
-//                    command1.Parameters.AddWithValue("@testID", testID);                 
-//                    maxPointsToAchieve = int.Parse(command1.ExecuteScalar()?.ToString()); // ?
-//                }
+                connection.Open();
 
-//            }
-//        }
+                string sqlQuery1 = @"
+SELECT SUM(Q.Points) as p from dbo.TestQuestions as TQ
+INNER JOIN dbo.Questions as Q on  TQ.QuestionID = Q.ID
+WHERE TQ.testID = @testID
+";
+                using (SqlCommand command1 = new SqlCommand(sqlQuery1, connection))
+                {
+                    command1.Parameters.AddWithValue("@testID", testID);
+                    maxPointsToAchieve = int.Parse(command1.ExecuteScalar()?.ToString()); // ?
+                    testResultAndTestMaxBody.TestMaxPointsToAchieve = maxPointsToAchieve;
+                }
+
+                string sqlQuery2 = @"
+SELECT QuestionID FROM dbo.TestQuestions
+WHERE testID = @testID
+";
+
+                using (SqlCommand command2 = new SqlCommand(sqlQuery2, connection))
+                {
+                    command2.Parameters.AddWithValue("@testID", testID);
+                    using (SqlDataReader reader = command2.ExecuteReader())
+                    {
+
+                        while (reader.Read())
+                        {
+                            string questionId = reader["QuestionID"].ToString();
+                            questionId ??= string.Empty;
+
+                            var questionIdGuid = Guid.Parse(questionId);
+
+                            listOfQuestions.Add(questionIdGuid);
+                        }
+                    }
+
+                    foreach (var question in listOfQuestions)
+                    {
+
+                        var pointsToAchieveInGivenQuestion = 0.0;
+                        var achievedPointsInGivenQuestion = 0.0;
+                        var pointsToAchievePerCorrectAnswer = 0.0;
+                        var pointsToLosePerIncorrectAnswer = 0.0;
+
+                        string sqlQuery3 = @"
+SELECT SUM(Q.Points) as p from dbo.TestQuestions as TQ
+INNER JOIN dbo.Questions as Q on  TQ.QuestionID = Q.ID
+WHERE Q.ID = @questionID and TQ.testID = @testID";
+                        using (SqlCommand command3 = new SqlCommand(sqlQuery3, connection))
+                        {
+                            command3.Parameters.AddWithValue("@testID", testID);
+                            command3.Parameters.AddWithValue("@questionID", question);
+                            pointsToAchieveInGivenQuestion = double.Parse(command3.ExecuteScalar()?.ToString());
+                        }
+                        string sqlQuery4 = "SELECT SelectionMultiplicity FROM dbo.Questions WHERE ID = @questionID";
+
+                        using (SqlCommand command4 = new SqlCommand(sqlQuery4, connection))
+                        {
+                            command4.Parameters.AddWithValue("@questionID", question);
+                            string selectionMultiplicity = command4.ExecuteScalar()?.ToString();
+
+                            if (selectionMultiplicity == "Single")
+                            {
+
+                                string sqlQuery5 = @"
+SELECT A.IsCorrect from dbo.Answers as A
+inner join dbo.TestAnswers as TA on A.ID = TA.AnswerID
+inner join dbo.TestQuestions as TQ on TA.TestQuestionsID = TQ.ID
+WHERE TQ.QuestionID = @questionID and TQ.testID = @testID
+";
+                                using (SqlCommand command5 = new SqlCommand(sqlQuery5, connection))
+                                {
+                                    command5.Parameters.AddWithValue("@questionID", question);
+                                    command5.Parameters.AddWithValue("@testID", testID);
+                                    using (SqlDataReader reader = command5.ExecuteReader())
+                                    {
+
+                                        while (reader.Read())
+                                        {
+                                            string isCorrect = reader["IsCorrect"].ToString();
+                                            isCorrect ??= string.Empty;
+                                            if (isCorrect == "True")
+                                            {
+                                                sumOfAchievedPoints = sumOfAchievedPoints + pointsToAchieveInGivenQuestion;
+                                            }
+                                            else
+                                            {
+
+                                            }
+                                        }
+
+                                    }
+
+                                }
+                            }
+                            else if (selectionMultiplicity == "Multiple")
+                            {
+                                string sqlQuery6 = @"
+
+SELECT COUNT(*) as sum from dbo.Questions as Q
+inner join dbo.Answers as A on Q.ID = A.QuestionID
+WHERE Q.ID = @questionID and A.IsCorrect = '1'";
+                                using (SqlCommand command6 = new SqlCommand(sqlQuery6, connection))
+                                {
+                                    command6.Parameters.AddWithValue("@questionID", question);
+                                    var countOfCorrectAnswersInGivenQuestion = double.Parse(command6.ExecuteScalar()?.ToString());
+                                    pointsToAchievePerCorrectAnswer = pointsToAchieveInGivenQuestion / countOfCorrectAnswersInGivenQuestion;
+                                    pointsToLosePerIncorrectAnswer = pointsToAchievePerCorrectAnswer;                                   
+                                }
+
+                                string sqlQuery7 = @"
+
+SELECT TA.AnswerID from dbo.TestQuestions as TQ
+inner join dbo.TestAnswers as TA on TQ.ID = TA.TestQuestionsID
+WHERE TQ.testID = @testID and TQ.QuestionID = @questionID
+";
+                                using (SqlCommand command7 = new SqlCommand(sqlQuery7, connection))
+                                {
+                                    command7.Parameters.AddWithValue("@testID", testID);
+                                    command7.Parameters.AddWithValue("@questionID", question);
+                                    using (SqlDataReader reader = command7.ExecuteReader())
+                                    {
+
+                                        while (reader.Read())
+                                        {
+                                            string answerId = reader["AnswerID"].ToString();
+                                            answerId ??= string.Empty;
+
+                                            var answerIdGuid = Guid.Parse(answerId);
+
+                                            listOfSelectedAnswersInMultipleQuestion.Add(answerIdGuid);
+                                        }
+                                    }
+
+                                    foreach (var answer in listOfSelectedAnswersInMultipleQuestion)
+                                    {
+                                        string sqlQuery8 = @"
+Select A.IsCorrect from dbo.TestQuestions as TQ
+inner join dbo.TestAnswers as TA on TQ.ID = TA.TestQuestionsID
+inner join dbo.Answers as A on TA.AnswerID = A.ID
+WHERE TQ.testID = @testID and TQ.QuestionID = @questionID
+";
+                                        using (SqlCommand command8 = new SqlCommand(sqlQuery8, connection))
+                                        {
+                                            command8.Parameters.AddWithValue("@questionID", question);
+                                            command8.Parameters.AddWithValue("@testID", testID);
+                                            using (SqlDataReader reader = command8.ExecuteReader())
+                                            {
+
+                                                while (reader.Read())
+                                                {
+                                                    string isCorrect = reader["IsCorrect"].ToString();
+                                                    isCorrect ??= string.Empty;
+                                                    if (isCorrect == "True")
+                                                    {
+                                                        achievedPointsInGivenQuestion = achievedPointsInGivenQuestion + pointsToAchievePerCorrectAnswer;
+                                                        
+                                                    }
+                                                    else
+                                                    {
+                                                        achievedPointsInGivenQuestion = achievedPointsInGivenQuestion - pointsToLosePerIncorrectAnswer;
+                                                    }                                                  
+                                                }
+                                                if(achievedPointsInGivenQuestion < 0)
+                                                {
+                                                    achievedPointsInGivenQuestion = 0;
+                                                }
+                                                
+                                                sumOfAchievedPoints = sumOfAchievedPoints + achievedPointsInGivenQuestion;
+
+                                            }
+
+                                        }
+                                    }
+
+
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            testResultAndTestMaxBody.TestResult = sumOfAchievedPoints;
+            return testResultAndTestMaxBody;
+        }
 
 
 
