@@ -193,7 +193,14 @@ namespace Quiz.WebUi.ApiClients
             await client.PutAsync(address, null);
         }
 
-       
+        public async Task EndTestAsync(Guid testID)
+        {
+            var client = CreateHttpClient();
+            var address = "tests/" + testID + "/end-test";
+            await client.PutAsync(address, null);
+        }
+
+
         public async Task<List<TestQuestionAnswerBody>> GetListOfQuestionAnswers(Guid testID, Guid questionID)
         {
             var client = CreateHttpClient();
@@ -220,6 +227,14 @@ namespace Quiz.WebUi.ApiClients
             var client = CreateHttpClient();
             var address = "tests/" + testID + "/test-questions/" + testQuestionID + "/test-answers/" + answerID;
             var response = await client.DeleteAsync(address);
+        }
+        public async Task<TestResultBody> GetResultAsync(Guid testID)
+        {
+            var client = CreateHttpClient();
+            var address = "tests/" + testID + "/result";
+            var response = await client.GetAsync(address);
+            var result = await response.Content.ReadFromJsonAsync<TestResultBody>();
+            return result;
         }
 
         private HttpClient CreateHttpClient()

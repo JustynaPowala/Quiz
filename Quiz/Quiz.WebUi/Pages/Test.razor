@@ -200,11 +200,11 @@
                             <td style="text-align: center;">
                                 @if (_TestQ.AnswerMultiplicity == AnswerMultiplicity.Single)
                                 {
-                                    <input type="radio" name="IsSelected" checked="@answ.IsSelected" class="checkbox-design2" @onchange="() => ChangeAnswerSelection(answ)" />
+                                    <input type="radio" name="IsSelected" checked="@answ.IsSelected" class="checkbox-design2" @onchange="() => ChangeAnswerSelection(answ)" disabled="@_isTestFinished" />
                                 }
                                 else
                                 {
-                                    <input type="checkbox" name="IsSelected" checked="@answ.IsSelected" class="checkbox-design2" @onchange="() => ChangeAnswerSelection(answ)" />
+                                    <input type="checkbox" name="IsSelected" checked="@answ.IsSelected" class="checkbox-design2" @onchange="() => ChangeAnswerSelection(answ)" disabled="@_isTestFinished" />
                                 }
                             </td>
                         </tr>
@@ -236,12 +236,21 @@
                 <input type="button" style="font-weight: bold" class="btn btn-info" value="Next" disabled />
             }
             <br>
-      @*      <input type="button" style="font-weight: bold" class="btn btn-info" value="Finish" @onclick="" />*@
+            <input type="button" style="font-weight: bold" class="btn btn-info" value="Finish" @onclick="EndTest" />
         </div>
         <div class="col"></div>
     </div>
     }
-   
+
+@if (_isTestFinished)
+{
+    _percentageResult = Math.Round((_testResultBody.TestResult / _testResultBody.TestMaxPointsToGain) * 100, 1);
+    <span style="font-weight: bold;">Your result is @_testResultBody.TestResult / @_testResultBody.TestMaxPointsToGain </span>
+    <span style="font-weight: bold;">@_percentageResult % </span>
+    <br />
+    <input type="button" style="font-weight: bold" class="btn btn-info" value="Back to start page" @onclick="OpenStartPage" />
+}
+
 
     
 
@@ -255,10 +264,13 @@
     //private const int TestSize = 10;
     private int _countOfQuestions = 0;
     private List<TestQuestionAnswerBody> _listOfQuestionAnswers;
+    private TestResultBody _testResultBody = new TestResultBody();
+    private double _percentageResult;
 
     private bool _startMode = true;
     private bool _testGeneratedButNotStarted;  // it will be false after pressing the "start" button, which will start the test
     private bool _testMode;
+    private bool _isTestFinished = false;
 
     private TestQuestionBody _TestQ;
 
@@ -277,7 +289,7 @@
     private async Task CreateTestOnClick()
     {
         await CreateTestAsync();
-        _startMode = false;                //false until the test is canceled or the test is completed and you can return to the "start page"
+        _startMode = false;                
         _testGeneratedButNotStarted = true;
 
     }
@@ -289,8 +301,25 @@
         await GetListOfQuestionAnswers();
         _testGeneratedButNotStarted = false;
         _testMode = true;
+        _isTestFinished = false;
 
 
+    }
+
+    private async Task EndTest()
+    {
+        await EndTestAsync();
+        await GetResultAsync();
+        _isTestFinished = true;
+        _testMode = false;
+    }
+
+    private async Task OpenStartPage()
+    {
+        _startMode = true;
+        _isTestFinished = false;
+        _testPageIndex = 0;
+        _TestQ = new TestQuestionBody();
     }
 
     private async Task PreviousTestPageAsync()
@@ -308,7 +337,6 @@
     }
 
 
-    //QuizApiClient methods below
     private async Task GetCategoriesAsync()
     {
         _listOfCategories = await QuizApiClient.GetCategoriesAsync();
@@ -354,6 +382,11 @@
         await QuizApiClient.StartTestAsync(_testGuid);
     }
 
+    private async Task EndTestAsync()
+    {
+        await QuizApiClient.EndTestAsync(_testGuid);    
+    }
+
     private async Task GetListOfQuestionAnswers()
     {
         _listOfQuestionAnswers =  await QuizApiClient.GetListOfQuestionAnswers(_testGuid, _TestQ.QGuid);
@@ -367,6 +400,12 @@
     {
         await QuizApiClient.DeleteAnswerFromTestAnswers(_testGuid, _TestQ.QGuid, testQuestionAnswerBody.AnswGuid);
     }
+
+    private async Task GetResultAsync()
+    {
+       _testResultBody = await QuizApiClient.GetResultAsync(_testGuid);
+    }
+
 
 
 }

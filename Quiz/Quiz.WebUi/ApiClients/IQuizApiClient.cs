@@ -33,10 +33,14 @@ namespace Quiz.WebUi.ApiClients
 
         Task StartTestAsync(Guid testID);
 
+        Task EndTestAsync(Guid testID);
+
         Task<List<TestQuestionAnswerBody>> GetListOfQuestionAnswers(Guid testID, Guid questionID);
 
         Task<Guid> AddAnswerToTestAnswers(Guid testID, Guid testQuestionID, Guid testAnswerID);
 
         Task DeleteAnswerFromTestAnswers(Guid testID, Guid testQuestionID, Guid answerID);
+
+        Task<TestResultBody> GetResultAsync(Guid testID);
     }
 }
