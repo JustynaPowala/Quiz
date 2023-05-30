@@ -42,7 +42,7 @@ namespace Quiz.WebApi.DomainModel
                         countOfCorrectAnswers += 1;
                     }
                 }
-                var pointsToGainPerCorrectAnswer = Points/ countOfCorrectAnswers;
+                double pointsToGainPerCorrectAnswer = Convert.ToDouble(Points)/ Convert.ToDouble(countOfCorrectAnswers);
                 var pointToLosePerInCorrectAnswer = pointsToGainPerCorrectAnswer;
                 var gainedPoints = 0.0;
                 foreach (var answer in Answers)

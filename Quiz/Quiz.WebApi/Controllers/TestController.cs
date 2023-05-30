@@ -236,56 +236,6 @@ WHERE TQ.TestID = @testID";
 
 
 
-        [HttpPut("{testID}/start")] //
-        public void StartTest([FromRoute] Guid testID)
-        {
-            string connectionString = GetConnectionString();
-            using (SqlConnection connection = new SqlConnection(connectionString))
-            {
-                connection.ConnectionString = connectionString;
-
-                connection.Open();
-
-                string sqlQuery = @"
-UPDATE dbo.Tests
-SET Started = @Started, Status = @Status
-WHERE ID = @testID";
-
-                using (SqlCommand command = new SqlCommand(sqlQuery, connection))
-                {
-                    command.Parameters.AddWithValue("@testID", testID);
-                    command.Parameters.AddWithValue("@Started", DateTime.Now);
-                    command.Parameters.AddWithValue("@Status", TestStatus.Started.ToString());
-                    command.ExecuteNonQuery();
-                }
-            }
-        }
-
-
-        [HttpPut("{testID}/end-test")] //
-        public void EndTest([FromRoute] Guid testID)
-        {
-            string connectionString = GetConnectionString();
-            using (SqlConnection connection = new SqlConnection(connectionString))
-            {
-                connection.ConnectionString = connectionString;
-
-                connection.Open();
-
-                string sqlQuery = @"
-UPDATE dbo.Tests
-SET Completed = @Completed, Status = @Status
-WHERE ID = @testID";
-
-                using (SqlCommand command = new SqlCommand(sqlQuery, connection))
-                {
-                    command.Parameters.AddWithValue("@testID", testID);
-                    command.Parameters.AddWithValue("@Completed", DateTime.Now);
-                    command.Parameters.AddWithValue("@Status", TestStatus.Completed.ToString());
-                    command.ExecuteNonQuery();
-                }
-            }
-        }
 
         [HttpPost("{testID}/test-questions/{testQuestionID}/test-answers")]
         public Guid AddAnswerToTestAnswers([FromRoute] Guid testID, [FromRoute] Guid testQuestionID, [FromBody] AddAnswerToTestAnswersBody body)
@@ -397,13 +347,10 @@ WHERE TQ.testID = @testID and TQ.QuestionID = @questionID and TA.AnswerID = @ans
             }
         }
 
-
-        [HttpGet("{testID}/result")]
-        public TestResultBody GetResult([FromRoute] Guid testID)
+        [HttpPut("{testID}/start")] //
+        public void StartTest([FromRoute] Guid testID)
         {
-
             string connectionString = GetConnectionString();
-
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
                 connection.ConnectionString = connectionString;
@@ -411,17 +358,46 @@ WHERE TQ.testID = @testID and TQ.QuestionID = @questionID and TA.AnswerID = @ans
                 connection.Open();
 
                 string sqlQuery = @"
-select Q.ID as QuestionnnID, Q.Points, Q.SelectionMultiplicity, A.ID as AnswerID, A.IsCorrect, TA.AnswerID as ChosenAnswer from dbo.TestQuestions as TQ
+UPDATE dbo.Tests
+SET Started = @Started, Status = @Status
+WHERE ID = @testID";
+
+                using (SqlCommand command = new SqlCommand(sqlQuery, connection))
+                {
+                    command.Parameters.AddWithValue("@testID", testID);
+                    command.Parameters.AddWithValue("@Started", DateTime.Now);
+                    command.Parameters.AddWithValue("@Status", TestStatus.Started.ToString());
+                    command.ExecuteNonQuery();
+                }
+            }
+        }
+
+
+        [HttpPut("{testID}/end-test")] //
+        public void EndTest([FromRoute] Guid testID)
+        {
+            double testResult = 0.0;
+            double testMaxPointsToGain = 0.0;
+
+            string connectionString = GetConnectionString();
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.ConnectionString = connectionString;
+
+                connection.Open();
+
+                string sqlQuery = @"
+select TQ.ID as QuestionID, Q.Points, Q.SelectionMultiplicity, A.ID as AnswerID, A.IsCorrect, TA.AnswerID as ChosenAnswer from dbo.TestQuestions as TQ
 inner join dbo.Questions as Q on TQ.QuestionID = Q.ID
 inner join dbo.Answers as A on Q.ID = A.QuestionID
-left join dbo.TestAnswers as TA on A.ID = TA.AnswerID
+left join dbo.TestAnswers as TA on A.ID = TA.AnswerID and TA.TestQuestionsID = TQ.ID
 WHERE TQ.TestID = @testID
-Order by Q.ID
+Order by TQ.ID
 ";
 
                 using (SqlCommand command = new SqlCommand(sqlQuery, connection))
                 {
-                    command.Parameters.AddWithValue("@testID", testID);                  
+                    command.Parameters.AddWithValue("@testID", testID);
                     using (SqlDataReader reader = command.ExecuteReader())
                     {
                         var test = new QuizTest();
@@ -429,9 +405,9 @@ Order by Q.ID
                         TestQuestion? currentQuestion = null;
                         while (reader.Read())
                         {
-                            var questionID = Guid.Parse(reader["QuestionnnID"].ToString()??String.Empty);
+                            var questionID = Guid.Parse(reader["QuestionID"].ToString() ?? String.Empty);
 
-                            if(questionID != currentQuestionID)
+                            if (questionID != currentQuestionID)
                             {
                                 var points = int.Parse(reader["Points"].ToString() ?? String.Empty);
                                 var answerMultiplicity = Enum.Parse<AnswerMultiplicity>(reader["SelectionMultiplicity"].ToString() ?? String.Empty);
@@ -445,7 +421,7 @@ Order by Q.ID
                                 currentQuestionID = questionID;
                             }
                             var anwerID = Guid.Parse(reader["AnswerID"].ToString() ?? String.Empty);
-                            var isCorrect = bool.Parse((reader["IsCorrect"].ToString()??String.Empty).ToLower());
+                            var isCorrect = bool.Parse((reader["IsCorrect"].ToString() ?? String.Empty).ToLower());
                             var isSelected = reader["ChosenAnswer"].ToString() != String.Empty;
 
 
@@ -454,18 +430,71 @@ Order by Q.ID
                                 AnswerId = anwerID,
                                 IsCorrect = isCorrect,
                                 IsSelected = isSelected
-                            }) ;
-                           
+                            });
                         }
-                        return new TestResultBody()
-                        {
-                            TestResult = test.GetGainedPoints(),
-                            TestMaxPointsToGain = test.GetMaxPointsToGain()
-                        };
+                        testResult = test.GetGainedPoints();
+                        testMaxPointsToGain = test.GetMaxPointsToGain();
+
+                    }
+
+                    string sqlQuery2 = @"
+UPDATE dbo.Tests
+SET Completed = @Completed, Status = @Status, MaxPoints = @MaxPoints, GainedPoints = @GainedPoints
+WHERE ID = @testID";
+
+                    using (SqlCommand command2 = new SqlCommand(sqlQuery2, connection))
+                    {
+                        command2.Parameters.AddWithValue("@testID", testID);
+                        command2.Parameters.AddWithValue("@Completed", DateTime.Now);
+                        command2.Parameters.AddWithValue("@Status", TestStatus.Completed.ToString());
+                        command2.Parameters.AddWithValue("@MaxPoints", testMaxPointsToGain);
+                        command2.Parameters.AddWithValue("@GainedPoints", testResult);
+                        command2.ExecuteNonQuery();
                     }
                 }
-            }     
+            }
         }
+
+        [HttpGet("{testID}/result")]
+        public TestResultBody GetResult([FromRoute] Guid testID)
+        {
+            double testResult = 0.0;
+            double testMaxPointsToGain = 0.0;
+            string connectionString = GetConnectionString();
+
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.ConnectionString = connectionString;
+
+                connection.Open();
+                string sqlQuery = @"
+SELECT MaxPoints, GainedPoints FROM dbo.Tests
+WHERE ID = @testID";
+
+                using (SqlCommand command = new SqlCommand(sqlQuery, connection))
+                {
+                    command.Parameters.AddWithValue("@testID", testID);
+
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            testResult = Convert.ToDouble(reader["GainedPoints"].ToString() ?? String.Empty);
+                            testMaxPointsToGain = Convert.ToDouble(reader["MaxPoints"].ToString() ?? String.Empty);
+                        }
+
+                            return new TestResultBody()
+                            {
+                                TestResult = testResult,
+                                TestMaxPointsToGain = testMaxPointsToGain
+                            };
+                        }
+                    }
+                }
+            }
+        
+                 
+        
 
 
         private string GetConnectionString()

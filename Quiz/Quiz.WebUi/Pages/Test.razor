@@ -125,9 +125,10 @@
     <div class="frame">
         <div class="frame-left">
             <span class="frame-title">
-                Hi!<br>
+                Welcome!<br>
                 Try your hand at taking the quiz. Select a question category.<br>
-                If you want to take a test from several categories - select them with the mouse, pressing Ctrl on the keyboard.
+                If you want to take a test from several categories - select them with the mouse, pressing Ctrl on the keyboard.<br>
+                If no category is selected, the test will consider all of them.
             </span>
         </div>
 
@@ -157,6 +158,10 @@
 
 @if (_testGeneratedButNotStarted && !_startMode)
 {
+    <span class="frame-title">
+       Your test is ready. Press "Start" to begin.
+    </span>
+    <br />
     <input type="button" style="font-weight: bold;" class="btn btn-info" value="Start" @onclick="StartTest" />
 }
 
@@ -236,6 +241,7 @@
                 <input type="button" style="font-weight: bold" class="btn btn-info" value="Next" disabled />
             }
             <br>
+            <br>
             <input type="button" style="font-weight: bold" class="btn btn-info" value="Finish" @onclick="EndTest" />
         </div>
         <div class="col"></div>
@@ -246,7 +252,7 @@
 {
     _percentageResult = Math.Round((_testResultBody.TestResult / _testResultBody.TestMaxPointsToGain) * 100, 1);
     <span style="font-weight: bold;">Your result is @_testResultBody.TestResult / @_testResultBody.TestMaxPointsToGain </span>
-    <span style="font-weight: bold;">@_percentageResult % </span>
+    <span style="font-weight: bold;">(@_percentageResult%) </span>
     <br />
     <input type="button" style="font-weight: bold" class="btn btn-info" value="Back to start page" @onclick="OpenStartPage" />
 }

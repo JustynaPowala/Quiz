@@ -43,7 +43,9 @@ CREATE TABLE [dbo].[Tests](
 	[ID] [uniqueidentifier] NOT NULL,
 	[Status] [nvarchar](200) NOT NULL,
 	[Started] [datetime], 
-	[Completed] [datetime] 
+	[Completed] [datetime],
+	[MaxPoints] [float] NULL,
+	[GainedPoints] [float] NULL, 
  CONSTRAINT [PK_Tests] PRIMARY KEY CLUSTERED 
 (
 	[ID] ASC

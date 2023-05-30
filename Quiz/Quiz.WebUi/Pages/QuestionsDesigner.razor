@@ -404,6 +404,7 @@ else
     private QuestionInfo _questionInfo;
     private bool IsNotInPreparation => !IsInPreparation;
     private bool IsInPreparation => _questionModel.ActivityStatus == QuestionActivityStatus.InPreparation;
+    private QuestionModel _questionModel = new QuestionModel();
 
 
 
@@ -442,7 +443,7 @@ else
     }
 
 
-    private QuestionModel _questionModel = new QuestionModel();
+   
 
 
     //Button Save function (HandleValidSubmit) depends on _isSaved.
@@ -489,7 +490,7 @@ else
 
 
     private void ClearQuestionModel()
-    {
+    {      
         _questionModel.Question = string.Empty;
         _questionModel.Points = 1;
         _questionModel.Category = "default";
