@@ -3,6 +3,7 @@
 @using Quiz.Contracts;
 @using Quiz.WebUi.ApiClients;
 @inject IQuizApiClient QuizApiClient;
+@inject IToastService ToastService
 
 <PageTitle>Test</PageTitle>
 
@@ -20,14 +21,12 @@
         color: black;
         font-weight: bold;
     }
-
         .select-input option {
             font-size: 18px;
             color: black;
             background-color: #EAF5FF;
             font-weight: bold;
         }
-
             .select-input option:nth-child(even) {
                 background-color: #D6EBFF;
             }
@@ -58,67 +57,7 @@
         text-align: center;
     }
 </style>
-@*///*@
-<style>
-    input[type="radio"] {
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        appearance: none;
-        border: 1px solid #ccc;
-        border-radius: 3px;
-        display: inline-block;
-        width: 16px;
-        height: 16px;
-        position: relative;
-        margin: -1px 4px 0 0;
-        vertical-align: middle;
-        cursor: pointer;
-        background-color: white;
-    }
 
-        input[type="radio"]:checked::before {
-            content: "\2714";
-            display: block;
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            text-align: center;
-            line-height: 16px;
-        }
-</style>
-
-<style>
-    .checkbox-design2 {
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        appearance: none;
-        border: 1px solid #ccc;
-        border-radius: 3px;
-        display: inline-block;
-        width: 16px;
-        height: 16px;
-        position: relative;
-        margin: -1px 4px 0 0;
-        vertical-align: middle;
-        cursor: pointer;
-        background-color: white;
-    }
-
-    input[type="checkbox"]:checked::before {
-        content: "\2714";
-        display: block;
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        text-align: center;
-        line-height: 16px;
-    }
-
-</style>
 
 @if (_startMode)
 {
@@ -267,14 +206,13 @@
     private string [] _selectedCategories= new string[0];
     private Guid _testGuid;
     private int _testPageIndex = 0;
-    //private const int TestSize = 10;
     private int _countOfQuestions = 0;
     private List<TestQuestionAnswerBody> _listOfQuestionAnswers;
     private TestResultBody _testResultBody = new TestResultBody();
     private double _percentageResult;
 
     private bool _startMode = true;
-    private bool _testGeneratedButNotStarted;  // it will be false after pressing the "start" button, which will start the test
+    private bool _testGeneratedButNotStarted;  
     private bool _testMode;
     private bool _isTestFinished = false;
 
@@ -284,7 +222,6 @@
     public Test()
     {
         _TestQ = new TestQuestionBody();
-
     }
 
     protected override async Task OnInitializedAsync()
@@ -297,7 +234,6 @@
         await CreateTestAsync();
         _startMode = false;                
         _testGeneratedButNotStarted = true;
-
     }
     private async Task StartTest()   
     {
@@ -308,8 +244,6 @@
         _testGeneratedButNotStarted = false;
         _testMode = true;
         _isTestFinished = false;
-
-
     }
 
     private async Task EndTest()
@@ -367,51 +301,84 @@
             await DeleteAnswerFromTestAnswers(testQuestionAnswerBody);
             await GetListOfQuestionAnswers();
         }
-
-
     }
 
 
 
+
+
+    private async Task ErrorCatcherAsync(Func<Task> action)
+    {
+        try
+        {
+            await action();
+        }
+        catch (QuizApiException quizApiException)
+        {
+            ToastService.ShowError(quizApiException.Message);
+        }
+    }
+
     private async Task GetTestQuestionAsync()
     {
+        await ErrorCatcherAsync(async () =>
+        {
         _TestQ = await QuizApiClient.GetTestQuestionAsync(_testGuid, _testPageIndex);
+        });
     }
 
     private async Task GetQuestionsCountAsync()
     {
+        await ErrorCatcherAsync(async () =>
+        {
         _countOfQuestions = await QuizApiClient.GetQuestionsCountAsync(_testGuid);
+        });
     }
 
     private async Task StartTestAsync()
     {
+        await ErrorCatcherAsync(async () =>
+        {
         await QuizApiClient.StartTestAsync(_testGuid);
+        });
     }
 
     private async Task EndTestAsync()
     {
-        await QuizApiClient.EndTestAsync(_testGuid);    
+        await ErrorCatcherAsync(async () =>
+        {
+        await QuizApiClient.EndTestAsync(_testGuid);   
+        });
     }
 
     private async Task GetListOfQuestionAnswers()
     {
+        await ErrorCatcherAsync(async () =>
+        {
         _listOfQuestionAnswers =  await QuizApiClient.GetListOfQuestionAnswers(_testGuid, _TestQ.QGuid);
+        });
     }
 
     private async Task AddAnswerToTestAnswers(AddAnswerToTestAnswersBody addAnswerToTestAnswersBody)
     {
+        await ErrorCatcherAsync(async () =>
+        {
         await QuizApiClient.AddAnswerToTestAnswers(_testGuid, _TestQ.QGuid, addAnswerToTestAnswersBody.AnswGuid);
+        });
     }
     private async Task DeleteAnswerFromTestAnswers(TestQuestionAnswerBody testQuestionAnswerBody)
     {
+        await ErrorCatcherAsync(async () =>
+        {
         await QuizApiClient.DeleteAnswerFromTestAnswers(_testGuid, _TestQ.QGuid, testQuestionAnswerBody.AnswGuid);
+        });
     }
 
     private async Task GetResultAsync()
     {
+        await ErrorCatcherAsync(async () =>
+        {
        _testResultBody = await QuizApiClient.GetResultAsync(_testGuid);
+        });
     }
-
-
-
 }

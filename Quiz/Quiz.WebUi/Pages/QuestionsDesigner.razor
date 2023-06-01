@@ -4,382 +4,305 @@
 @using Blazored.Toast.Services
 @using Quiz.Contracts;
 @using Quiz.WebUi.ApiClients;
-@using System.ComponentModel.DataAnnotations; @*//*@
+@using System.ComponentModel.DataAnnotations;
 @using Quiz.WebUi.Models.QuestionDesigner;
-@inject IQuizApiClient  QuizApiClient;  //property in class QuestionDesginer. Początkowo nie wie mój qestions designer co zrobić. Muszę "połączyć" IQuizApiClient z  HttpQuizApiClient(który ma zawarty ten interfejs). To połączenie jest zrobione poprzez services w klasie program.//
-@inject ILogger<QuestionsDesigner> Logger //
+@inject IQuizApiClient QuizApiClient;
+@inject ILogger<QuestionsDesigner> Logger
 @inject IToastService ToastService
+
 
 
 <PageTitle>Questions Designer</PageTitle>
 
 
 <style>
-    .checkbox-design{
-        height: 25px;
-        width: 25px;
-        margin-left: 5px;
-    }
+	.checkbox-design {
+		height: 25px;
+		width: 25px;
+		margin-left: 5px;
+	}
 </style>
 <style>
-    .input-container {
-        display: flex;
-        width: 100%;
-        margin-bottom: 10px;
-    }
-</style>
-<style>
-    input[type="radio"] {
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        appearance: none;
-        border: 1px solid #ccc;
-        border-radius: 3px;
-        display: inline-block;
-        width: 16px;
-        height: 16px;
-        position: relative;
-        margin: -1px 4px 0 0;
-        vertical-align: middle;
-        cursor: pointer;
-        background-color: white;
-    }
-
-        input[type="radio"]:checked::before {
-            content: "\2714";
-            display: block;
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            text-align: center;
-            line-height: 16px;
-        }
-</style>
-
-<style>
-   .checkbox-design2 {
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        appearance: none;
-        border: 1px solid #ccc;
-        border-radius: 3px;
-        display: inline-block;
-        width: 16px;
-        height: 16px;
-        position: relative;
-        margin: -1px 4px 0 0;
-        vertical-align: middle;
-        cursor: pointer;
-        background-color: white;
-    }
-
-        input[type="checkbox"]:checked::before {
-            content: "\2714";
-            display: block;
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            text-align: center;
-            line-height: 16px;
-        }
-
+	.input-container {
+		display: flex;
+		width: 100%;
+		margin-bottom: 10px;
+	}
 </style>
 
 
 <style>
-    .full-width-input {
-        width: 100%;
-    }
+	.full-width-input {
+		width: 100%;
+	}
 </style>
 
 <h1>Questions Designer</h1>
 
 <div class="container">
-    <div class="row">
-        <div class="col text-xxl-start">
+	<div class="row">
+		<div class="col text-xxl-start">
 
-<input type="button" style="font-weight: bold" class="btn btn-info" value="New" @onclick="ClearQuestionModel" />
-         
-<EditForm Model="@_questionModel" OnValidSubmit="@HandleValidSubmit">     
-    
-    <p>
-                    
-     <span style="font-weight: bold;">Enter content of Your question</span>                   
-                  
-     <br />
-                                
-         <InputText id="question" @bind-Value="_questionModel.Question" @onclick="OnFormEdited" disabled="@IsNotInPreparation" style="width: 500px;" />
-                    
-    </p>
-    <p>
-        <span style="font-weight: bold;">Choose how many points you can get in this question</span>
-        <br />
-                    <input type="number" additionalatributes max="10" min="1" @bind-value="_questionModel.Points" @onclick="OnFormEdited" disabled="@IsNotInPreparation" />
-    </p>
-  
-        <p>
-        <span style="font-weight: bold;">Select question category</span>
-        <br />
-                    <InputSelect @bind-Value="_questionModel.Category" @onclick="OnFormEdited" disabled="@IsNotInPreparation">
-      
-            <option value="default" disabled selected>Select a category</option>
-            @if(_listOfCategories !=null)
-                foreach (var cat in _listOfCategories)
-                {
-                    <option value="@cat.ID">@cat.Name</option>
-                }
-        </InputSelect>
-    </p>
-    
-    <p>
-        <span style="font-weight: bold;">Select whether the question is single-choice or multiple-choice</span>
-        <br />
-                    <InputSelect @bind-Value="_questionModel.SelectionMultiplicity" @onclick="OnFormEdited" disabled="@IsNotInPreparation">
-            <option value="@AnswerMultiplicity.Single" selected >Single</option>
-            <option value="@AnswerMultiplicity.Multiple">Multiple</option>
-        </InputSelect>
-    </p>
-    
+			<input type="button" style="font-weight: bold" class="btn btn-info" value="New" @onclick="ClearQuestionModel" />
 
-    <DataAnnotationsValidator />
-    <ValidationSummary />
-                @if (IsInPreparation)
-                {
+			<EditForm Model="@_questionModel" OnValidSubmit="@HandleValidSubmit">
 
-                    <button type="submit" style="font-weight: bold" class="btn btn-info">Save</button>
+				<p>
+
+					<span style="font-weight: bold;">Enter content of Your question</span>
+
+					<br />
+
+					<InputText id="question" @bind-Value="_questionModel.Question" @onclick="OnFormEdited" disabled="@IsNotInPreparation" style="width: 500px;" />
+
+				</p>
+				<p>
+					<span style="font-weight: bold;">Choose how many points you can get in this question</span>
+					<br />
+					<input type="number" additionalatributes max="10" min="1" @bind-value="_questionModel.Points" @onclick="OnFormEdited" disabled="@IsNotInPreparation" />
+				</p>
+
+				<p>
+					<span style="font-weight: bold;">Select question category</span>
+					<br />
+					<InputSelect @bind-Value="_questionModel.Category" @onclick="OnFormEdited" disabled="@IsNotInPreparation">
+
+						<option value="default" disabled selected>Select a category</option>
+						@if (_listOfCategories != null)
+							foreach (var cat in _listOfCategories)
+							{
+								<option value="@cat.ID">@cat.Name</option>
+							}
+					</InputSelect>
+				</p>
+
+				<p>
+					<span style="font-weight: bold;">Select whether the question is single-choice or multiple-choice</span>
+					<br />
+					<InputSelect @bind-Value="_questionModel.SelectionMultiplicity" @onclick="OnFormEdited" disabled="@IsNotInPreparation">
+						<option value="@AnswerMultiplicity.Single" selected>Single</option>
+						<option value="@AnswerMultiplicity.Multiple">Multiple</option>
+					</InputSelect>
+				</p>
 
 
-                    @if (_isSaved && !_answers)
-                    {
-                        <br />
-                        <span style="font-weight: bold;"> Press "Save" to save question and add or modify answers.</span>
-                    }
-                    <div> <br />  </div>
-                }
-                else
-                {
-                    <button type="button" @onclick="CloneQuestion" style="font-weight: bold" class="btn btn-info">Create New Version</button>
-                }
-         
-        
-</EditForm>
+				<DataAnnotationsValidator />
+				<ValidationSummary />
+				@if (IsInPreparation)
+				{
 
-            @if (!_isDirty)  
-            {                  
-                if (IsInPreparation && _isSaved)
-                {
-                    <span style="text-justify; font-weight: bold;">
-                        Add answers to your question below. At least one must be correct. <br /> When You decide that the question is ready, press "Confirm" to add <br> the question to the test question database.
-                    </span>
-                    <br />
-                    if (_allFalse)
-                    {
-                        <input type="button" style="font-weight: bold" class="btn btn-info" value="Confirm" disabled />
-                    }
-                    else
-                    {
-                        <input type="button" style="font-weight: bold" class="btn btn-info" value="Confirm" @onclick="Confirm" />
-                    }
-                    
-                
-                }
-            }
-            
-           
+					<button type="submit" style="font-weight: bold" class="btn btn-info">Save</button>
 
 
-            <EditForm Model="@_answerModel" OnValidSubmit="@HandleValidAnswerSubmit">
-    
-    @if (_answers == true)
-    {      
-        <p>
+					@if (_isSaved && !_answers)
+					{
+						<br />
+						<span style="font-weight: bold;"> Press "Save" to save question and add or modify answers.</span>
+					}
+					<div> <br />  </div>
+				}
+				else
+				{
+					<button type="button" @onclick="CloneQuestion" style="font-weight: bold" class="btn btn-info">Create New Version</button>
+				}
 
 
-        @if(_allFalse == true)
-        {
-            <span style="font-weight: bold; color: red;">Your question does not have a correct answer yet</span>
-        }
-        </p>
-      <p style="display:flex; align-items:center;">
-                        <InputText id="answer" @bind-Value="_answerModel.Answer" style="flex:1; height:25px;" placeholder="Input answer" disabled="@IsNotInPreparation" />
-                      
-        </p>
-                    
-                    @if (IsInPreparation)
-                    {
-                        <button type="submit" style="font-weight: bold" class="btn btn-info">Add answer</button>
-                    }
-                    <br />
-                    <span style="text-justify; font-weight: bold;">
-                        Check the box in the table with answers if it is the correct answer.
-                    </span>
-                    
-                    
-        <DataAnnotationsValidator />
-        <ValidationSummary />
-    }
-</EditForm>
-<div>  <br /> </div>
+			</EditForm>
+
+			@if (!_isDirty)
+			{
+				if (IsInPreparation && _isSaved)
+				{
+					<span style="text-justify; font-weight: bold;">
+						Add answers to your question below. At least one must be correct. <br /> When You decide that the question is ready, press "Confirm" to add <br> the question to the test question database.
+					</span>
+					<br />
+					if (_allFalse)
+					{
+						<input type="button" style="font-weight: bold" class="btn btn-info" value="Confirm" disabled />
+					}
+					else
+					{
+						<input type="button" style="font-weight: bold" class="btn btn-info" value="Confirm" @onclick="Confirm" />
+					}
+				}
+			}
 
 
-           
-            
+			<EditForm Model="@_answerModel" OnValidSubmit="@HandleValidAnswerSubmit">
+
+				@if (_answers == true)
+				{
+					<p>
+						@if (_allFalse == true)
+						{
+							<span style="font-weight: bold; color: red;">Your question does not have a correct answer yet</span>
+						}
+					</p>
+					<p style="display:flex; align-items:center;">
+						<InputText id="answer" @bind-Value="_answerModel.Answer" style="flex:1; height:25px;" placeholder="Input answer" disabled="@IsNotInPreparation" />
+
+					</p>
+
+					@if (IsInPreparation)
+					{
+						<button type="submit" style="font-weight: bold" class="btn btn-info">Add answer</button>
+					}
+					<br />
+					<span style="text-justify; font-weight: bold;">
+						Check the box in the table with answers if it is the correct answer.
+					</span>
+
+					<DataAnnotationsValidator />
+					<ValidationSummary />
+				}
+			</EditForm>
+			<div>  <br /> </div>
 
 
-@if (_answers == true)
-{
-    
-    @if (_listOfAnswers == null)
-    {
-        <p><em>Loading...</em></p>
-    }
-    else
-    {
-        var answersCounting = 1;
-        
-                    <table class="table table-striped table-bordered">
-            <thead>
-                <tr>
-                        <th style="width: 10%; text-align: center;">No.</th>
-                        <th style="width: 70%; text-align: center;">Answer Content</th>
-                        <th style="width: 10%; text-align: center;">Is Correct?</th>
-                        <th style="width: 10%; text-align: center;">Remove</th>
-                </tr>
-            </thead>
-            <tbody>
-                                                
-                @foreach (var answ in _listOfAnswers)
-                {           
-                                <tr>
-                                <td style="text-align: center;">@(answersCounting++)</td>
-                                <td style="text-align: center;">
-                                        <input type="text" @bind="@answ.AnswerContent" @oninput="e => OnAnswerContentChange(e, answ)" @onblur="()=>OnAnswerContentChanged(answ)" class="full-width-input" disabled="@IsNotInPreparation" />
-                                </td>
-                                 <td style="text-align: center;">
-                                        @if (_questionModel.SelectionMultiplicity == AnswerMultiplicity.Single)
-                                        {
-                                            <input type="radio" name="IsCorrect" checked="@answ.IsCorrect" class="checkbox-design2" @onchange="() => ChangeAnswerCorectness(answ)" disabled="@IsNotInPreparation" />
-                                        }
-                                        else
-                                        {
-                                            <input type="checkbox" name="IsCorrect" checked="@answ.IsCorrect" class="checkbox-design2" @onchange="() => ChangeAnswerCorectness(answ)" disabled="@IsNotInPreparation" />
-                                        }
-                                 </td>
-                                    <td style="text-align: center;"><button disabled="@IsNotInPreparation" @onclick="() => DeletingAnswerAsync(answ.QeGuid, answ.AnswGuid)"><i class="oi oi-trash"></i></button></td>
-                        
-                            </tr>                
-                }
-                
 
-            </tbody>
-        </table>
-                    
-    }
-}
-        </div>
+			@if (_answers == true)
+			{
+				@if (_listOfAnswers == null)
+				{
+					<p><em>Loading...</em></p>
+				}
+				else
+				{
+					var answersCounting = 1;
 
-<div class="col">
-    <div>
-                <span style="font-weight: bold;">List of questions</span>
-    </div>
-            <div class="input-container">
-<InputSelect @bind-Value="_category"  @oninput="OnCategoryChange">
-                    @if (_listOfCategories != null)
-                        foreach (var cat in _listOfCategories)
-                        {
-                            <option value="@cat.ID">@cat.Name</option>
-                        }
-</InputSelect>
-              
-                <input type="text" placeholder="Search"  @bind-value="@_searchString" @oninput="OnSearchStringChange" />
-</div>
+					<table class="table table-striped table-bordered">
+						<thead>
+							<tr>
+								<th style="width: 10%; text-align: center;">No.</th>
+								<th style="width: 70%; text-align: center;">Answer Content</th>
+								<th style="width: 10%; text-align: center;">Is Correct?</th>
+								<th style="width: 10%; text-align: center;">Remove</th>
+							</tr>
+						</thead>
+						<tbody>
 
- @if (_listOfQuestions == null)
-    {
-    <p><em>Loading...</em></p>
-}
-else
-{   
-    
-    var questionCounting = 1 + _pageIndex * 10;
-                <table class="table table-striped table-bordered">
-        <thead>
-            <tr>               
-                <th style="width: 5%; text-align: center;">No.</th>
-                <th style="width: 10%;  text-align: center;">Select</th>
-                <th style="width: 60%;  text-align: center;">Question content</th>
-                <th style="width: 15%;  text-align: center;">Status</th>
-                <th style="width: 10%;  text-align: center;">Remove</th>
-            </tr>
-        </thead>
-        <tbody>
+							@foreach (var answ in _listOfAnswers)
+							{
+								<tr>
+									<td style="text-align: center;">@(answersCounting++)</td>
+									<td style="text-align: center;">
+										<input type="text" @bind="@answ.AnswerContent" @oninput="e => OnAnswerContentChange(e, answ)" @onblur="()=>OnAnswerContentChanged(answ)" class="full-width-input" disabled="@IsNotInPreparation" />
+									</td>
+									<td style="text-align: center;">
+										@if (_questionModel.SelectionMultiplicity == AnswerMultiplicity.Single)
+										{
+											<input type="radio" name="IsCorrect" checked="@answ.IsCorrect" class="checkbox-design2" @onchange="() => ChangeAnswerCorectness(answ)" disabled="@IsNotInPreparation" />
+										}
+										else
+										{
+											<input type="checkbox" name="IsCorrect" checked="@answ.IsCorrect" class="checkbox-design2" @onchange="() => ChangeAnswerCorectness(answ)" disabled="@IsNotInPreparation" />
+										}
+									</td>
+									<td style="text-align: center;"><button disabled="@IsNotInPreparation" @onclick="() => DeletingAnswerAsync(answ.QeGuid, answ.AnswGuid)"><i class="oi oi-trash"></i></button></td>
 
-            @{
-                var count = _listOfQuestions.Count;
-                if (_listOfQuestions.Count > PageSize)
-                { count = PageSize; }
-            }
+								</tr>
+							}
+						</tbody>
+					</table>
+				}
+			}
+		</div>
 
-            
-            @for (int i = 0; i < count; i++)
+		<div class="col">
+			<div>
+				<span style="font-weight: bold;">List of questions</span>
+			</div>
+			<div class="input-container">
+				<InputSelect @bind-Value="_category" @oninput="OnCategoryChange">
+					@if (_listOfCategories != null)
+						foreach (var cat in _listOfCategories)
+						{
+							<option value="@cat.ID">@cat.Name</option>
+						}
+				</InputSelect>
 
-            {
-                var id = _listOfQuestions[i].Guid;
-                <tr>                  
-                        <td style="text-align: center;">@(questionCounting++)</td>
-                        <td style="text-align: center;"><button @onclick="() => SetModifyMode(id)"><i class="oi oi-check"></i></button></td>
-                        <td>@_listOfQuestions[i].QuestionContent</td>
-                        <td style ="text-align: center;">@_listOfQuestions[i].ActivityStatus</td>
-                        <td style="text-align: center;"><button @onclick="async() =>
+				<input type="text" placeholder="Search" @bind-value="@_searchString" @oninput="OnSearchStringChange" />
+			</div>
+
+			@if (_listOfQuestions == null)
+			{
+				<p><em>Loading...</em></p>
+			}
+			else
+			{
+
+				var questionCounting = 1 + _pageIndex * 10;
+				<table class="table table-striped table-bordered">
+					<thead>
+						<tr>
+							<th style="width: 5%; text-align: center;">No.</th>
+							<th style="width: 10%;  text-align: center;">Select</th>
+							<th style="width: 60%;  text-align: center;">Question content</th>
+							<th style="width: 15%;  text-align: center;">Status</th>
+							<th style="width: 10%;  text-align: center;">Remove</th>
+						</tr>
+					</thead>
+					<tbody>
+
+						@{
+							var count = _listOfQuestions.Count;
+							if (_listOfQuestions.Count > PageSize)
+							{ count = PageSize; }
+						}
+
+
+						@for (int i = 0; i < count; i++)
+
+						{
+							var id = _listOfQuestions[i].Guid;
+							<tr>
+								<td style="text-align: center;">@(questionCounting++)</td>
+								<td style="text-align: center;"><button @onclick="() => SetModifyMode(id)"><i class="oi oi-check"></i></button></td>
+								<td>@_listOfQuestions[i].QuestionContent</td>
+								<td style="text-align: center;">@_listOfQuestions[i].ActivityStatus</td>
+								<td style="text-align: center;">
+									<button @onclick="async() =>
                             {
-                                
+
                            await DeletingQuestionWithAssignedAnswers(id);
-                            }"><i class="oi oi-trash"></i></button></td>
-                    </tr>          
-                }     
-            </tbody>
-          
-
-        </table>
-                <div style="display: flex; justify-content: center;">
-                    @if (_pageIndex > 0)
-                    {
-
-                        <input type="button" style="font-weight: bold" class="btn btn-info" value="Back" @onclick="PreviousPageAsync" />
-                    }
-                    else
-                    {
-                        <input type="button" style="font-weight: bold" class="btn btn-info" value="Back" disabled />
-                    }
-
-                    @if (_listOfQuestions.Count != 0)
-                    {
+                            }">
+										<i class="oi oi-trash"></i>
+									</button>
+								</td>
+							</tr>
+						}
+					</tbody>
 
 
-                        if (_listOfQuestions.Count > PageSize)
-                        {
-                            <input type="button" style="font-weight: bold" class="btn btn-info" value="Next" @onclick="NextPageAsync" />
-                        }
-                        else
-                        {
-                            <input type="button" style="font-weight: bold" class="btn btn-info" value="Next" disabled />
-                        }
-                    }
-                </div>
-}
-        </div>
-    </div>
+				</table>
+				<div style="display: flex; justify-content: center;">
+					@if (_pageIndex > 0)
+					{
 
-<BlazoredToasts Position="Blazored.Toast.Configuration.ToastPosition.BottomRight"
-            Timeout="8"
-            ShowProgressBar="@true"
-            ShowCloseButton="@true"
-            MaxToastCount="3">
-</BlazoredToasts>
+						<input type="button" style="font-weight: bold" class="btn btn-info" value="Back" @onclick="PreviousPageAsync" />
+					}
+					else
+					{
+						<input type="button" style="font-weight: bold" class="btn btn-info" value="Back" disabled />
+					}
+
+					@if (_listOfQuestions.Count != 0)
+					{
+						if (_listOfQuestions.Count > PageSize)
+						{
+							<input type="button" style="font-weight: bold" class="btn btn-info" value="Next" @onclick="NextPageAsync" />
+						}
+						else
+						{
+							<input type="button" style="font-weight: bold" class="btn btn-info" value="Next" disabled />
+						}
+					}
+				</div>
+			}
+		</div>
+	</div>
+
 
 
 </div>
@@ -387,300 +310,345 @@ else
 
 @code {
 
-    private Guid _returnedguid;
-    private bool _answers = false;
-    private string _category = "history";
-    private string _searchString = string.Empty;
-    private int _pageIndex = 0;
-    private const int PageSize = 10;
-    private bool _allFalse = true;
-    private bool _isSaved = false;
-    private bool _isDirty = false;
-
-
-    private List<QuestionInfo> _listOfQuestions;
-    private List<CategoryInfo> _listOfCategories;
-    private List<AnswerInfo> _listOfAnswers;
-    private QuestionInfo _questionInfo;
-    private bool IsNotInPreparation => !IsInPreparation;
-    private bool IsInPreparation => _questionModel.ActivityStatus == QuestionActivityStatus.InPreparation;
-    private QuestionModel _questionModel = new QuestionModel();
-
-
-
-    private async Task OnCategoryChange(ChangeEventArgs e)
-    {
-        _pageIndex = 0;
-        _category = e.Value.ToString();
-        await GetQuestionsAsync();
-    }
-
-    private async Task OnSearchStringChange(ChangeEventArgs e)
-    {
-        _pageIndex = 0;
-        _searchString = e.Value.ToString();
-        await GetQuestionsAsync();
-    }
-
-    protected override async Task OnInitializedAsync()
-    {
-        await GetQuestionsAsync();
-        await GetCategoriesAsync();
-    }
-
-    private async Task PreviousPageAsync()
-    {
-        _pageIndex -= 1;
-        await GetQuestionsAsync();
-    }
-
-
-
-    private async Task NextPageAsync()
-    {
-        _pageIndex += 1;
-        await GetQuestionsAsync();
-    }
-
-
-   
-
-
-    //Button Save function (HandleValidSubmit) depends on _isSaved.
-    //The "SetModifyMode" function changes _isSaved to true. Then, the data from the selected question is substituted into the fields for entering information about the question.
-    //You can modify them and click save, then the change will go to the data base. Button "New"  changes _isSaved to false.
-    private async Task HandleValidSubmit()
-    {
-
-        Logger.LogInformation("Handlesubmit called");
-        if (_isSaved == false)
-        {
-            ToastService.ShowSuccess("Your question has been added");
-            await AddQuestionAsync();
-            _isSaved = true;
-
-        }
-        else
-        {
-            ToastService.ShowSuccess("Your question has been modified");
-            await ModifyQuestionAsync(_questionModel.ID);
-        }
-        _answers = true;
-        await GetQuestionsAsync();
-        await GetListOfAnswersAsync(_questionModel.ID);
-        _isDirty = false;
-    }
-
-    private async Task CloneQuestion()
-    {
-        await CloneQuestionAsync(_questionModel.ID);
-        _questionModel.ActivityStatus = QuestionActivityStatus.InPreparation;
-        await GetQuestionsAsync();
-        await GetListOfAnswersAsync(_questionModel.ID);
-    }
-    private void OnFormEdited()
-    {
-        if(_isSaved)
-        {
-            _answers = false;
-            _isDirty = true;
-
-        }
-    }
-
-
-    private void ClearQuestionModel()
-    {      
-        _questionModel.Question = string.Empty;
-        _questionModel.Points = 1;
-        _questionModel.Category = "default";
-        _questionModel.SelectionMultiplicity = AnswerMultiplicity.Single;
-        _questionModel.ActivityStatus = QuestionActivityStatus.InPreparation;
-        _isSaved = false;
-        _answers = false;
-    }
-
-    private AnswerModel _answerModel = new();
-
-    private async Task HandleValidAnswerSubmit()
-    {
-        Logger.LogInformation("Handlesubmit called");
-        await AddingAnswerOnButtonClickedAsync();
-        _answerModel.Answer = string.Empty;
-    }
-
-    public QuestionsDesigner()
-    {
-        _returnedguid = Guid.Empty;
-        _listOfQuestions = new List<QuestionInfo>();
-        _listOfAnswers = new List<AnswerInfo>();
-        _questionInfo = new QuestionInfo();
-    }
-
-
-    private async Task AddingAnswerOnButtonClickedAsync()
-    {
-        await AddQuestionAnswerAsync();
-        await GetListOfAnswersAsync(_questionModel.ID); //
-    }
-
-    private async Task DeletingAnswerAsync(Guid questionID, Guid answerID)
-    {
-
-        await DeleteAnswerAsync(questionID, answerID);
-        await GetListOfAnswersAsync(_questionModel.ID); //
-
-    }
-    private async Task DeletingQuestionWithAssignedAnswers(Guid questionID)
-    {
-        await DeleteQuestionAsync(questionID);
-        await GetQuestionsAsync();
-        ClearQuestionModel();
-    }
-
-    private async Task SetModifyMode(Guid questionID) 
-    {
-        await GetQuestionInfoAsync(questionID);
-        _isSaved = true; 
-        _questionModel.ID = questionID;
-        _questionModel.Question = _questionInfo.QuestionContent;
-        _questionModel.Category = _questionInfo.Category;
-        _questionModel.Points = _questionInfo.Points;
-        _questionModel.SelectionMultiplicity = _questionInfo.AnswerMultiplicity;
-        _questionModel.ActivityStatus = _questionInfo.ActivityStatus;
-        _answers = true;
-        await GetQuestionsAsync();
-        await GetListOfAnswersAsync(questionID);    
-    }
-
-    private async Task ChangeAnswerCorectness(AnswerInfo answerInfo)
-    {
-        await ModifyAnswerCorectnessAsync(answerInfo);
-        await GetListOfAnswersAsync(_questionModel.ID);
-
-    }
-
-    private async Task OnAnswerContentChange(ChangeEventArgs e, AnswerInfo answerInfo)
-    {     
-        answerInfo.AnswerContent = e.Value.ToString();
-
-    }
-
-    private async Task OnAnswerContentChanged(AnswerInfo answerInfo)
-    {
-        await ChangeAnswerContent(answerInfo);
-    }
-
-
-
-    private async Task ChangeAnswerContent(AnswerInfo answerInfo)
-    {
-        await ModifyAnswerContentAsync(answerInfo);
-        await GetListOfAnswersAsync(_questionModel.ID);
-    }
-
-
-    private async Task Confirm()
-    {
-        await ModifyQuestionStatusToActiveAsync(_questionModel.ID);  
-        _questionModel.ActivityStatus = QuestionActivityStatus.Active;
-        await GetQuestionsAsync();
-        await GetListOfAnswersAsync(_questionModel.ID);
-
-
-
-    }
-
-
-    //Below: QuizApiClient methods
-
-
-    private async Task AddQuestionAsync()
-    {
-        _questionModel.ID = await QuizApiClient.AddQuestionAsync(_questionModel.Question, _questionModel.Points, _questionModel.Category, _questionModel.SelectionMultiplicity);  //metoda dodaje pytanie i zwraca też guida. guid pod prywatne pole, bo będzie potrzebny do dodawania odpowiedzi
-
-    }
-
-    private async Task AddQuestionAnswerAsync()
-    {
-
-        await QuizApiClient.AddQuestionAnswerAsync(_questionModel.ID, _answerModel.Answer, _answerModel.IsCorrect);  ////
-    }
-
-    private async Task DeleteAnswerAsync(Guid questionID, Guid answerID)
-    {
-        await QuizApiClient.DeleteAnswer(questionID, answerID);
-    }
-
-    private async Task DeleteQuestionAsync(Guid questionID)
-    {
-        await QuizApiClient.DeleteQuestion(questionID);   
-    }
-
-    private async Task GetListOfAnswersAsync(Guid questionID)
-    {
-        _listOfAnswers = await QuizApiClient.GetListOfAnswersAsync(questionID);
-        _allFalse = true;
-
-        foreach (var answer in _listOfAnswers)
-        {
-            if (answer.IsCorrect == true)
-            {
-                _allFalse = false;
-            }
-        }
-
-    }
-
-    private async Task GetQuestionsAsync()
-    {
-
-        _listOfQuestions = await QuizApiClient.GetQuestionsAsync(_category, _pageIndex * PageSize, PageSize + 1, _searchString);
-    }
-
-    private async Task GetCategoriesAsync()
-    {
-        _listOfCategories = await QuizApiClient.GetCategoriesAsync();
-    }
-
-    private async Task GetQuestionInfoAsync(Guid questionID)
-    {
-        _questionInfo = await QuizApiClient.GetQuestionInfo(questionID);
-    }
-
-    private async Task ModifyQuestionAsync(Guid questionID)
-    {
-        await QuizApiClient.ModifyQuestionAsync(questionID,_questionModel.Question, _questionModel.Points, _questionModel.Category, _questionModel.SelectionMultiplicity);
-    }
-
-    private async Task ModifyAnswerCorectnessAsync(AnswerInfo answerInfo)
-    {
-        await QuizApiClient.ModifyAnswerAsync(answerInfo.QeGuid, answerInfo.AnswGuid, answerInfo.AnswerContent, !answerInfo.IsCorrect);
-    }
-
-    private async Task ModifyAnswerContentAsync(AnswerInfo answerInfo)
-    {
-        await QuizApiClient.ModifyAnswerAsync(answerInfo.QeGuid, answerInfo.AnswGuid, answerInfo.AnswerContent, answerInfo.IsCorrect);
-    }
-
-    private async Task ModifyQuestionStatusToActiveAsync(Guid questionID)
-    {
-        await QuizApiClient.ModifyQuestionStatusToActiveAsync(questionID);
-    }
-
-    private async Task CloneQuestionAsync(Guid questionID)
-    {
-        _questionModel.ID = await QuizApiClient.CloneQuestionAsync(questionID);
-    }
-
-
+	private Guid _returnedguid;
+	private bool _answers = false;
+	private string _category = "history";
+	private string _searchString = string.Empty;
+	private int _pageIndex = 0;
+	private const int PageSize = 10;
+	private bool _allFalse = true;
+	private bool _isSaved = false;
+	private bool _isDirty = false;
+
+
+	private List<QuestionInfo> _listOfQuestions;
+	private List<CategoryInfo> _listOfCategories;
+	private List<AnswerInfo> _listOfAnswers;
+	private QuestionInfo _questionInfo;
+	private bool IsNotInPreparation => !IsInPreparation;
+	private bool IsInPreparation => _questionModel.ActivityStatus == QuestionActivityStatus.InPreparation;
+	private QuestionModel _questionModel = new QuestionModel();
+
+
+	private async Task OnCategoryChange(ChangeEventArgs e)
+	{
+		_pageIndex = 0;
+		_category = e.Value.ToString();
+		await GetQuestionsAsync();
+	}
+
+	private async Task OnSearchStringChange(ChangeEventArgs e)
+	{
+		_pageIndex = 0;
+		_searchString = e.Value.ToString();
+		await GetQuestionsAsync();
+	}
+
+	protected override async Task OnInitializedAsync()
+	{
+		await GetQuestionsAsync();
+		await GetCategoriesAsync();
+	}
+
+	private async Task PreviousPageAsync()
+	{
+		_pageIndex -= 1;
+		await GetQuestionsAsync();
+	}
+
+
+	private async Task NextPageAsync()
+	{
+		_pageIndex += 1;
+		await GetQuestionsAsync();
+	}
+
+
+
+	//Button Save function (HandleValidSubmit) depends on _isSaved.
+	//The "SetModifyMode" function changes _isSaved to true. Then, the data from the selected question is substituted into the fields for entering information about the question.
+	//You can modify them and click save, then the change will go to the data base. Button "New"  changes _isSaved to false.
+	private async Task HandleValidSubmit()
+	{
+
+		Logger.LogInformation("Handlesubmit called");
+		var success = false;
+		if (_isSaved == false)
+		{  if(await AddQuestionAsync()){
+				success = true;
+				ToastService.ShowSuccess("Your question has been added");			
+				_isSaved = true;
+			}
+		}
+		else
+		{	
+			if(await ModifyQuestionAsync(_questionModel.ID))
+			{
+				success = true;
+				ToastService.ShowSuccess("Your question has been modified");
+			}		
+		}
+		if (success)
+		{
+			_answers = true;
+			await GetQuestionsAsync();
+			await GetListOfAnswersAsync(_questionModel.ID);
+			_isDirty = false;
+		}	
+	}
+
+	private async Task CloneQuestion()
+	{
+		await CloneQuestionAsync(_questionModel.ID);
+		_questionModel.ActivityStatus = QuestionActivityStatus.InPreparation;
+		await GetQuestionsAsync();
+		await GetListOfAnswersAsync(_questionModel.ID);
+	}
+	private void OnFormEdited()
+	{
+		if (_isSaved)
+		{
+			_answers = false;
+			_isDirty = true;
+
+		}
+	}
+
+	private void ClearQuestionModel()
+	{
+		_questionModel.Question = string.Empty;
+		_questionModel.Points = 1;
+		_questionModel.Category = "default";
+		_questionModel.SelectionMultiplicity = AnswerMultiplicity.Single;
+		_questionModel.ActivityStatus = QuestionActivityStatus.InPreparation;
+		_isSaved = false;
+		_answers = false;
+	}
+
+	private AnswerModel _answerModel = new();
+
+	private async Task HandleValidAnswerSubmit()
+	{
+		Logger.LogInformation("Handlesubmit called");
+		await AddingAnswerOnButtonClickedAsync();
+		_answerModel.Answer = string.Empty;
+	}
+
+	public QuestionsDesigner()
+	{
+		_returnedguid = Guid.Empty;
+		_listOfQuestions = new List<QuestionInfo>();
+		_listOfAnswers = new List<AnswerInfo>();
+		_questionInfo = new QuestionInfo();
+	}
+
+
+	private async Task AddingAnswerOnButtonClickedAsync()
+	{
+		await AddQuestionAnswerAsync();
+		await GetListOfAnswersAsync(_questionModel.ID); //
+	}
+
+	private async Task DeletingAnswerAsync(Guid questionID, Guid answerID)
+	{
+
+		await DeleteAnswerAsync(questionID, answerID);
+		await GetListOfAnswersAsync(_questionModel.ID); //
+
+	}
+	private async Task DeletingQuestionWithAssignedAnswers(Guid questionID)
+	{
+		await DeleteQuestionAsync(questionID);
+		await GetQuestionsAsync();
+		ClearQuestionModel();
+	}
+
+	private async Task SetModifyMode(Guid questionID)
+	{
+		await GetQuestionInfoAsync(questionID);
+		_isSaved = true;
+		_questionModel.ID = questionID;
+		_questionModel.Question = _questionInfo.QuestionContent;
+		_questionModel.Category = _questionInfo.Category;
+		_questionModel.Points = _questionInfo.Points;
+		_questionModel.SelectionMultiplicity = _questionInfo.AnswerMultiplicity;
+		_questionModel.ActivityStatus = _questionInfo.ActivityStatus;
+		_answers = true;
+		await GetQuestionsAsync();
+		await GetListOfAnswersAsync(questionID);
+	}
+
+	private async Task ChangeAnswerCorectness(AnswerInfo answerInfo)
+	{
+		await ModifyAnswerCorectnessAsync(answerInfo);
+		await GetListOfAnswersAsync(_questionModel.ID);
+
+	}
+
+	private async Task OnAnswerContentChange(ChangeEventArgs e, AnswerInfo answerInfo)
+	{
+		answerInfo.AnswerContent = e.Value.ToString();
+
+	}
+
+	private async Task OnAnswerContentChanged(AnswerInfo answerInfo)
+	{
+		await ChangeAnswerContent(answerInfo);
+	}
+
+
+
+	private async Task ChangeAnswerContent(AnswerInfo answerInfo)
+	{
+		await ModifyAnswerContentAsync(answerInfo);
+		await GetListOfAnswersAsync(_questionModel.ID);
+	}
+
+
+	private async Task Confirm()
+	{
+		await ModifyQuestionStatusToActiveAsync(_questionModel.ID);
+		_questionModel.ActivityStatus = QuestionActivityStatus.Active;
+		await GetQuestionsAsync();
+		await GetListOfAnswersAsync(_questionModel.ID);
+	}
+
+
+	//Below: QuizApiClient methods
+	private async Task<bool> ErrorCatcherAsync(Func<Task> action)
+	{
+		try
+		{
+			await action();
+			return true;
+		}
+		catch (QuizApiException quizApiException)
+		{
+			ToastService.ShowError(quizApiException.Message);
+			return false;
+		}
+	}
+
+	private async Task<bool> AddQuestionAsync()
+	{
+		return await ErrorCatcherAsync(async () =>
+		{
+			_questionModel.ID = await QuizApiClient.AddQuestionAsync(_questionModel.Question, _questionModel.Points, _questionModel.Category, _questionModel.SelectionMultiplicity);
+		});	
+	}
+
+	private async Task<bool> AddQuestionAnswerAsync()
+	{
+		return await ErrorCatcherAsync(async () =>
+		{
+			await QuizApiClient.AddQuestionAnswerAsync(_questionModel.ID, _answerModel.Answer, _answerModel.IsCorrect);
+		});
+	}
+
+	private async Task<bool> DeleteAnswerAsync(Guid questionID, Guid answerID)
+	{
+		return await ErrorCatcherAsync(async () =>
+		{
+		 await QuizApiClient.DeleteAnswer(questionID, answerID);
+		});
+	}
+
+	private async Task<bool>  DeleteQuestionAsync(Guid questionID)
+	{
+		return await ErrorCatcherAsync(async () =>
+		{
+			await QuizApiClient.DeleteQuestion(questionID);
+		});
+	}
+
+	private async Task<bool>  GetListOfAnswersAsync(Guid questionID)
+	{
+		return await ErrorCatcherAsync(async () =>
+		{
+			_listOfAnswers = await QuizApiClient.GetListOfAnswersAsync(questionID);
+			_allFalse = true;
+
+			foreach (var answer in _listOfAnswers)
+			{
+				if (answer.IsCorrect == true)
+				{
+					_allFalse = false;
+				}
+			}
+		});
+
+	}
+
+	private async Task<bool>  GetQuestionsAsync()
+	{
+		return await ErrorCatcherAsync(async () =>
+		{
+			_listOfQuestions = await QuizApiClient.GetQuestionsAsync(_category, _pageIndex * PageSize, PageSize + 1, _searchString);
+		});
+	}
+
+	private async Task<bool>  GetCategoriesAsync()
+	{
+		return await ErrorCatcherAsync(async () =>
+		{
+			_listOfCategories = await QuizApiClient.GetCategoriesAsync();
+		});
+	}
+
+	private async Task<bool>  GetQuestionInfoAsync(Guid questionID)
+	{
+		return await ErrorCatcherAsync(async () =>
+		{
+			_questionInfo = await QuizApiClient.GetQuestionInfo(questionID);
+		});
+	}
+
+	private async Task<bool>  ModifyQuestionAsync(Guid questionID)
+	{
+		return await ErrorCatcherAsync(async () =>
+		{
+			await QuizApiClient.ModifyQuestionAsync(questionID, _questionModel.Question, _questionModel.Points, _questionModel.Category, _questionModel.SelectionMultiplicity);
+		});
+	}
+
+	private async Task<bool> ModifyAnswerCorectnessAsync(AnswerInfo answerInfo)
+	{
+		return await ErrorCatcherAsync(async () =>
+		{
+			await QuizApiClient.ModifyAnswerAsync(answerInfo.QeGuid, answerInfo.AnswGuid, answerInfo.AnswerContent, !answerInfo.IsCorrect);
+		});
+	}
+
+	private async Task<bool> ModifyAnswerContentAsync(AnswerInfo answerInfo)
+	{
+		return await ErrorCatcherAsync(async () =>
+		{
+			await QuizApiClient.ModifyAnswerAsync(answerInfo.QeGuid, answerInfo.AnswGuid, answerInfo.AnswerContent, answerInfo.IsCorrect);
+		});
+	}
+
+	private async Task<bool>  ModifyQuestionStatusToActiveAsync(Guid questionID)
+	{
+		return await ErrorCatcherAsync(async () =>
+		{
+			await QuizApiClient.ModifyQuestionStatusToActiveAsync(questionID);
+		});
+	}
+
+	private async Task<bool> CloneQuestionAsync(Guid questionID)
+	{
+		return await ErrorCatcherAsync(async () =>
+		{
+			_questionModel.ID = await QuizApiClient.CloneQuestionAsync(questionID);
+		});
+	}
 
 }
 
 
 
-    
-   
+
+
 
 
 

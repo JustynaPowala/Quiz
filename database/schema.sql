@@ -1,6 +1,3 @@
-USE [Quiz]
-GO
-
 
 CREATE TABLE [dbo].[Questions](
 	[ID] [uniqueidentifier] NOT NULL,

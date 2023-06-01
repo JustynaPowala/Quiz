@@ -156,7 +156,6 @@ WHERE Id = @ID";
 
                         while (reader.Read())
                         {
-
                             var answer = new AnswerInfo();
 
                             string questionId = reader["questionID"].ToString();
@@ -497,7 +496,7 @@ COMMIT TRANSACTION
 
         private string GetConnectionString()
         {
-            return _configuration["ConnectionStrings:Default"];    // appsettings, tam jest path
+            return _configuration["ConnectionStrings:Default"];    
         }
     }
 }

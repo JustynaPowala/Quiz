@@ -1,6 +1,7 @@
 using Blazored.Toast;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Quiz.WebApi;
 using Quiz.WebUi;
 using Quiz.WebUi.ApiClients;
 using Syncfusion.Blazor;
@@ -17,7 +18,15 @@ namespace Quiz.WebUi
             builder.Services.AddBlazoredToast();
 
             var services = builder.Services;
-            services.AddSingleton<IQuizApiClient, HttpQuizApiClient>(); // wszêdzie gdzie poproszê o wstrzykniêcie Iquiz(...) dostanê new HttpQuizApiClient
+            services.AddSingleton<IQuizApiClient, HttpQuizApiClient>(); 
+            services.AddTransient<ErrorHandlingHttpMessageHandler>();
+            services
+                .AddHttpClient("QuizHttpClient",(sp,client) =>
+                {
+                    var configuration = sp.GetRequiredService<IConfiguration>();
+                    client.BaseAddress = new Uri(configuration["HttpClients:Quiz"]);
+                })
+                .AddHttpMessageHandler<ErrorHandlingHttpMessageHandler>();
             await builder.Build().RunAsync();
         }
     }

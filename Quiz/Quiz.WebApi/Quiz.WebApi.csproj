@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Quiz.Contracts\Quiz.Contracts.csproj" />
+    <ProjectReference Include="..\Quiz.WebUi\Quiz.WebUi.csproj" />
   </ItemGroup>
 
 

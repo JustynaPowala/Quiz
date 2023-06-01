@@ -12,8 +12,13 @@ namespace Quiz.WebApi
             var services = builder.Services;
 
             services.AddControllers();
+            services.AddMvc(mvcOptions =>
+            {
+                mvcOptions.Filters.Add(new ExceptionFilter());
+            });
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
+            
 
             services.AddCors(options =>
             {
@@ -31,7 +36,7 @@ namespace Quiz.WebApi
             });
 
             services.AddSingleton<ICategoriesProvider, HardcodedCategoriesProvider>();
-
+            
             var app = builder.Build();       
             if (app.Environment.IsDevelopment())
             {

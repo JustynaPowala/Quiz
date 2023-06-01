@@ -6,9 +6,7 @@ namespace Quiz.WebUi.Models.QuestionDesigner
     public class QuestionModel
     {
         public QuestionModel() { }
-
         public Guid ID { get; set; }
-
 
         [Required]
         public string? Question { get; set; }
@@ -21,10 +19,6 @@ namespace Quiz.WebUi.Models.QuestionDesigner
 
         [Required]
         public AnswerMultiplicity SelectionMultiplicity { get; set; }
-
         public QuestionActivityStatus ActivityStatus { get; set; }
-
-
-
     }
 }

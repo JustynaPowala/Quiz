@@ -41,7 +41,6 @@ namespace Quiz.WebApi.Controllers
                 connection.ConnectionString = connectionString;
 
                 connection.Open();
-                //var testsCategories = string.Join(",",body.CategoriesIds);
                 var testsCategories2 = body.CategoriesIds.Select(x => "'" + x + "'").ToList();
                 var testsCategories = string.Join(",", testsCategories2);
 
@@ -59,7 +58,7 @@ WHERE Status = @Status2";
                     sqlQuery += " AND Category IN(" + testsCategories + ") ";
                 }
 
-                sqlQuery += " ORDER BY NEWID()  COMMIT TRANSACTION";  ////
+                sqlQuery += " ORDER BY NEWID()  COMMIT TRANSACTION";  
 
                 using (SqlCommand command = new SqlCommand(sqlQuery, connection))
                 {
@@ -306,7 +305,7 @@ WHERE testID = @testID and QuestionID = @questionID";
                     command0.Parameters.AddWithValue("@testID", testID);
                     string testStatus = command0.ExecuteScalar()?.ToString();
 
-                    if (testStatus == TestStatus.Completed.ToString()) // need to check it later
+                    if (testStatus == TestStatus.Completed.ToString()) 
                     {
                         throw new DomainValidationException("Test is finished, you can't change answers.");
                     }
@@ -329,7 +328,7 @@ WHERE TQ.testID = @testID and TQ.QuestionID = @questionID and TA.AnswerID = @ans
             }
         }
 
-        [HttpPut("{testID}/start")] //
+        [HttpPut("{testID}/start")] 
         public void StartTest([FromRoute] Guid testID)
         {
             string connectionString = GetConnectionString();
@@ -355,7 +354,7 @@ WHERE ID = @testID";
         }
 
 
-        [HttpPut("{testID}/end-test")] //
+        [HttpPut("{testID}/end-test")] 
         public void EndTest([FromRoute] Guid testID)
         {
             double testResult = 0.0;

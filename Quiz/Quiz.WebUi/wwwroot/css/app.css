@@ -99,3 +99,61 @@ a, .btn-link {
     .loading-progress-text:after {
         content: var(--blazor-load-percentage-text, "Loading");
     }
+
+
+input[type="radio"] {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    position: relative;
+    margin: -1px 4px 0 0;
+    vertical-align: middle;
+    cursor: pointer;
+    background-color: white;
+}
+
+input[type="radio"]:checked::before {
+    content: "\2714";
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    text-align: center;
+    line-height: 16px;
+}
+
+.checkbox-design2 {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    position: relative;
+    margin: -1px 4px 0 0;
+    vertical-align: middle;
+    cursor: pointer;
+    background-color: white;
+}
+
+input[type="checkbox"]:checked::before {
+    content: "\2714";
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    text-align: center;
+    line-height: 16px;
+}
+
