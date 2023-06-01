@@ -8,20 +8,15 @@ namespace Quiz.Contracts
 {
     public class AddAnswerToTestAnswersBody
     {
-
         public AddAnswerToTestAnswersBody()
         {
             AnswGuid = Guid.Empty;
         }
         public AddAnswerToTestAnswersBody(Guid answGuid)
         {
-            AnswGuid = answGuid;        
+            AnswGuid = answGuid;
         }
-
         public Guid AnswGuid { get; set; }
     }
-
-
-
 }
 

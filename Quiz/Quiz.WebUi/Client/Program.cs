@@ -11,19 +11,13 @@ namespace Quiz.WebUi
     {
         public static async Task Main(string[] args)
         {
-            
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.RootComponents.Add<App>("#app");
             builder.RootComponents.Add<HeadOutlet>("head::after");
             builder.Services.AddBlazoredToast();
 
-
-
             var services = builder.Services;
             services.AddSingleton<IQuizApiClient, HttpQuizApiClient>(); // wszêdzie gdzie poproszê o wstrzykniêcie Iquiz(...) dostanê new HttpQuizApiClient
-
-           
-
             await builder.Build().RunAsync();
         }
     }

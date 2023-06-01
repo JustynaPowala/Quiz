@@ -11,10 +11,7 @@ namespace Quiz.WebApi
             var builder = WebApplication.CreateBuilder(args);
             var services = builder.Services;
 
-            // Add services to the container.
-
             services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
 
@@ -22,7 +19,7 @@ namespace Quiz.WebApi
             {
                 options.AddPolicy("AllowedCorsOrigins",
 
-                    corsPolicyBuilder => 
+                    corsPolicyBuilder =>
                     {
                         corsPolicyBuilder
                         .SetIsOriginAllowed(_ => true)
@@ -31,15 +28,11 @@ namespace Quiz.WebApi
                         .AllowCredentials();
                     }
                     );
-
             });
 
-            
             services.AddSingleton<ICategoriesProvider, HardcodedCategoriesProvider>();
 
-            var app = builder.Build();
-
-            // Configure the HTTP request pipeline.
+            var app = builder.Build();       
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();

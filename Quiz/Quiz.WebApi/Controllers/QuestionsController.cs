@@ -13,14 +13,11 @@ namespace Quiz.WebApi.Controllers
     [Route("questions")]
     public class QuestionsController : ControllerBase
     {
-
-
         private readonly ILogger<QuestionsController> _logger;
         private readonly IConfiguration _configuration;
         private readonly ICategoriesProvider _categoriesProvider;
         private QuestionValidator _questionValidator = new QuestionValidator();
         private AnswerValidator _answerValidator = new AnswerValidator();
-
         public QuestionsController(ILogger<QuestionsController> logger, IConfiguration configuration, ICategoriesProvider categoriesProvider)
         {
             _logger = logger;
@@ -33,7 +30,7 @@ namespace Quiz.WebApi.Controllers
         {
             var categories = await _categoriesProvider.GetCategoriesAsync();
             _questionValidator.Validate(body.QuestionContent, body.Category, body.Points, body.SelectionMultiplicity, categories);
-           
+
             var id = Guid.NewGuid();
 
             string connectionString = GetConnectionString();
@@ -80,7 +77,7 @@ namespace Quiz.WebApi.Controllers
                     command.Parameters.AddWithValue("@QuestionID", questionID);
                     command.Parameters.AddWithValue("@Id", answerId);
                     command.Parameters.AddWithValue("@AnswerContent", body.AnswerContent);
-                    command.Parameters.AddWithValue("@IsCorrect", body.IsCorrect ? 1 : 0);         //jeœli to co przed? bêdzie true to przyjmie to co przed: a jak false to to co po:. czyli 1 bêdzie true a 0 bêdzie false- tak jak jst w sql.
+                    command.Parameters.AddWithValue("@IsCorrect", body.IsCorrect ? 1 : 0);         
                     command.Parameters.AddWithValue("@CreationTimestamp", DateTime.Now);
                     command.ExecuteNonQuery();
                 }
@@ -92,7 +89,6 @@ namespace Quiz.WebApi.Controllers
         [HttpDelete("{questionID}/answers/{answerID}")]
         public void DeletingAnswer([FromRoute] Guid questionID, Guid answerID)
         {
-
             string connectionString = GetConnectionString();
 
             using (SqlConnection connection = new SqlConnection(connectionString))
@@ -109,7 +105,6 @@ namespace Quiz.WebApi.Controllers
                     command.ExecuteNonQuery();
                 }
             }
-
         }
 
 
@@ -128,7 +123,7 @@ namespace Quiz.WebApi.Controllers
 UPDATE dbo.Questions 
 SET Status = @Status
 WHERE Id = @ID";
-                               
+
                 using (SqlCommand command = new SqlCommand(sqlQuery, connection))
                 {
                     command.Parameters.AddWithValue("@ID", questionID);
@@ -136,7 +131,6 @@ WHERE Id = @ID";
                     command.ExecuteNonQuery();
                 }
             }
-
         }
 
         [HttpGet("{questionID}/answers")]
@@ -162,7 +156,7 @@ WHERE Id = @ID";
 
                         while (reader.Read())
                         {
-                           
+
                             var answer = new AnswerInfo();
 
                             string questionId = reader["questionID"].ToString();
@@ -190,11 +184,7 @@ WHERE Id = @ID";
                             {
                                 answer.IsCorrect = true;
                             }
-
-
                             listOfAnswers.Add(answer);
-
-
                         }
                     }
                 }
@@ -207,7 +197,6 @@ WHERE Id = @ID";
         public List<QuestionInfo> GetListOfQuestions([FromQuery] string? category, [FromQuery] string? searchString, [FromQuery] int skipCount, [FromQuery] int maxResultCount)
         {
             var listOfQuestions = new List<QuestionInfo>();
-
 
             string connectionString = GetConnectionString();
 
@@ -237,8 +226,6 @@ WHERE Id = @ID";
                     if (searchString != null)
                     {
                         command.Parameters.AddWithValue("@searchString", searchString);
-
-
                     }
 
                     using (SqlDataReader reader = command.ExecuteReader())
@@ -265,7 +252,6 @@ WHERE Id = @ID";
 
                             question.ActivityStatus = Enum.Parse<QuestionActivityStatus>(activityStatus);
 
-
                             listOfQuestions.Add(question);
                         }
                     }
@@ -281,7 +267,6 @@ WHERE Id = @ID";
             _questionValidator.Validate(body.QuestionContent, body.Category, body.Points, body.SelectionMultiplicity, categories);
 
             string connectionString = GetConnectionString();
-
 
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
@@ -333,8 +318,6 @@ WHERE Id = @Id";
                         }
                     }
                 }
-
-               
             }
         }
 
@@ -362,16 +345,15 @@ WHERE Id = @ID";
                     command.ExecuteNonQuery();
                 }
             }
-
         }
-    
-            
+
+
 
 
         [HttpGet("{questionID}")]
         public QuestionInfo GetQuestionInfo([FromRoute] Guid questionID)
         {
-            var question= new QuestionInfo();
+            var question = new QuestionInfo();
             string connectionString = GetConnectionString();
 
             using (SqlConnection connection = new SqlConnection(connectionString))
@@ -402,7 +384,7 @@ WHERE Id = @ID";
                             question.Category = quesCategory;
 
                             string points = reader["Points"].ToString();
-                            points??= string.Empty;
+                            points ??= string.Empty;
                             question.Points = int.Parse(points);
 
                             string answerMultiplicity = reader["SelectionMultiplicity"].ToString();
@@ -410,7 +392,7 @@ WHERE Id = @ID";
 
                             question.AnswerMultiplicity = Enum.Parse<AnswerMultiplicity>(answerMultiplicity);
 
-                            string activityStatus= reader["Status"].ToString();
+                            string activityStatus = reader["Status"].ToString();
                             activityStatus ??= string.Empty;
 
                             question.ActivityStatus = Enum.Parse<QuestionActivityStatus>(activityStatus);
@@ -431,7 +413,6 @@ WHERE Id = @ID";
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
                 connection.Open();
-
 
                 string sqlQuery1 = "SELECT SelectionMultiplicity FROM dbo.Questions WHERE ID = @questionID";
 
@@ -474,7 +455,6 @@ UPDATE dbo.Answers SET IsCorrect = CASE WHEN ID = @ID THEN 1 ELSE 0 END WHERE Qu
         {
             var newID = Guid.NewGuid();
 
-
             string connectionString = GetConnectionString();
 
             using (SqlConnection connection = new SqlConnection(connectionString))
@@ -507,7 +487,6 @@ COMMIT TRANSACTION
                     command.Parameters.AddWithValue("@Status", QuestionActivityStatus.Archived.ToString());
                     command.Parameters.AddWithValue("@CreationTimestamp", DateTime.Now);
                     command.ExecuteNonQuery();
-
                 }
             }
             return newID;
@@ -516,16 +495,10 @@ COMMIT TRANSACTION
 
 
 
-            private string GetConnectionString()
-            {
-
-                return _configuration["ConnectionStrings:Default"];    // appsettings, tam jest path
-            }
+        private string GetConnectionString()
+        {
+            return _configuration["ConnectionStrings:Default"];    // appsettings, tam jest path
         }
-
-
-
-
-
     }
+}
 

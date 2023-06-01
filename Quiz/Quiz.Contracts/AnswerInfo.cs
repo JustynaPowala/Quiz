@@ -6,27 +6,25 @@ using System.Threading.Tasks;
 
 namespace Quiz.Contracts
 {
-    public class AnswerInfo
+   public class AnswerInfo
     {
-       public AnswerInfo() 
+        public AnswerInfo()
         {
             QeGuid = Guid.Empty;
             AnswGuid = Guid.Empty;
             AnswerContent = String.Empty;
             IsCorrect = false;
         }
-       public AnswerInfo(Guid qeGuid, Guid answGuid, string answerContent, bool isCorrect)  // 2 różne przeciążenia tej samej metody
+        public AnswerInfo(Guid qeGuid, Guid answGuid, string answerContent, bool isCorrect)
         {
-            QeGuid=qeGuid;
-            AnswGuid=answGuid;
-            AnswerContent=answerContent;
+            QeGuid = qeGuid;
+            AnswGuid = answGuid;
+            AnswerContent = answerContent;
             IsCorrect = isCorrect;
         }
-        public Guid QeGuid { get; set; } 
-
-        public Guid  AnswGuid { get; set; } 
+        public Guid QeGuid { get; set; }
+        public Guid AnswGuid { get; set; }
         public string AnswerContent { get; set; }
-
-        public bool IsCorrect  { get; set; } 
+        public bool IsCorrect { get; set; }
     }
 }

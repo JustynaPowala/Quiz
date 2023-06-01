@@ -8,7 +8,6 @@ namespace Quiz.Contracts
 {
     public class CategoryInfo
     {
-
         public string ID { get; set; }
         public string Name { get; set; }
     }

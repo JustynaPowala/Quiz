@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Quiz.Contracts
 {
     public class CreateTestBody
-    {     
+    {
         public List<string> CategoriesIds { get; set; }
     }
 }

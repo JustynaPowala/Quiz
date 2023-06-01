@@ -4,6 +4,6 @@ namespace Quiz.WebApi
 {
     public interface ICategoriesProvider
     {
-        Task <List<CategoryInfo>> GetCategoriesAsync();
+        Task<List<CategoryInfo>> GetCategoriesAsync();
     }
 }

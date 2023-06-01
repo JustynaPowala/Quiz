@@ -9,17 +9,16 @@ namespace Quiz.Contracts
 {
     public class QuestionInfo
     {
-       public QuestionInfo() 
+        public QuestionInfo()
         {
             Guid = Guid.Empty;
-            QuestionContent = String.Empty; 
+            QuestionContent = String.Empty;
             Category = String.Empty;
             Points = 0;
             AnswerMultiplicity = AnswerMultiplicity.Single;
             ActivityStatus = QuestionActivityStatus.InPreparation;
-            
         }
-       public QuestionInfo(Guid guid, string questionContent, string category, int points, AnswerMultiplicity answerMultiplicity, QuestionActivityStatus activityStatus)  // 2 różne przeciążenia tej samej metody
+        public QuestionInfo(Guid guid, string questionContent, string category, int points, AnswerMultiplicity answerMultiplicity, QuestionActivityStatus activityStatus)
         {
             Guid = guid;
             QuestionContent = questionContent;
@@ -27,14 +26,12 @@ namespace Quiz.Contracts
             Points = points;
             AnswerMultiplicity = answerMultiplicity;
             ActivityStatus = activityStatus;
-            
         }
-        public Guid Guid { get; set; } 
+        public Guid Guid { get; set; }
         public string QuestionContent { get; set; }
-
         public string Category { get; set; }
         public int Points { get; set; }
         public AnswerMultiplicity AnswerMultiplicity { get; set; }
-        public QuestionActivityStatus ActivityStatus { get; set;}
+        public QuestionActivityStatus ActivityStatus { get; set; }
     }
 }

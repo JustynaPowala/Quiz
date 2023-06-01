@@ -7,7 +7,6 @@ using Syncfusion.Blazor;
 
 namespace Quiz.WebApi.Controllers
 {
-
     [ApiController]
     [Route("tests")]
     public class TestController : Controller
@@ -32,8 +31,6 @@ namespace Quiz.WebApi.Controllers
                 {
                     throw new DomainValidationException($"The {category} category is not recognized");
                 }
-
-
             }
             var id = Guid.NewGuid();
 
@@ -81,7 +78,6 @@ WHERE Status = @Status2";
             var TestQ = new TestQuestionBody();
             string connectionString = GetConnectionString();
 
-
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
                 connection.ConnectionString = connectionString;
@@ -101,7 +97,6 @@ OFFSET @skipCount ROWS FETCH NEXT 1 ROWS ONLY";
                 {
                     command.Parameters.AddWithValue("@testID", testID);
                     command.Parameters.AddWithValue("@skipCount", skipCount);
-
 
                     using (SqlDataReader reader = command.ExecuteReader())
                     {
@@ -125,13 +120,10 @@ OFFSET @skipCount ROWS FETCH NEXT 1 ROWS ONLY";
                             QuesId ??= string.Empty;
 
                             TestQ.QGuid = Guid.Parse(QuesId);
-
-
                         }
                     }
                 }
                 return TestQ;
-
             }
         }
 
@@ -169,14 +161,12 @@ order by A.CreationTimestamp";
 
                         while (reader.Read())
                         {
-
                             var answer = new TestQuestionAnswerBody();
 
                             string answerId = reader["ID"].ToString();
                             answerId ??= string.Empty;
 
                             answer.AnswGuid = Guid.Parse(answerId);
-
 
                             string answerText = reader["AnswerContent"].ToString();
                             answerText ??= string.Empty;
@@ -192,8 +182,6 @@ order by A.CreationTimestamp";
                             {
                                 answer.IsSelected = true;
                             }
-
-
                             listOfAnswers.Add(answer);
                         }
                     }
@@ -201,9 +189,6 @@ order by A.CreationTimestamp";
             }
             return listOfAnswers;
         }
-
-
-
 
 
         [HttpGet("{testID}/questions/count")]  // this method is needed when there would be less than 10 possible questions to be drawn in the database.
@@ -235,8 +220,6 @@ WHERE TQ.TestID = @testID";
         }
 
 
-
-
         [HttpPost("{testID}/test-questions/{testQuestionID}/test-answers")]
         public Guid AddAnswerToTestAnswers([FromRoute] Guid testID, [FromRoute] Guid testQuestionID, [FromBody] AddAnswerToTestAnswersBody body)
         {
@@ -256,13 +239,12 @@ WHERE TQ.TestID = @testID";
                     command0.Parameters.AddWithValue("@testID", testID);
                     string testStatus = command0.ExecuteScalar()?.ToString();
 
-                    if (testStatus == TestStatus.Completed.ToString()) 
+                    if (testStatus == TestStatus.Completed.ToString())
                     {
                         throw new DomainValidationException("Test is finished, you can't change answers.");
                     }
                     else
                     {
-
                         string sqlQuery1 = "SELECT SelectionMultiplicity FROM dbo.Questions WHERE ID = @questionID";
 
                         using (SqlCommand command1 = new SqlCommand(sqlQuery1, connection))
@@ -424,7 +406,6 @@ Order by TQ.ID
                             var isCorrect = bool.Parse((reader["IsCorrect"].ToString() ?? String.Empty).ToLower());
                             var isSelected = reader["ChosenAnswer"].ToString() != String.Empty;
 
-
                             currentQuestion.Answers.Add(new TestAnswer()
                             {
                                 AnswerId = anwerID,
@@ -434,7 +415,6 @@ Order by TQ.ID
                         }
                         testResult = test.GetGainedPoints();
                         testMaxPointsToGain = test.GetMaxPointsToGain();
-
                     }
 
                     string sqlQuery2 = @"
@@ -483,28 +463,22 @@ WHERE ID = @testID";
                             testMaxPointsToGain = Convert.ToDouble(reader["MaxPoints"].ToString() ?? String.Empty);
                         }
 
-                            return new TestResultBody()
-                            {
-                                TestResult = testResult,
-                                TestMaxPointsToGain = testMaxPointsToGain
-                            };
-                        }
+                        return new TestResultBody()
+                        {
+                            TestResult = testResult,
+                            TestMaxPointsToGain = testMaxPointsToGain
+                        };
                     }
                 }
             }
-        
-                 
-        
+        }
 
 
         private string GetConnectionString()
         {
-
             return _configuration["ConnectionStrings:Default"];
         }
-
     }
-
 }
 
 

@@ -4,16 +4,15 @@ using System.Net.Http;
 using System.Net.Http.Json;
 
 namespace Quiz.WebUi.ApiClients
-
 {
     public class HttpQuizApiClient : IQuizApiClient
     {
         private readonly IConfiguration _configuration;
-        public HttpQuizApiClient(IConfiguration configuration) 
-        { 
+        public HttpQuizApiClient(IConfiguration configuration)
+        {
             _configuration = configuration;
         }
-       
+
         public async Task<Guid> AddQuestionAsync(string questionContent, int points, string category, AnswerMultiplicity selectionMultiplicity)
         {
             var client = CreateHttpClient();
@@ -23,7 +22,7 @@ namespace Quiz.WebUi.ApiClients
                 Points = points,
                 Category = category,
                 SelectionMultiplicity = selectionMultiplicity
-            }));;
+            })); ;
 
             var body = await response.Content.ReadFromJsonAsync<Guid>();
             return body;
@@ -32,9 +31,8 @@ namespace Quiz.WebUi.ApiClients
 
         public async Task<Guid> AddQuestionAnswerAsync(Guid questionID, string answerContent, bool isCorrect)
         {
-            
             var client = CreateHttpClient();
-            var address = "questions/" + questionID+ "/answers";
+            var address = "questions/" + questionID + "/answers";
             var response = await client.PostAsync(address, JsonContent.Create(new AnswerBody()  // 
             {
                 AnswerContent = answerContent,
@@ -49,7 +47,7 @@ namespace Quiz.WebUi.ApiClients
         {
             var client = CreateHttpClient();
             var address = "questions/" + questionID + "/answers/" + answerID;
-            await client.DeleteAsync(address);  
+            await client.DeleteAsync(address);
         }
 
         public async Task DeleteQuestion(Guid questionID)
@@ -61,7 +59,6 @@ namespace Quiz.WebUi.ApiClients
 
         public async Task<List<AnswerInfo>> GetListOfAnswersAsync(Guid questionID)
         {
-
             var client = CreateHttpClient();
             var address = "questions/" + questionID + "/answers";
             var response = await client.GetAsync(address);
@@ -74,23 +71,21 @@ namespace Quiz.WebUi.ApiClients
             var cat = category.ToLower();  //tolower is to delete
             var searchStr = searchString.ToLower();
             var skippedCount = skipCount;
-            var maxResult = maxResultCount;    
+            var maxResult = maxResultCount;
 
             var client = CreateHttpClient();
             var address = "questions?category=" + cat + "&skipCount=" + skippedCount + "&maxResultCount=" + maxResult;
-            if(searchStr != null)
+            if (searchStr != null)
             {
                 address += "&searchString=" + searchStr;
             }
-            
             var response = await client.GetAsync(address);
             var listOfQuestions = await response.Content.ReadFromJsonAsync<List<QuestionInfo>>();
             return listOfQuestions;
         }
 
-       public async Task <List<CategoryInfo>> GetCategoriesAsync()
+        public async Task<List<CategoryInfo>> GetCategoriesAsync()
         {
-            
             var client = CreateHttpClient();
             var address = "categories";
             var response = await client.GetAsync(address);
@@ -100,7 +95,7 @@ namespace Quiz.WebUi.ApiClients
 
 
         public async Task ModifyQuestionAsync(Guid questionID, string questionContent, int points, string category, AnswerMultiplicity selectionMultiplicity)
-        {           
+        {
             var client = CreateHttpClient();
             var address = "questions/" + questionID;
             await client.PutAsync(address, JsonContent.Create(new QuestionBody()
@@ -109,7 +104,6 @@ namespace Quiz.WebUi.ApiClients
                 Points = points,
                 Category = category,
                 SelectionMultiplicity = selectionMultiplicity
-
             }));
         }
 
@@ -128,7 +122,7 @@ namespace Quiz.WebUi.ApiClients
         {
             var client = CreateHttpClient();
             var address = "questions/" + questionID + "/answers/" + answerID;
-            var response = await client.PutAsync(address, JsonContent.Create(new AnswerBody()  
+            var response = await client.PutAsync(address, JsonContent.Create(new AnswerBody()
             {
                 AnswerContent = answerContent,
                 IsCorrect = isCorrect
@@ -147,7 +141,7 @@ namespace Quiz.WebUi.ApiClients
             var client = CreateHttpClient();
             var address = "questions/" + questionID + "/clone";
             var response = await client.PostAsync(address, null);
-            var body = await response.Content.ReadFromJsonAsync<Guid>();  
+            var body = await response.Content.ReadFromJsonAsync<Guid>();
             return body;
         }
 
@@ -156,11 +150,10 @@ namespace Quiz.WebUi.ApiClients
         public async Task<Guid> CreateTestAsync(List<string> listOfCategoriesIds)
         {
             var client = CreateHttpClient();
-            var response = await client.PostAsync("tests", JsonContent.Create(new CreateTestBody()  
+            var response = await client.PostAsync("tests", JsonContent.Create(new CreateTestBody()
             {
-             CategoriesIds = listOfCategoriesIds              
-            })); 
-
+                CategoriesIds = listOfCategoriesIds
+            }));
             var body = await response.Content.ReadFromJsonAsync<Guid>();
             return body;
         }
@@ -173,7 +166,6 @@ namespace Quiz.WebUi.ApiClients
             var response = await client.GetAsync(address);
             var TestQA = await response.Content.ReadFromJsonAsync<TestQuestionBody>();
             return TestQA;
-
         }
 
         public async Task<int> GetQuestionsCountAsync(Guid testID)
@@ -183,7 +175,7 @@ namespace Quiz.WebUi.ApiClients
             var response = await client.GetAsync(address);
             var stringCount = await response.Content.ReadAsStringAsync();
             var count = int.Parse(stringCount);
-            return count;             
+            return count;
         }
 
         public async Task StartTestAsync(Guid testID)
@@ -236,10 +228,9 @@ namespace Quiz.WebUi.ApiClients
             var result = await response.Content.ReadFromJsonAsync<TestResultBody>();
             return result;
         }
-
         private HttpClient CreateHttpClient()
         {
-            var client= new HttpClient();
+            var client = new HttpClient();
             client.BaseAddress = new Uri(_configuration["HttpClients:Quiz"]);    //from appsettings file (domyslnie)
             return client;
         }

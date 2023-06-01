@@ -11,15 +11,12 @@ namespace Quiz.WebApi.Controllers
         public CategoriesController(ICategoriesProvider categoriesProvider)
         {
             _categoriesProvider = categoriesProvider;
-
         }
-
         [HttpGet("")]
         public async Task<List<CategoryInfo>> GetCategoriesAsync()
         {
             return await _categoriesProvider.GetCategoriesAsync();
         }
-
     }
 }
 

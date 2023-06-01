@@ -6,14 +6,12 @@ namespace Quiz.WebApi.DomainModel
     public class TestQuestion
     {
         public Guid Id { get; set; }
-        public int Points { get; set; } 
+        public int Points { get; set; }
         public AnswerMultiplicity AnswerMultiplicity { get; set; }
         public List<TestAnswer> Answers { get; set; } = new List<TestAnswer>();
 
-
         public double GetGainedPoints()
         {
-
             if (AnswerMultiplicity == AnswerMultiplicity.Single)
             {
                 foreach (var answer in Answers)
@@ -28,7 +26,7 @@ namespace Quiz.WebApi.DomainModel
                         {
                             return 0;
                         }
-                    }                   
+                    }
                 }
                 return 0;
             }
@@ -42,7 +40,7 @@ namespace Quiz.WebApi.DomainModel
                         countOfCorrectAnswers += 1;
                     }
                 }
-                double pointsToGainPerCorrectAnswer = Convert.ToDouble(Points)/ Convert.ToDouble(countOfCorrectAnswers);
+                double pointsToGainPerCorrectAnswer = Convert.ToDouble(Points) / Convert.ToDouble(countOfCorrectAnswers);
                 var pointToLosePerInCorrectAnswer = pointsToGainPerCorrectAnswer;
                 var gainedPoints = 0.0;
                 foreach (var answer in Answers)
@@ -69,6 +67,5 @@ namespace Quiz.WebApi.DomainModel
                 }
             }
         }
-
     }
 }
