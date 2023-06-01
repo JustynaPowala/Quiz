@@ -5,15 +5,14 @@
 3. [Application overview](#application-overview)
 
 # Introduction
-Quiz is a web application created by me during my participation in the TechLeaders mentoring program. It is built in client-server architecture. It allows you to create your own test questions and solve tests. The technologies I used areare .NET, Blazor & SQL.
+Quiz is ASP.NET Core application created to learn the framework. It is built in client-server architecture. It allows you to create your own test questions and solve tests. The technologies I used are ASP.NET Core, Blazor & SQL.
 
 # How to run the program
-1. You should have famework .Net 7.0 installed ///////
-2. Go to the "database" folder in this repository and download the schema.sql file. Then open it in MS SQL Server and press F5 on the keyboard or "Execute" in the program. This will create the Quiz database.
-3. program ////?
-4. Open appsettings.json in Quiz.WebAPi and add your connection string. //progg envir?
-![image](https://github.com/JustynaPowala/Quiz/assets/124584877/22e1da36-a865-4dea-bead-4cb541269ae9)
-5. Now you can add a sample database of questions with answers, which I encourage you to do. This will make it easier for you to check the functionality of the program. Open "database" folder in this repository and download sample-data-seed.sql. Open this file in MS SQL Server and press F5 on the keyboard or "Execute" in the program.
+1. You should have .NET 7.0 installed.
+2. Create database in MS SQL Server.
+3. Open the `database/schema.sql` file in MS SQL Managament Studio and execute it in the context of the database that you created in step 2.
+4. Open `Quiz/Quiz.WebApi/appsettings.json` and replace the connection string with connection string to your databse.
+5. (optional) Now you can add a sample data of questions, which I encourage you to do. This will make it easier for you to check the functionality of the program. Execute the `database/sample-data-seed.sql` script.
 
 6. Expand start and select "Configure Startup Projects"
 
