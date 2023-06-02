@@ -1,4 +1,4 @@
-#[In preparation!]
+
 # Quiz - Spis treści
 1. [Introduction](#introduction)
 2. [How to run the program](#how-to-run-the-program)
