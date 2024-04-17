@@ -1,7 +1,6 @@
 using Blazored.Toast;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Quiz.WebApi;
 using Quiz.WebUi;
 using Quiz.WebUi.ApiClients;
 using Syncfusion.Blazor;

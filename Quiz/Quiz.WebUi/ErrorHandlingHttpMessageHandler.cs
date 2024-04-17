@@ -3,7 +3,7 @@ using Quiz.WebUi.ApiClients;
 using System.Net.Http.Json;
 using System.Reflection.Metadata.Ecma335;
 
-namespace Quiz.WebApi
+namespace Quiz.WebUi
 {
 	public class ErrorHandlingHttpMessageHandler : DelegatingHandler
 	{
